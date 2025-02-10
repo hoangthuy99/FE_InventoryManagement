@@ -5,6 +5,7 @@
  * If you're looking to actual Router routes, go to
  * `routes/index.js`
  */
+
 const routes = [
   {
     path: '/app/dashboard', // the url
@@ -12,19 +13,45 @@ const routes = [
     name: 'Dashboard', // name that appear in Sidebar
   },
   {
-    path: '/app/forms',
-    icon: 'FormsIcon',
-    name: 'Forms',
+    icon: 'ModalsIcon',
+    name: 'Category',
+    routes: [
+      // submenu
+      {
+        path: '/category/all-category',
+        name: 'All Category',
+      },
+      {
+        path: '/category/add-category',
+        name: 'Add Category',
+      },
+      {
+        path: '/category/edit-category',
+        name: 'Edit Category',
+      },
+      
+    ],
   },
   {
-    path: '/app/cards',
-    icon: 'CardsIcon',
-    name: 'Cards',
+    icon: 'ProductIcon',
+    name: 'Product',
+    routes: [
+      // submenu
+      {
+        path: './add-product',
+        name: 'Add Product',
+      },
+      {
+        path: './edit-category',
+        name: 'Edit Product',
+      },
+    ],
+      
   },
   {
-    path: '/app/charts',
-    icon: 'ChartsIcon',
-    name: 'Charts',
+    path: '/app/history',
+    icon: 'HistoryIcon',
+    name: 'History',
   },
   {
     path: '/app/buttons',
@@ -39,11 +66,11 @@ const routes = [
   {
     path: '/app/tables',
     icon: 'TablesIcon',
-    name: 'Tables',
+    name: 'Menu',
   },
   {
     icon: 'PagesIcon',
-    name: 'Pages',
+    name: 'Account',
     routes: [
       // submenu
       {

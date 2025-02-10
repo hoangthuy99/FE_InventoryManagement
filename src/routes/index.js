@@ -1,24 +1,26 @@
 import { lazy } from 'react'
 
+
 // use lazy for better code splitting, a.k.a. load faster
 const Dashboard = lazy(() => import('../pages/Dashboard'))
-const Forms = lazy(() => import('../pages/Forms'))
-const Cards = lazy(() => import('../pages/Cards'))
-const Charts = lazy(() => import('../pages/Charts'))
+const Category = lazy(() => import('../pages/category/AllCategory'))
+const Product = lazy(() => import('../pages/product/Product'))
+const History = lazy(() => import('../pages/History'))
 const Buttons = lazy(() => import('../pages/Buttons'))
 const Modals = lazy(() => import('../pages/Modals'))
 const Tables = lazy(() => import('../pages/Tables'))
 const Page404 = lazy(() => import('../pages/404'))
 
+
 /**
- * ⚠ These are internal routes!
- * They will be rendered inside the app, using the default `containers/Layout`.
- * If you want to add a route to, let's say, a landing page, you should add
- * it to the `App`'s router, exactly like `Login`, `CreateAccount` and other pages
- * are routed.
- *
- * If you're looking for the links rendered in the SidebarContent, go to
- * `routes/sidebar.js`
+*Đây là các tuyến nội bộ!
+* Chúng sẽ được hiển thị bên trong ứng dụng, sử dụng `containers/Layout` mặc định.
+* Nếu bạn muốn thêm tuyến đến, chẳng hạn như trang đích, bạn nên thêm
+* tuyến đó vào bộ định tuyến của `Ứng dụng`, giống hệt như `Đăng nhập`, `CreateAccount` và các trang khác
+* được định tuyến.
+*
+* Nếu bạn đang tìm kiếm các liên kết được hiển thị trong SidebarContent, hãy truy cập
+* `routes/sidebar.js`
  */
 const routes = [
   {
@@ -26,16 +28,16 @@ const routes = [
     component: Dashboard, // view rendered
   },
   {
-    path: '/forms',
-    component: Forms,
+    path: '/category/all-category',
+    component:Category,
   },
   {
-    path: '/cards',
-    component: Cards,
+    path: '/product',
+    component: Product,
   },
   {
-    path: '/charts',
-    component: Charts,
+    path: '/history',
+    component: History,
   },
   {
     path: '/buttons',
