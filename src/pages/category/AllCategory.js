@@ -49,8 +49,7 @@ function Category() {
           .then(data => setCategories(data))
           .catch(error => console.error('Error fetching categories:', error));
       }, []);
-  // on page change, load new sliced data
-  // here you would make another server request for new data
+ 
   useEffect(() => {
     setDataTable1(response.slice((pageTable1 - 1) * resultsPerPage, pageTable1 * resultsPerPage))
   }, [pageTable1])
@@ -63,66 +62,19 @@ function Category() {
 
   return (
     <>
-      <PageTitle>Tables</PageTitle>
-
-      <CTA />
-
-      <SectionTitle>Simple table</SectionTitle>
+      <PageTitle>Danh sách danh mục</PageTitle>
+      
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>
             <tr>
-              <TableCell>Client</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Date</TableCell>
-            </tr>
-          </TableHeader>
-          <TableBody>
-            {dataTable1.map((user, i) => (
-              <TableRow key={i}>
-                <TableCell>
-                  <div className="flex items-center text-sm">
-                    <Avatar className="hidden mr-3 md:block" src={user.avatar} alt="User avatar" />
-                    <div>
-                      <p className="font-semibold">{user.name}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">{user.job}</p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">$ {user.amount}</span>
-                </TableCell>
-                <TableCell>
-                  <Badge type={user.status}>{user.status}</Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">{new Date(user.date).toLocaleDateString()}</span>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <TableFooter>
-          <Pagination
-            totalResults={totalResults}
-            resultsPerPage={resultsPerPage}
-            onChange={onPageChangeTable1}
-            label="Table navigation"
-          />
-        </TableFooter>
-      </TableContainer>
-
-      <SectionTitle>Table with actions</SectionTitle>
-      <TableContainer className="mb-8">
-        <Table>
-          <TableHeader>
-            <tr>
-              <TableCell>Client</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>STT</TableCell>
+              <TableCell>Mã Code</TableCell>
+              <TableCell>Tên danh mục</TableCell>
+              <TableCell>Tình trạng</TableCell>
+              <TableCell>Ngày tạo</TableCell>
+              <TableCell>Ngày cập nhập</TableCell>
+              <TableCell>Trạng thái</TableCell>
             </tr>
           </TableHeader>
           <TableBody>
