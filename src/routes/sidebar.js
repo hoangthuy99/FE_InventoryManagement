@@ -9,26 +9,15 @@
 const routes = [
   {
     path: '/app/dashboard', // the url
-    icon: 'HomeIcon', // the component being exported from icons/index.js
+    icon: 'HomeIcon', 
     name: 'Dashboard', // name that appear in Sidebar
   },
   {
     icon: 'ModalsIcon',
     name: 'Category',
     routes: [
-      // submenu
-      {
-        path: '/category/all-category',
-        name: 'All Category',
-      },
-      {
-        path: '/category/add-category',
-        name: 'Add Category',
-      },
-      {
-        path: '/category/edit-category',
-        name: 'Edit Category',
-      },
+      { path: '/app/category/all-category', name: 'All Category' },
+      { path: '/app/category/add-category', name: 'Add Category' },
       
     ],
   },
@@ -36,17 +25,10 @@ const routes = [
     icon: 'ProductIcon',
     name: 'Product',
     routes: [
-      // submenu
-      {
-        path: './add-product',
-        name: 'Add Product',
-      },
-      {
-        path: './edit-category',
-        name: 'Edit Product',
-      },
-    ],
+      { path: '/app/product/all-product', name: 'All Product' },
+      { path: '/app/product/add-product', name: 'Add Product' },
       
+    ],
   },
   {
     path: '/app/history',
@@ -67,6 +49,16 @@ const routes = [
     path: '/app/tables',
     icon: 'TablesIcon',
     name: 'Menu',
+  },
+  {
+    path: '/app/cards',
+    icon: 'TablesIcon',
+    name: 'Cards',
+  },
+  {
+    path: '/app/forms',
+    icon: 'TablesIcon',
+    name: 'Forms',
   },
   {
     icon: 'PagesIcon',
