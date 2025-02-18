@@ -15,39 +15,43 @@ import {
   Pagination,
 } from "@windmill/react-ui";
 import { EditIcon, TrashIcon } from "../../icons";
+import { categoryAPI } from "../../api/api";
 
 function Category() {
   const [categories, setCategories] = useState([]);
-  const [page, setPage] = useState(0); // Backend đang sử dụng page = 0 (zero-based index)
+  const [page, setPage] = useState(0); // Backend sử dụng page = 0 (zero-based index)
   const [limit] = useState(10); // Số danh mục mỗi trang
   const [totalPages, setTotalPages] = useState(1); // Tổng số trang
 
   // Fetch danh mục có phân trang
   useEffect(() => {
-    fetch(`http://localhost:8089/app/category?page=${page}&limit=${limit}`)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("API Response:", data);
-        if (data.content) {
-          setCategories(data.content);
-          setTotalPages(data.totalPages); // Cập nhật tổng số trang từ API
+    const fetchCategories = async () => {
+      try {
+        const response = await categoryAPI.getAllPaginated(page, limit);
+        console.log("API Response:", response.data);
+
+        // Kiểm tra nếu API trả về một mảng danh mục
+        if (Array.isArray(response.data)) {
+          setCategories(response.data);
+
+          // Nếu API không trả về totalPages, tính toán từ số lượng dữ liệu
+          setTotalPages(Math.ceil(response.data.length / limit));
         } else {
-          console.error("Dữ liệu API không đúng định dạng");
+          console.error("Dữ liệu API không đúng định dạng:", response.data);
         }
-      })
-      .catch((error) => console.error("Lỗi khi gọi API:", error));
+      } catch (error) {
+        console.error("Lỗi khi gọi API:", error);
+      }
+    };
+
+    fetchCategories();
   }, [page]); // Khi `page` thay đổi, gọi API mới
 
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8089/app/category/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Xóa danh mục thất bại!");
-
+      await categoryAPI.delete(id);
       showSuccessToast("Danh mục đã được xóa thành công!");
 
       // Cập nhật danh sách danh mục sau khi xóa
@@ -55,7 +59,7 @@ function Category() {
         prevCategories.filter((cat) => cat.id !== id)
       );
     } catch (error) {
-      showErrorToast(error.message);
+      showErrorToast("Xóa danh mục thất bại!");
     }
   };
 
@@ -83,7 +87,9 @@ function Category() {
                 <TableCell>{category.code}</TableCell>
                 <TableCell>{category.name}</TableCell>
                 <TableCell>
-                  {new Date(category.createdDate).toLocaleDateString()}
+                  {category.createdDate
+                    ? new Date(category.createdDate).toLocaleDateString()
+                    : "Không có dữ liệu"}
                 </TableCell>
                 <TableCell>
                   {category.updateDate
@@ -130,7 +136,7 @@ function Category() {
           <Pagination
             totalResults={totalPages * limit} // Tổng số kết quả
             resultsPerPage={limit}
-            onChange={(p) => setPage(p - 1)} // Chuyển đổi page (zero-based index)
+            onChange={(p) => setPage(p - 1)} 
             label="Table navigation"
           />
         </TableFooter>

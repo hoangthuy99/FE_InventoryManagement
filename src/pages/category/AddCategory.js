@@ -3,6 +3,7 @@ import { showSuccessToast, showErrorToast } from "../../components/Toast";
 import PageTitle from "../../components/Typography/PageTitle";
 import SectionTitle from "../../components/Typography/SectionTitle";
 import { Input, HelperText, Label, Select, Textarea, Button } from "@windmill/react-ui";
+import { categoryAPI } from "../../api/api"; 
 
 function AddCategory() {
   const [formData, setFormData] = useState({
@@ -44,45 +45,22 @@ function AddCategory() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8089/app/category/add-category", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      let result;
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        result = await response.json();
-      } else {
-        result = await response.text();
-      }
-
-      if (!response.ok) {
-        setLoading(false);
-        let errorMessage = "Thêm danh mục thất bại!";
-        if (typeof result === "string") {
-          errorMessage = result;
-        } else if (result.error) {
-          errorMessage = result.error;
-        } else if (result.message) {
-          errorMessage = result.message;
-        }
-
-        if (errorMessage.includes("Tên danh mục đã tồn tại")) {
-          setErrors({ name: errorMessage });
-        } else {
-          setErrors({ general: errorMessage });
-        }
-
-        showErrorToast(errorMessage);
-        return;
-      }
-
+      const response = await categoryAPI.create(formData);
       showSuccessToast("Thêm danh mục thành công!");
       setFormData({ name: "", code: "", description: "", activeFlag: 1 });
     } catch (error) {
-      showErrorToast("Lỗi hệ thống, vui lòng thử lại sau!");
+      let errorMessage = "Thêm danh mục thất bại!";
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.message || errorMessage;
+      }
+
+      if (errorMessage.includes("Tên danh mục đã tồn tại")) {
+        setErrors({ name: errorMessage });
+      } else {
+        setErrors({ general: errorMessage });
+      }
+
+      showErrorToast(errorMessage);
     } finally {
       setLoading(false);
     }

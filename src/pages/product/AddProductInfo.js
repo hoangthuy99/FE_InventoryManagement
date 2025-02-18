@@ -3,163 +3,150 @@ import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import PageTitle from "../../components/Typography/PageTitle";
 import SectionTitle from "../../components/Typography/SectionTitle";
 import { Input, Label, Textarea, Button, Select, HelperText } from "@windmill/react-ui";
+import { productAPI, categoryAPI } from "../../api/api";
 
 function AddProduct() {
   const [formData, setFormData] = useState({
     name: "",
     code: "",
+    qty: "",
+    price: "",
     description: "",
-    category: "", 
+    categoryId: "",
     activeFlag: 1,
   });
 
   const [image, setImage] = useState(null);
   const [errors, setErrors] = useState({});
-  const [categories, setCategories] = useState([]); 
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("http://localhost:8089/app/category", {
-          method: "GET",
-        });
-        if (!response.ok) throw new Error("Không thể tải danh mục!");
-
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setCategories(data);
-        } else {
-          throw new Error("Dữ liệu danh mục không hợp lệ!");
-        }
+        const response = await categoryAPI.getAll();
+        setCategories(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
-        showErrorToast("Lỗi khi tải danh mục: " + error.message);
-        setCategories([]); 
+        console.error("Lỗi khi gọi API danh mục:", error);
       }
     };
-
     fetchCategories();
   }, []);
 
-  // Xử lý thay đổi input
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Xử lý thay đổi hình ảnh
+  const validateForm = () => {
+    let newErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = "Tên sản phẩm không được để trống!";
+    if (!formData.code.trim()) {
+      newErrors.code = "Mã sản phẩm không được để trống!";
+    } else if (!/^[A-Za-z]{2}\d{3}$/.test(formData.code)) {
+      newErrors.code = "Mã sản phẩm phải có 5 ký tự, bắt đầu bằng 2 chữ cái và 3 số!";
+    }
+    if (!formData.qty.trim() || isNaN(formData.qty) || Number(formData.qty) <= 0) {
+      newErrors.qty = "Số lượng phải là số nguyên dương!";
+    }
+    if (!formData.price.trim() || isNaN(formData.price) || Number(formData.price) <= 0) {
+      newErrors.price = "Giá phải là số lớn hơn 0!";
+    }
+    if (!formData.categoryId) newErrors.categoryId = "Vui lòng chọn danh mục!";
+    if (!formData.description.trim()) newErrors.description = "Mô tả không được để trống!";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImage(file);
+    setImage(e.target.files[0]);
   };
 
-  // Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
+    if (!validateForm()) return;
     setLoading(true);
 
     try {
       const formDataToSend = new FormData();
-      for (const key in formData) {
+      Object.keys(formData).forEach((key) => {
         formDataToSend.append(key, formData[key]);
-      }
+      });
       if (image) {
-        formDataToSend.append("image", image);
+        formDataToSend.append("img", image);
       }
 
-      const response = await fetch("http://localhost:8089/app/product/add-product", {
-        method: "POST",
-        body: formDataToSend,
+      await productAPI.create(formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-
-      const result = await response.json();
-      setLoading(false);
-
-      if (!response.ok) {
-        const newErrors = result.errors || { general: result.error || "Thêm sản phẩm thất bại!" };
-        setErrors(newErrors);
-        return;
-      }
-
+      
       showSuccessToast("Thêm sản phẩm thành công!");
-      setFormData({
-        name: "",
-        code: "",
-        description: "",
-        category: "",
-        activeFlag: 1,
-      });
+      setFormData({ name: "", code: "", qty: "", price: "", description: "", categoryId: "", activeFlag: 1 });
       setImage(null);
     } catch (error) {
-      showErrorToast("Lỗi kết nối server!");
-      setLoading(false);
+      if (error.response) {
+        const { status, data } = error.response;
+        if (status === 400 && data.errors) {
+          setErrors(data.errors);
+        } else {
+          showErrorToast("Lỗi: " + (data.message || "Thêm sản phẩm thất bại!"));
+        }
+      } else {
+        showErrorToast("Lỗi kết nối server!");
+      }
     }
+    setLoading(false);
   };
 
   return (
     <>
       <PageTitle>Thêm Sản Phẩm</PageTitle>
       <SectionTitle>Nhập thông tin sản phẩm</SectionTitle>
-
       <div className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
         {errors.general && <HelperText valid={false}>{errors.general}</HelperText>}
-
         <form onSubmit={handleSubmit}>
           <Label>
             <span>Tên sản phẩm</span>
-            <Input className="mt-1" type="text" name="name" value={formData.name} onChange={handleChange} />
+            <Input type="text" name="name" value={formData.name} onChange={handleChange} />
             {errors.name && <HelperText valid={false}>{errors.name}</HelperText>}
           </Label>
-
           <Label className="mt-4">
             <span>Mã sản phẩm</span>
-            <Input className="mt-1" type="text" name="code" value={formData.code} onChange={handleChange}  />
+            <Input type="text" name="code" value={formData.code} onChange={handleChange} />
             {errors.code && <HelperText valid={false}>{errors.code}</HelperText>}
           </Label>
           <Label className="mt-4">
-            <span>Số lượng sản phẩm</span>
-            <Input className="mt-1" type="text" name="qty" value={formData.qty} onChange={handleChange}  />
+            <span>Số lượng</span>
+            <Input type="number" name="qty" value={formData.qty} onChange={handleChange} />
             {errors.qty && <HelperText valid={false}>{errors.qty}</HelperText>}
           </Label>
-
           <Label className="mt-4">
-            <span>Giá bán sản phẩm</span>
-            <Input className="mt-1" type="text" name="price" value={formData.price} onChange={handleChange}  />
+            <span>Giá</span>
+            <Input type="number" name="price" value={formData.price} onChange={handleChange} />
             {errors.price && <HelperText valid={false}>{errors.price}</HelperText>}
           </Label>
-          
           <Label className="mt-4">
-            <span>Mô tả sản phẩm</span>
-            <Textarea className="mt-1" name="description" value={formData.description} onChange={handleChange} />
+            <span>Mô tả</span>
+            <Textarea name="description" value={formData.description} onChange={handleChange} />
             {errors.description && <HelperText valid={false}>{errors.description}</HelperText>}
           </Label>
-
           <Label className="mt-4">
             <span>Danh mục</span>
-            <Select className="mt-1" name="category" value={formData.category} onChange={handleChange} >
+            <Select name="categoryId" value={formData.categoryId} onChange={handleChange}>
               <option value="">-- Chọn danh mục --</option>
-              {Array.isArray(categories) && categories.length > 0 ? (
-                categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))
-              ) : (
-                <option value="" disabled>Không có danh mục</option>
-              )}
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
+              ))}
             </Select>
-            {errors.category && <HelperText valid={false}>{errors.category}</HelperText>}
+            {errors.categoryId && <HelperText valid={false}>{errors.categoryId}</HelperText>}
           </Label>
-
           <Label className="mt-4">
-            <span>Hình ảnh sản phẩm</span>
-            <Input type="file" onChange={handleImageChange} accept="image/jpeg,image/png,image/jpg" />
-            {errors.image && <HelperText valid={false}>{errors.image}</HelperText>}
+            <span>Hình ảnh</span>
+            <Input type="file" name="img" onChange={handleImageChange} accept="image/jpeg,image/png,image/jpg" />
           </Label>
-
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="mt-4">
             {loading ? "Đang xử lý..." : "Thêm sản phẩm"}
           </Button>
         </form>
