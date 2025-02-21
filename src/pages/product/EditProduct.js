@@ -1,153 +1,142 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import PageTitle from "../../components/Typography/PageTitle";
 import SectionTitle from "../../components/Typography/SectionTitle";
 import { Input, Label, Textarea, Button, Select, HelperText } from "@windmill/react-ui";
+import { productAPI, categoryAPI } from "../../api/api";
 
-function AddProduct() {
+function EditProduct() {
+  const { id } = useParams();
   const [formData, setFormData] = useState({
     name: "",
     code: "",
+    qty: "",
+    price: "",
     description: "",
-    category: "", 
+    categoryId: "",
     activeFlag: 1,
+    img: "",
   });
 
   const [image, setImage] = useState(null);
   const [errors, setErrors] = useState({});
-  const [categories, setCategories] = useState([]); 
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
-
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchProduct = async () => {
       try {
-        const response = await fetch("http://localhost:8089/app/category");
-        if (!response.ok) throw new Error("Không thể tải danh mục!");
-
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setCategories(data);
-        } else {
-          throw new Error("Dữ liệu danh mục không hợp lệ!");
-        }
+        const response = await productAPI.getById(id);
+        setFormData(response.data);
       } catch (error) {
-        showErrorToast("Lỗi khi tải danh mục: " + error.message);
-        setCategories([]); 
+        showErrorToast("Không thể tải dữ liệu sản phẩm!");
       }
     };
 
+    const fetchCategories = async () => {
+      try {
+        const response = await categoryAPI.getAll();
+        setCategories(response.data);
+      } catch (error) {
+        showErrorToast("Lỗi khi tải danh mục!");
+      }
+    };
+
+    fetchProduct();
     fetchCategories();
-  }, []);
+  }, [id]);
 
-  // Xử lý thay đổi input
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Xử lý thay đổi hình ảnh
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImage(file);
+    setImage(e.target.files[0]);
   };
 
-  // Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({});
     setLoading(true);
+    setErrors({});
+
+    if (!formData.name.trim()) {
+      setErrors((prev) => ({ ...prev, name: "Tên sản phẩm không được để trống" }));
+      setLoading(false);
+      return;
+    }
 
     try {
       const formDataToSend = new FormData();
-      for (const key in formData) {
+      Object.keys(formData).forEach((key) => {
         formDataToSend.append(key, formData[key]);
-      }
+      });
       if (image) {
-        formDataToSend.append("image", image);
+        formDataToSend.append("img", image);
       }
 
-      const response = await fetch("http://localhost:8089/app/product/add-product", {
-        method: "POST",
-        body: formDataToSend,
+      await productAPI.update(id, formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-
-      const result = await response.json();
-      setLoading(false);
-
-      if (!response.ok) {
-        const newErrors = result.errors || { general: result.error || "Thêm sản phẩm thất bại!" };
-        setErrors(newErrors);
-        return;
-      }
-
-      showSuccessToast("Thêm sản phẩm thành công!");
-      setFormData({
-        name: "",
-        code: "",
-        description: "",
-        category: "",
-        activeFlag: 1,
-      });
-      setImage(null);
+      showSuccessToast("Cập nhật sản phẩm thành công!");
     } catch (error) {
-      showErrorToast("Lỗi kết nối server!");
-      setLoading(false);
+      showErrorToast(error.response?.data?.message || "Lỗi khi cập nhật sản phẩm!");
     }
+    setLoading(false);
   };
 
   return (
     <>
-      <PageTitle>Thêm Sản Phẩm</PageTitle>
-      <SectionTitle>Nhập thông tin sản phẩm</SectionTitle>
-
+      <PageTitle>Chỉnh Sửa Sản Phẩm</PageTitle>
+      <SectionTitle>Cập nhật thông tin sản phẩm</SectionTitle>
       <div className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
-        {errors.general && <HelperText valid={false}>{errors.general}</HelperText>}
-
         <form onSubmit={handleSubmit}>
           <Label>
             <span>Tên sản phẩm</span>
-            <Input className="mt-1" type="text" name="name" value={formData.name} onChange={handleChange} required />
+            <Input type="text" name="name" value={formData.name} onChange={handleChange} />
             {errors.name && <HelperText valid={false}>{errors.name}</HelperText>}
           </Label>
-
           <Label className="mt-4">
             <span>Mã sản phẩm</span>
-            <Input className="mt-1" type="text" name="code" value={formData.code} onChange={handleChange} required />
-            {errors.code && <HelperText valid={false}>{errors.code}</HelperText>}
+            <Input type="text" name="code" value={formData.code} onChange={handleChange} />
           </Label>
-
           <Label className="mt-4">
-            <span>Mô tả sản phẩm</span>
-            <Textarea className="mt-1" name="description" value={formData.description} onChange={handleChange} required />
-            {errors.description && <HelperText valid={false}>{errors.description}</HelperText>}
+            <span>Số lượng</span>
+            <Input type="number" name="qty" value={formData.qty} onChange={handleChange} />
           </Label>
-
+          <Label className="mt-4">
+            <span>Giá</span>
+            <Input type="number" name="price" value={formData.price} onChange={handleChange} />
+          </Label>
+          <Label className="mt-4">
+            <span>Mô tả</span>
+            <Textarea name="description" value={formData.description} onChange={handleChange} />
+          </Label>
           <Label className="mt-4">
             <span>Danh mục</span>
-            <Select className="mt-1" name="category" value={formData.category} onChange={handleChange} required>
+            <Select name="categoryId" value={formData.categoryId} onChange={handleChange}>
               <option value="">-- Chọn danh mục --</option>
-              {Array.isArray(categories) && categories.length > 0 ? (
-                categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))
-              ) : (
-                <option value="" disabled>Không có danh mục</option>
-              )}
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
+              ))}
             </Select>
-            {errors.category && <HelperText valid={false}>{errors.category}</HelperText>}
           </Label>
-
           <Label className="mt-4">
-            <span>Hình ảnh sản phẩm</span>
+            <span>Hình ảnh</span>
             <Input type="file" onChange={handleImageChange} accept="image/jpeg,image/png,image/jpg" />
-            {errors.image && <HelperText valid={false}>{errors.image}</HelperText>}
+            {formData.img && (
+              <img src={`http://localhost:8089/${formData.img}`} alt={formData.name} className="h-32 mt-2" />
+            )}
           </Label>
-
-          <Button type="submit" disabled={loading}>
-            {loading ? "Đang xử lý..." : "Thêm sản phẩm"}
+          <Label className="mt-4">
+            <span>Trạng thái</span>
+            <Select className="mt-1" name="activeFlag" value={formData.activeFlag} onChange={handleChange}>
+              <option value={1}>Hoạt động</option>
+              <option value={0}>Không hoạt động</option>
+            </Select>
+          </Label>
+          <Button type="submit" disabled={loading} className="mt-4">
+            {loading ? "Đang xử lý..." : "Cập nhật sản phẩm"}
           </Button>
         </form>
       </div>
@@ -155,4 +144,4 @@ function AddProduct() {
   );
 }
 
-export default AddProduct;
+export default EditProduct;

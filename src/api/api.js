@@ -30,7 +30,9 @@ export const productAPI = {
     create: (data) => api.post("/product/add-product", data, {
         headers: { "Content-Type": "multipart/form-data" } // Đảm bảo hỗ trợ upload file
     }),
-    update: (id, data) => api.put(`/product/${id}`, data),
+    update: (id, data) => api.put(`/product/${id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" } 
+    }),
     delete: (id) => api.delete(`/product/${id}`),
 };
 

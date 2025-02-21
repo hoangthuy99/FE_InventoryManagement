@@ -112,7 +112,7 @@ function Category() {
                       size="icon"
                       aria-label="Edit"
                       onClick={() =>
-                        (window.location.href = `http://localhost:3001/app/category/edit-category/${category.id}`)
+                        (window.location.href = `http://localhost:3000/app/category/edit-category/${category.id}`)
                       }
                     >
                       <EditIcon className="w-5 h-5" aria-hidden="true" />

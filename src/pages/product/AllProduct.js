@@ -93,7 +93,10 @@ const AllProduct = () => {
 
                 </TableCell>
                 <TableCell>{product.name}</TableCell>
-                <TableCell>{product.categoryName}</TableCell>
+                <TableCell>
+                {product.categories.name}
+               </TableCell>
+                
                 <TableCell>{new Date(product.createdDate).toLocaleDateString()}</TableCell>
                 <TableCell>
                   {product.updateDate ? new Date(product.updateDate).toLocaleDateString() : "Chưa cập nhật"}
@@ -109,7 +112,7 @@ const AllProduct = () => {
                       layout="link"
                       size="icon"
                       aria-label="Edit"
-                      onClick={() => (window.location.href = `http://localhost:3001/app/product/edit-product/${product.id}`)}
+                      onClick={() => (window.location.href = `http://localhost:3000/app/product/edit-product/${product.id}`)}
                     >
                       <EditIcon className="w-5 h-5" aria-hidden="true" />
                     </Button>
