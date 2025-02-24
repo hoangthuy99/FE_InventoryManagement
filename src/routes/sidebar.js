@@ -31,9 +31,15 @@ const routes = [
     ],
   },
   {
-    path: '/app/history',
-    icon: 'HistoryIcon',
-    name: 'History',
+    icon: 'OrderIcon',
+    name: 'Orders',
+    routes: [
+      { path: '/app/order/all-orders', name: 'All Orders' },
+      { path: '/app/order/all-order-detail', name: 'All OrderDetail' },
+      { path: '/app/order/add-order', name: 'Add Order' },
+      { path: '/app/order/add-order-detail', name: 'AddOrderDetail' },
+      
+    ],
   },
   {
     path: '/app/buttons',

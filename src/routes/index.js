@@ -8,7 +8,10 @@ const EditCategory = lazy(() => import('../pages/category/EditCategory'))
 const AddProductInfo = lazy(() => import('../pages/product/AddProductInfo'))
 const AllProduct = lazy(() => import('../pages/product/AllProduct'))
 const EditProduct = lazy(() => import('../pages/product/EditProduct'))
-const History = lazy(() => import('../pages/History'))
+const AddOrder = lazy(() => import('../pages/order/AddOrder'))
+const AllOrders = lazy(() => import('../pages/order/AllOrders'))
+const AllOrderDetail = lazy(() => import('../pages/order/AllOrderDetail'))
+const AddOrderDetail = lazy(() => import('../pages/order/AddOrderDetail'))
 const Buttons = lazy(() => import('../pages/Buttons'))
 const Modals = lazy(() => import('../pages/Modals'))
 const Tables = lazy(() => import('../pages/Tables'))
@@ -48,8 +51,20 @@ const routes = [
     component: EditProduct,
   },
   {
-    path: '/history',
-    component: History,
+    path: '/order/all-orders',
+    component: AllOrders,
+  },
+  {
+    path: '/order/all-order-detail',
+    component: AllOrderDetail,
+  },
+  {
+    path: '/order/add-order',
+    component: AddOrder,
+  },
+ {
+    path: '/order/add-order-detail',
+    component: AddOrderDetail,
   },
   {
     path: '/buttons',

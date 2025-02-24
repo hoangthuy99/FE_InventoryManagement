@@ -36,12 +36,24 @@ export const productAPI = {
     delete: (id) => api.delete(`/product/${id}`),
 };
 
-
-// API History
-export const historyAPI = {
-    getAll: () => api.get("/history"),
-    getById: (id) => api.get(`/history/${id}`),
+// API Order (Đơn hàng)
+export const orderAPI = {
+    getAll: (customerId) => api.get(`/order/all/${customerId}`),
+    getById: (id) => api.get(`/order/${id}`),
+    addOrder: (customer, totalPrice) => api.post("/order/add", { customer, totalPrice }),
+    saveOrder: (orderData) => api.post("/order/save", orderData),
+    searchByOrderCode: (keyword) => api.get("/order/search", { params: { keyword } }),
+    getByIdAndStatus: (customerId, orderId, status) => api.get(`/order/${customerId}/${orderId}/${status}`),
 };
+export const orderDetailAPI = {
+    getAll: () => api.get("/"),
+    getAllPaginated: (page, limit) => api.get(`?page=${page}&limit=${limit}`),
+    getById: (id) => api.get(`/${id}`),
+    getByOrderCode: (orderCode) => api.get(`/order/${orderCode}`),
+    create: (data) => api.post("/", data),
+    update: (id, data) => api.put(`/${id}`, data),
+    delete: (id) => api.delete(`/${id}`),
+  };
 
 // API Invoice
 export const invoiceAPI = {

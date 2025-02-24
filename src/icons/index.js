@@ -27,7 +27,7 @@ import { ReactComponent as OutlinePersonIcon } from './outlinePerson.svg'
 import { ReactComponent as OutlineCogIcon } from './outlineCog.svg'
 import { ReactComponent as OutlineLogoutIcon } from './outlineLogout.svg'
 import { ReactComponent as ProductIcon } from './product.svg'
-import { ReactComponent as HistoryIcon} from './history.svg'
+import { ReactComponent as OrderIcon} from './order.svg'
 
 export {
   ButtonsIcon,
@@ -59,5 +59,5 @@ export {
   OutlineCogIcon,
   OutlineLogoutIcon,
   ProductIcon,
-  HistoryIcon
+  OrderIcon
 }
