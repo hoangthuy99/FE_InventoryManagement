@@ -11,6 +11,26 @@ const api = axios.create({
 });
 
 //  Function API cho từng module
+//  API Category
+export const customerAPI = {
+    getAll: () => api.get("/customer"),
+    getAllPaginated: (page, limit) => api.get(`/customer?page=${page}&limit=${limit}`),
+    getById: (id) => api.get(`/customer/${id}`),
+    create: (data) => api.post("/customer", data),
+    update: (id, data) => api.put(`/customer/${id}`, data),
+    delete: (id) => api.delete(`/customer/${id}`),
+};
+    
+export const branchAPI = {
+    getAll: () => api.get("/branch"),
+    getAllPaginated: (page, limit) => api.get(`/branch?page=${page}&limit=${limit}`),
+    getById: (id) => api.get(`/branch/${id}`),
+    create: (data) => api.post("/branch", data),
+    update: (id, data) => api.put(`/branch/${id}`, data),
+    delete: (id) => api.delete(`/branch/${id}`),
+    getByActiveFlag: () => api.get("/branch/active"),
+    searchByName: (keyword) => api.get(`/branch/search?keyword=${keyword}`)
+};
 
 //  API Category
 export const categoryAPI = {

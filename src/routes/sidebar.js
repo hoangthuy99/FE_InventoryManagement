@@ -42,6 +42,22 @@ const routes = [
     ],
   },
   {
+    icon: 'CustomerIcon',
+    name: 'Customer',
+    routes: [
+      { path: '/app/customer/all-customer', name: 'All Customer' },
+      { path: '/app/customer/add-customer', name: 'Add Customer' },
+    ],
+  },
+  {
+    icon: 'BranchIcon',
+    name: 'Branch',
+    routes: [
+      { path: '/app/branch/all-branch', name: 'All Branch' },
+      { path: '/app/branch/add-branch', name: 'Add Branch' },
+    ],
+  },
+  {
     path: '/app/buttons',
     icon: 'ButtonsIcon',
     name: 'Buttons',

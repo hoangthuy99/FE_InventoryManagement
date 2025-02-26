@@ -12,6 +12,12 @@ const AddOrder = lazy(() => import('../pages/order/AddOrder'))
 const AllOrders = lazy(() => import('../pages/order/AllOrders'))
 const AllOrderDetail = lazy(() => import('../pages/order/AllOrderDetail'))
 const AddOrderDetail = lazy(() => import('../pages/order/AddOrderDetail'))
+const AddCustomer = lazy(() => import('../pages/customer/AddCustomer'))
+const AllCustomer = lazy(() => import('../pages/customer/AllCustomer'))
+const EditCustomer = lazy(() => import('../pages/customer/EditCustomer'))
+const AddBranch = lazy(() => import('../pages/branch/AddBranch'))
+const AllBranch = lazy(() => import('../pages/branch/AllBranch')) 
+const EditBranch = lazy(() => import('../pages/branch/EditBranch'))
 const Buttons = lazy(() => import('../pages/Buttons'))
 const Modals = lazy(() => import('../pages/Modals'))
 const Tables = lazy(() => import('../pages/Tables'))
@@ -65,6 +71,30 @@ const routes = [
  {
     path: '/order/add-order-detail',
     component: AddOrderDetail,
+  },
+  {
+    path: '/customer/add-customer',
+    component: AddCustomer,
+  },
+   {
+    path: '/customer/all-customer',
+    component: AllCustomer,
+  },
+  {
+    path: '/customer/edit-customer/:id',
+    component: EditCustomer,
+  },
+  {
+    path: '/branch/add-branch',
+    component: AddBranch,
+  },
+   {
+    path: '/branch/all-branche',
+    component: AllBranch,
+  },
+  {
+    path: '/branch/edit-branch/:id',
+    component: EditBranch,
   },
   {
     path: '/buttons',
