@@ -5,7 +5,7 @@ import SectionTitle from "../../components/Typography/SectionTitle";
 import { Input, HelperText, Label, Select, Textarea, Button } from "@windmill/react-ui";
 import { useParams } from "react-router-dom";
 
-function EditCategory() {
+function EditBranch() {
   const { id } = useParams();
   const [formData, setFormData] = useState({ name: "", code: "", description: "", activeFlag: 1 });
   const [existingCategories, setExistingCategories] = useState([]);
@@ -164,4 +164,4 @@ function EditCategory() {
   );
 }
 
-export default EditCategory;
+export default EditBranch;

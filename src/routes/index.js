@@ -89,7 +89,7 @@ const routes = [
     component: AddBranch,
   },
    {
-    path: '/branch/all-branche',
+    path: '/branch/all-branch',
     component: AllBranch,
   },
   {

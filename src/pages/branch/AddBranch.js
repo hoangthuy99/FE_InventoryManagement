@@ -2,14 +2,14 @@ import { useState } from "react";
 import { showSuccessToast, showErrorToast } from "../../components/Toast";
 import PageTitle from "../../components/Typography/PageTitle";
 import SectionTitle from "../../components/Typography/SectionTitle";
-import { Input, HelperText, Label, Select, Textarea, Button } from "@windmill/react-ui";
-import { categoryAPI } from "../../api/api"; 
+import { Input, HelperText, Label, Select, Button } from "@windmill/react-ui";
+import { branchAPI } from "../../api/api"; 
 
-function AddCategory() {
+function AddBranch() {
   const [formData, setFormData] = useState({
     name: "",
-    code: "",
-    description: "",
+    address: "",
+    phone: "",
     activeFlag: 1,
   });
 
@@ -25,13 +25,13 @@ function AddCategory() {
   const validateForm = () => {
     let newErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = "Tên danh mục không được để trống!";
-    if (!formData.code.trim()) {
-      newErrors.code = "Mã danh mục không được để trống!";
-    } else if (!/^[A-Za-z]{2}\d{3}$/.test(formData.code)) {
-      newErrors.code = "Mã danh mục phải có 5 ký tự, bắt đầu bằng 2 chữ cái và 3 số!";
+    if (!formData.name.trim()) newErrors.name = "Tên chi nhánh không được để trống!";
+    if (!formData.address.trim()) newErrors.address = "Địa chỉ không được để trống!";
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Số điện thoại không được để trống!";
+    } else if (!/^\d{10,15}$/.test(formData.phone)) {
+      newErrors.phone = "Số điện thoại phải có từ 10 đến 15 chữ số!";
     }
-    if (!formData.description.trim()) newErrors.description = "Mô tả không được để trống!";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -45,22 +45,16 @@ function AddCategory() {
     setLoading(true);
 
     try {
-      const response = await categoryAPI.create(formData);
-      showSuccessToast("Thêm danh mục thành công!");
-      setFormData({ name: "", code: "", description: "", activeFlag: 1 });
+      await branchAPI.create(formData);
+      showSuccessToast("Thêm chi nhánh thành công!");
+      setFormData({ name: "", address: "", phone: "", activeFlag: 1 });
     } catch (error) {
-      let errorMessage = "Thêm danh mục thất bại!";
+      let errorMessage = "Thêm chi nhánh thất bại!";
       if (error.response && error.response.data) {
         errorMessage = error.response.data.message || errorMessage;
       }
-
-      if (errorMessage.includes("Tên danh mục đã tồn tại")) {
-        setErrors({ name: errorMessage });
-      } else {
-        setErrors({ general: errorMessage });
-      }
-
       showErrorToast(errorMessage);
+      setErrors({ general: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -68,27 +62,27 @@ function AddCategory() {
 
   return (
     <>
-      <PageTitle>Thêm Danh Mục</PageTitle>
-      <SectionTitle>Nhập thông tin danh mục</SectionTitle>
+      <PageTitle>Thêm Chi Nhánh</PageTitle>
+      <SectionTitle>Nhập thông tin chi nhánh</SectionTitle>
       <div className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
         {errors.general && <HelperText valid={false}>{errors.general}</HelperText>}
         <form onSubmit={handleSubmit}>
           <Label>
-            <span>Tên danh mục</span>
+            <span>Tên chi nhánh</span>
             <Input className="mt-1" type="text" name="name" value={formData.name} onChange={handleChange} />
             {errors.name && <HelperText valid={false} className="mt-1">{errors.name}</HelperText>}
           </Label>
 
           <Label className="mt-4">
-            <span>Mã danh mục</span>
-            <Input className="mt-1" type="text" name="code" value={formData.code} onChange={handleChange} />
-            {errors.code && <HelperText valid={false} className="mt-1">{errors.code}</HelperText>}
+            <span>Địa chỉ</span>
+            <Input className="mt-1" type="text" name="address" value={formData.address} onChange={handleChange} />
+            {errors.address && <HelperText valid={false} className="mt-1">{errors.address}</HelperText>}
           </Label>
 
           <Label className="mt-4">
-            <span>Mô tả danh mục</span>
-            <Textarea className="mt-1" name="description" value={formData.description} onChange={handleChange} />
-            {errors.description && <HelperText valid={false} className="mt-1">{errors.description}</HelperText>}
+            <span>Số điện thoại</span>
+            <Input className="mt-1" type="text" name="phone" value={formData.phone} onChange={handleChange} />
+            {errors.phone && <HelperText valid={false} className="mt-1">{errors.phone}</HelperText>}
           </Label>
 
           <Label className="mt-4">
@@ -100,7 +94,7 @@ function AddCategory() {
           </Label>
 
           <Button className="p-4 mt-6" type="submit" disabled={loading}>
-            {loading ? "Đang xử lý..." : "Thêm danh mục"}
+            {loading ? "Đang xử lý..." : "Thêm chi nhánh"}
           </Button>
         </form>
       </div>
@@ -108,4 +102,4 @@ function AddCategory() {
   );
 }
 
-export default AddCategory;
+export default AddBranch;
