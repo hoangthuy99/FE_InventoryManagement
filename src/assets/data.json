@@ -1,0 +1,48 @@
+{
+  "gdrStatus": [
+    {
+      "key": 1,
+      "name": "Mới"
+    },
+    {
+      "key": 2,
+      "name": "Đã xác nhận"
+    },
+    {
+      "key": 3,
+      "name": "Đã từ chối"
+    },
+    {
+      "key": 4,
+      "name": "Đã hủy"
+    }
+  ],
+  "productUnit": [
+    {
+      "key": 1,
+      "name": "Gói"
+    },
+    {
+      "key": 2,
+      "name": "Chiếc"
+    },
+    {
+      "key": 3,
+      "name": "Thùng"
+    },
+    {
+      "key": 4,
+      "name": "KG"
+    }
+  ],
+  "stockStatus": [
+    {
+      "key": 1,
+      "name": "Hàng mới"
+    },
+    {
+      "key": 1,
+      "name": "Hàng lỗi"
+    }
+  ]
+}

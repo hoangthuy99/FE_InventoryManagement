@@ -1,12 +1,90 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
-import ImageLight from '../assets/img/login-office.jpeg'
-import ImageDark from '../assets/img/login-office-dark.jpeg'
-import { GithubIcon, FacebookIcon } from '../icons'
-import { Label, Input, Button } from '@windmill/react-ui'
+import ImageLight from "../assets/img/login-office.jpeg";
+import ImageDark from "../assets/img/login-office-dark.jpeg";
+import { GithubIcon, FacebookIcon } from "../icons";
+import { Label, Input, Button, HelperText } from "@windmill/react-ui";
+import { authAPI } from "../api/api";
+import { GoogleLogin } from "@react-oauth/google";
+import { showErrorToast, showSuccessToast } from "../components/Toast";
+import { useHistory } from "react-router-dom/cjs/react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { jwtDecode } from "jwt-decode";
+import * as yup from "yup";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
 
 function Login() {
+  const history = useHistory();
+  const { login } = useAuth();
+
+  const handleLoginGoogle = async (response) => {
+    console.log("Google Token:", response.credential);
+
+    try {
+      const res = await authAPI.loginOauth(response.credential);
+
+      if (res.status === 200) {
+        const { exp } = jwtDecode(res.data?.data.accessToken); // Kiểm tra lỗi
+        const token = JSON.stringify({
+          accessToken: response.credential,
+          expiration: Date.now() + exp,
+        });
+        login(token);
+        history.push("/app/dashboard");
+        showSuccessToast("Login successfully");
+      }
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
+  // Validate form
+  const schema = yup.object().shape({
+    username: yup
+      .string()
+      .required("Username is required!")
+      .min(6, "Username must be at least 6 characters!"),
+    password: yup.string().required("Password is required!"),
+  });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    mode: "onChange",
+  });
+
+  const onSubmitForm = async (data) => {
+    try {
+      const res = await authAPI.login(data);
+
+      if (res.status === 200 && res.data.code === 200) {
+        const accessToken = res.data?.data?.accessToken;
+        const { exp } = jwtDecode(accessToken); // Kiểm tra lỗi
+        const tokenStorage = JSON.stringify({
+          accessToken,
+          expiration: Date.now() + exp,
+        });
+        login(tokenStorage);
+        history.push("/app/dashboard");
+        showSuccessToast("Login successfully");
+      }
+
+      if (res.data.code !== 200) {
+        throw new Error(res.data.message);
+      }
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
   return (
     <div className="flex items-center min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
       <div className="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl dark:bg-gray-800">
@@ -27,31 +105,52 @@ function Login() {
           </div>
           <main className="flex items-center justify-center p-6 sm:p-12 md:w-1/2">
             <div className="w-full">
-              <h1 className="mb-4 text-xl font-semibold text-gray-700 dark:text-gray-200">Login</h1>
-              <Label>
-                <span>Email</span>
-                <Input className="mt-1" type="email" placeholder="john@doe.com" />
-              </Label>
+              <form onSubmit={handleSubmit(onSubmitForm)}>
+                <h1 className="mb-4 text-xl font-semibold text-gray-700 dark:text-gray-200">
+                  Login
+                </h1>
+                <Label>
+                  <span>Username</span>
+                  <Input
+                    {...register("username")}
+                    className="mt-1"
+                    type="text"
+                    name="username"
+                    autoComplete="off"
+                    valid={!errors?.username}
+                  />
+                  <HelperText valid={!errors?.username}>
+                    {errors?.username?.message}
+                  </HelperText>
+                </Label>
 
-              <Label className="mt-4">
-                <span>Password</span>
-                <Input className="mt-1" type="password" placeholder="***************" />
-              </Label>
-
-              <Button className="mt-4" block tag={Link} to="/app">
-                Log in
-              </Button>
+                <Label className="mt-4">
+                  <span>Password</span>
+                  <Input
+                    className="mt-1"
+                    type="password"
+                    {...register("password")}
+                    placeholder="***************"
+                    name="password"
+                    autoComplete="off"
+                    valid={!errors?.password}
+                  />
+                  <HelperText valid={!errors?.password}>
+                    {errors?.password?.message}
+                  </HelperText>
+                </Label>
+                <Button className="mt-4 w-full" type="submit">
+                  Log in
+                </Button>
+              </form>
 
               <hr className="my-8" />
 
-              <Button block layout="outline">
-                <GithubIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-                Login with Github
-              </Button>
-              <Button className="mt-4" block layout="outline">
-                <FacebookIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-                Login with Facebook
-              </Button>
+              <GoogleLogin
+                clientId={CLIENT_ID}
+                redirectUri={REDIRECT_URI}
+                onSuccess={handleLoginGoogle}
+              />
 
               <p className="mt-4">
                 <Link
@@ -74,7 +173,7 @@ function Login() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;

@@ -31,8 +31,8 @@ function Category() {
         console.log("API Response:", response.data);
 
         // Kiểm tra nếu API trả về một mảng danh mục
-        if (Array.isArray(response.data)) {
-          setCategories(response.data);
+        if (Array.isArray(response.data?.content)) {
+          setCategories(response.data?.content);
 
           // Nếu API không trả về totalPages, tính toán từ số lượng dữ liệu
           setTotalPages(Math.ceil(response.data.length / limit));

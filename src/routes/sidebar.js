@@ -8,85 +8,91 @@
 
 const routes = [
   {
-    path: '/app/dashboard', // the url
-    icon: 'HomeIcon', 
-    name: 'Dashboard', // name that appear in Sidebar
+    path: "/app/dashboard", // the url
+    icon: "HomeIcon",
+    name: "Dashboard", // name that appear in Sidebar
   },
   {
-    icon: 'ModalsIcon',
-    name: 'Category',
+    icon: "ModalsIcon",
+    name: "Category",
     routes: [
-      { path: '/app/category/all-category', name: 'All Category' },
-      { path: '/app/category/add-category', name: 'Add Category' },
-      
+      { path: "/app/category/all-category", name: "All Category" },
+      { path: "/app/category/add-category", name: "Add Category" },
     ],
   },
   {
-    icon: 'ProductIcon',
-    name: 'Product',
+    icon: "ProductIcon",
+    name: "Product",
     routes: [
-      { path: '/app/product/all-product', name: 'All Product' },
-      { path: '/app/product/add-product', name: 'Add Product' },
-      
+      { path: "/app/product/all-product", name: "All Product" },
+      { path: "/app/product/add-product", name: "Add Product" },
     ],
   },
   {
-    path: '/app/history',
-    icon: 'HistoryIcon',
-    name: 'History',
+    icon: "ProductIcon",
+    name: "Purchase Order",
+    routes: [
+      { path: "/app/purchase/all-purchase", name: "All Purchase" },
+      { path: "/app/purchase/add-purchase", name: "Add Purchase" },
+    ],
   },
   {
-    path: '/app/buttons',
-    icon: 'ButtonsIcon',
-    name: 'Buttons',
+    path: "/app/history",
+    icon: "HistoryIcon",
+    name: "History",
   },
   {
-    path: '/app/modals',
-    icon: 'ModalsIcon',
-    name: 'Modals',
+    path: "/app/buttons",
+    icon: "ButtonsIcon",
+    name: "Buttons",
   },
   {
-    path: '/app/tables',
-    icon: 'TablesIcon',
-    name: 'Menu',
+    path: "/app/modals",
+    icon: "ModalsIcon",
+    name: "Modals",
   },
   {
-    path: '/app/cards',
-    icon: 'TablesIcon',
-    name: 'Cards',
+    path: "/app/tables",
+    icon: "TablesIcon",
+    name: "Menu",
   },
   {
-    path: '/app/forms',
-    icon: 'TablesIcon',
-    name: 'Forms',
+    path: "/app/cards",
+    icon: "TablesIcon",
+    name: "Cards",
   },
   {
-    icon: 'PagesIcon',
-    name: 'Account',
+    path: "/app/forms",
+    icon: "TablesIcon",
+    name: "Forms",
+  },
+  {
+    icon: "PagesIcon",
+    name: "Account",
     routes: [
       // submenu
       {
-        path: '/login',
-        name: 'Login',
+        path: "/login",
+        name: "Login",
       },
       {
-        path: '/create-account',
-        name: 'Create account',
+        path: "/create-account",
+        name: "Create account",
       },
       {
-        path: '/forgot-password',
-        name: 'Forgot password',
+        path: "/forgot-password",
+        name: "Forgot password",
       },
       {
-        path: '/app/404',
-        name: '404',
+        path: "/app/404",
+        name: "404",
       },
       {
-        path: '/app/blank',
-        name: 'Blank',
+        path: "/app/blank",
+        name: "Blank",
       },
     ],
   },
-]
+];
 
-export default routes
+export default routes;

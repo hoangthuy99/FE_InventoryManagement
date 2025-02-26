@@ -1,12 +1,57 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { Link } from "react-router-dom";
 
-import ImageLight from '../assets/img/create-account-office.jpeg'
-import ImageDark from '../assets/img/create-account-office-dark.jpeg'
-import { GithubIcon, FacebookIcon } from '../icons'
-import { Input, Label, Button } from '@windmill/react-ui'
+import ImageLight from "../assets/img/create-account-office.jpeg";
+import ImageDark from "../assets/img/create-account-office-dark.jpeg";
+import { Input, Label, Button } from "@windmill/react-ui";
+import { authAPI } from "../api/api";
+import { GoogleLogin } from "@react-oauth/google";
+import { useAuth } from "../context/AuthContext";
+import { useHistory } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showWarningToast,
+} from "../components/Toast";
+
+const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
 
 function Login() {
+  const { login } = useAuth();
+  const history = useHistory();
+
+  const handleSuccess = async (response) => {
+    console.log("Google Token:", response.credential);
+
+    try {
+      const res = await authAPI.registerOauth(response.credential);
+
+      if (res.status === 200 && res.data?.code === 200) {
+        try {
+          const { exp } = jwtDecode(response.credential); // Kiểm tra lỗi
+          const token = JSON.stringify({
+            accessToken: response.credential,
+            expiration: exp,
+          });
+
+          login(token);
+          history.push("/app/dashboard");
+          showSuccessToast("Register successfully");
+        } catch (decodeError) {
+          showErrorToast(decodeError);
+        }
+      }
+
+      if (res.data?.code !== 200) {
+        throw new Error(res.data?.message);
+      }
+    } catch (error) {
+      showWarningToast(error);
+    }
+  };
+
   return (
     <div className="flex items-center min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
       <div className="flex-1 h-full max-w-4xl mx-auto overflow-hidden bg-white rounded-lg shadow-xl dark:bg-gray-800">
@@ -32,21 +77,34 @@ function Login() {
               </h1>
               <Label>
                 <span>Email</span>
-                <Input className="mt-1" type="email" placeholder="john@doe.com" />
+                <Input
+                  className="mt-1"
+                  type="email"
+                  placeholder="john@doe.com"
+                />
               </Label>
               <Label className="mt-4">
                 <span>Password</span>
-                <Input className="mt-1" placeholder="***************" type="password" />
+                <Input
+                  className="mt-1"
+                  placeholder="***************"
+                  type="password"
+                />
               </Label>
               <Label className="mt-4">
                 <span>Confirm password</span>
-                <Input className="mt-1" placeholder="***************" type="password" />
+                <Input
+                  className="mt-1"
+                  placeholder="***************"
+                  type="password"
+                />
               </Label>
 
               <Label className="mt-6" check>
                 <Input type="checkbox" />
                 <span className="ml-2">
-                  I agree to the <span className="underline">privacy policy</span>
+                  I agree to the{" "}
+                  <span className="underline">privacy policy</span>
                 </span>
               </Label>
 
@@ -56,14 +114,12 @@ function Login() {
 
               <hr className="my-8" />
 
-              <Button block layout="outline">
-                <GithubIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-                Github
-              </Button>
-              <Button block className="mt-4" layout="outline">
-                <FacebookIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-                Facebook
-              </Button>
+              <GoogleLogin
+                clientId={CLIENT_ID}
+                redirectUri={REDIRECT_URI}
+                onSuccess={handleSuccess}
+                text="signup_with"
+              />
 
               <p className="mt-4">
                 <Link
@@ -78,7 +134,7 @@ function Login() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;
