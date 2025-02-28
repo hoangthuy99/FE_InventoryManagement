@@ -54,7 +54,7 @@ const routes = [
     component: AllPurchase,
   },
   {
-    path: "/purchase/add-purchase",
+    path: "/purchase/add-purchase/:id?",
     component: AddPurchase,
   },
   {

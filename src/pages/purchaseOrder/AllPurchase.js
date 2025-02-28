@@ -18,6 +18,7 @@ import {
 import { EditIcon, TrashIcon } from "../../icons";
 import { productAPI, purchaseOrderAPI } from "../../api/api";
 import data from "../../assets/data.json";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 const AllPurchase = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -25,6 +26,7 @@ const AllPurchase = () => {
   const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const { gdrStatus } = data;
+  const history = useHistory();
 
   const fetchAllPurchase = async () => {
     try {
@@ -102,9 +104,7 @@ const AllPurchase = () => {
                         layout="link"
                         size="icon"
                         aria-label="Edit"
-                        onClick={() =>
-                          (window.location.href = `http://localhost:3000/app/product/edit-product/${order.id}`)
-                        }
+                        onClick={() => history.push(`/app/purchase/add-purchase/${order.id}`)}
                       >
                         <EditIcon className="w-5 h-5" aria-hidden="true" />
                       </Button>

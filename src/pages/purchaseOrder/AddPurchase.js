@@ -9,6 +9,7 @@ import {
   supplierAPI,
   branchAPI,
   purchaseOrderAPI,
+  areaAPI,
 } from "../../api/api";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -36,15 +37,22 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import data from "../../assets/data.json";
 import { useHistory } from "react-router-dom";
+import { useParams } from "react-router-dom/cjs/react-router-dom";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 
 function AddPurchase() {
   const [products, setProducts] = useState([]);
   const [orderItems, setOrderItems] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [branchs, setBranchs] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [order, setOrder] = useState();
   const [loading, setLoading] = useState(false);
   const { gdrStatus, productUnit, stockStatus } = data;
   const history = useHistory();
+  const { id } = useParams();
+
+  console.log(id);
 
   const fetchAllProducts = async () => {
     try {
@@ -75,10 +83,58 @@ function AddPurchase() {
     }
   };
 
+  const fetchOrderById = async () => {
+    try {
+      const response = await purchaseOrderAPI.getById(id);
+      const data = response.data?.data;
+
+      console.log(data);
+
+      if (data) {
+        reset({
+          supplierId: data?.supplier.id || "",
+          branchId: data?.branch.id || "",
+          orderDateActual: dayjs(data?.orderDate) || dayjs(),
+          orderDatePlan: dayjs(data?.orderDatePlan) || dayjs(),
+          status: data?.status || "",
+          note: data?.note || "",
+        });
+
+        // set order items
+        const items = data?.purchaseOrderItems.map((item) => {
+          return {
+            id: item?.id || "",
+            productId: item?.product.id || "",
+            itemUnit: item?.itemUnit || "",
+            stockType: item?.stockType || "",
+            quantityPlan: item?.quantityPlan || 0,
+            quantityActual: item?.quantityActual || 0,
+            areaId: item?.area ? item?.area.id : "",
+          };
+        });
+
+        setOrderItems(items);
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API danh mục:", error);
+    }
+  };
+
+  const fetchAllAreas = async () => {
+    try {
+      const response = await areaAPI.getAll();
+      setAreas(Array.isArray(response.data?.data) ? response.data?.data : []);
+    } catch (error) {
+      console.error("Lỗi khi gọi API danh mục:", error);
+    }
+  };
+
   useEffect(() => {
     fetchAllProducts();
     fetchAllSuppliers();
     fetchAllBranchs();
+    fetchAllAreas();
+    fetchOrderById();
   }, []);
 
   const handleChangeProduct = (index, field, value) => {
@@ -86,6 +142,8 @@ function AddPurchase() {
     updateItems[index][field] = value;
     setOrderItems(updateItems);
   };
+
+  console.log(order);
 
   const handleAddItem = (item) => {
     setOrderItems([...orderItems, item]);
@@ -113,38 +171,40 @@ function AddPurchase() {
     handleSubmit,
     getValues,
     setValue,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(purchaseSchema),
   });
 
   const submitForm = async (data) => {
-    const items = orderItems.map((item) => {
-      return {
-        productId: item?.productId,
-        areaId: item?.areaId,
-        itemUnit: item?.productUnit,
-        stockType: item?.stockType,
-        quantityPlan: parseInt(item?.quantityPlan),
-        quantityActual: parseInt(item?.quantityActual),
-      };
-    });
+    if (!window.confirm("Bạn có chắc chắn muốn lưu đơn nhập kho này?")) return;
 
     const dataRequest = {
+      id: id || "",
       supplierId: data?.supplierId,
       orderDatePlan: data?.orderDatePlan,
       orderDate: data?.orderDateActual,
       branchId: data?.branchId,
       status: data?.status,
       note: data?.note,
-      items,
+      items: orderItems,
     };
 
     try {
-      const res = purchaseOrderAPI.addNew(dataRequest);
+      let res;
+
+      if (id) {
+        res = await purchaseOrderAPI.update(dataRequest);
+      } else {
+        res = await purchaseOrderAPI.addNew(dataRequest);
+      }
+
       if (res.data?.code === 200) {
-        history.push("/purchase/all-purchase")
-        showSuccessToast("Create purchase order successfully");
+        history.push("/app/purchase/all-purchase");
+        showSuccessToast(
+          `${id ? "Update" : "Create"} purchase order successfully`
+        );
       }
     } catch (error) {
       showErrorToast(error);
@@ -158,7 +218,7 @@ function AddPurchase() {
         <div className="px-4 py-3 mb-8  rounded-lg shadow-md dark:bg-gray-800">
           <Grid container spacing={2}>
             <Grid item xs={6} className="flex items-center gap-10">
-              <span className="w-64">Nhà cung cấp </span>
+              <span className="w-1/2">Nhà cung cấp </span>
               <Controller
                 name="supplierId"
                 control={control}
@@ -169,12 +229,14 @@ function AddPurchase() {
                     </InputLabel>
                     <Select
                       error={renderProps.fieldState.error}
-                      value={renderProps.field.value}
+                      value={renderProps.field.value || ""}
                       onChange={renderProps.field.onChange}
                       label="Chọn nhà cung cấp"
                       className="text-white border border-gray-600"
                     >
-                      <MenuItem value="">-- Chọn nhà cung cấp --</MenuItem>
+                      <MenuItem selected value="">
+                        -- Chọn nhà cung cấp --
+                      </MenuItem>
                       {suppliers?.map((supplier) => (
                         <MenuItem key={supplier.id} value={supplier.id}>
                           {supplier.name}
@@ -189,10 +251,9 @@ function AddPurchase() {
                   </FormControl>
                 )}
               />
-              <HelperText valid={false}></HelperText>
             </Grid>
             <Grid item xs={6} className="flex items-center gap-10">
-              <span className="w-64">Chi nhánh </span>
+              <span className="w-1/2">Chi nhánh </span>
               <Controller
                 name="branchId"
                 control={control}
@@ -203,7 +264,7 @@ function AddPurchase() {
                     </InputLabel>
                     <Select
                       error={renderProps.fieldState.error}
-                      value={renderProps.field.value}
+                      value={renderProps.field.value || ""}
                       onChange={renderProps.field.onChange}
                       label="Nhà cung cấp"
                       className="text-white border border-gray-600"
@@ -224,9 +285,10 @@ function AddPurchase() {
               />
             </Grid>
             <Grid item xs={6} className="flex items-center gap-10">
-              <span className="w-64">Ngày nhập kho kế hoạch </span>
+              <span className="w-1/2">Ngày nhập kho kế hoạch </span>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateTimePicker
+                  minDateTime={dayjs()}
                   value={getValues("orderDatePlan")}
                   onChange={(newValue) =>
                     setValue("orderDatePlan", newValue, {
@@ -249,61 +311,68 @@ function AddPurchase() {
                 )}
               </LocalizationProvider>
             </Grid>
-            <Grid item xs={6} className="flex items-center gap-10">
-              <span className="w-64">Ngày nhập kho </span>
+            <Grid sx={{
+              "&. .MuiInputBase-root.MuiOutlinedInput-root": {
+                color: "#fff"
+              }
+            }} item xs={6} className="flex items-center">
+              <span className="w-1/2">Ngày nhập kho </span>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DateTimePicker
-                  value={getValues("orderDateActual")}
-                  onChange={(newValue) => setValue("orderDateActual", newValue)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      {...register("orderDateActual")}
-                      fullWidth
-                      sx={{ color: "#fff" }}
-                    />
+                <DemoContainer components={["DateTimePicker"]}>
+                  <DateTimePicker
+                    minDateTime={dayjs()}
+                    value={getValues("orderDateActual")}
+                    onChange={(newValue) =>
+                      setValue("orderDateActual", newValue)
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        {...register("orderDateActual")}
+                        fullWidth
+                      />
+                    )}
+                  />
+                </DemoContainer>
+              </LocalizationProvider>
+            </Grid>
+            {id && (
+              <Grid item xs={6} className="flex items-center gap-10">
+                <span className="w-1/2">Trạng thái </span>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={(renderProps) => (
+                    <FormControl fullWidth>
+                      <InputLabel className="text-white">
+                        Chọn trạng thái
+                      </InputLabel>
+                      <Select
+                        error={renderProps.fieldState.error}
+                        value={renderProps.field.value || ""}
+                        onChange={renderProps.field.onChange}
+                        label="Chọn trạng thái"
+                        className="text-white border border-gray-600"
+                      >
+                        {gdrStatus.map((status) => (
+                          <MenuItem key={status.key} value={status.key}>
+                            {status.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {renderProps.fieldState.error && (
+                        <FormHelperText className="text-red-600">
+                          {renderProps.fieldState.error.message}
+                        </FormHelperText>
+                      )}
+                    </FormControl>
                   )}
                 />
-              </LocalizationProvider>
-              <HelperText valid={false}></HelperText>
-            </Grid>
+              </Grid>
+            )}
             <Grid item xs={6} className="flex items-center gap-10">
-              <span className="w-64">Trạng thái </span>
-              <Controller
-                name="status"
-                control={control}
-                render={(renderProps) => (
-                  <FormControl fullWidth>
-                    <InputLabel className="text-white">
-                      Chọn trạng thái
-                    </InputLabel>
-                    <Select
-                      error={renderProps.fieldState.error}
-                      value={renderProps.field.value}
-                      onChange={renderProps.field.onChange}
-                      label="Chọn trạng thái"
-                      className="text-white border border-gray-600"
-                    >
-                      {gdrStatus.map((status) => (
-                        <MenuItem key={status.key} value={status.key}>
-                          {status.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {renderProps.fieldState.error && (
-                      <FormHelperText className="text-red-600">
-                        {renderProps.fieldState.error.message}
-                      </FormHelperText>
-                    )}
-                  </FormControl>
-                )}
-              />
-              <HelperText valid={false}></HelperText>
-            </Grid>
-            <Grid item xs={6} className="flex items-center gap-10">
-              <span className="w-64">Ghi chú </span>
+              <span className="w-1/2">Ghi chú </span>
               <Textarea {...register("note")} minRows={1} />
-              <HelperText valid={false}></HelperText>
             </Grid>
           </Grid>
         </div>
@@ -320,7 +389,7 @@ function AddPurchase() {
                       color=""
                       onClick={() => {
                         handleAddItem({
-                          productId: 0,
+                          productId: "",
                           quantity: 0,
                         });
                       }}
@@ -390,11 +459,11 @@ function AddPurchase() {
                           Chọn đơn vị
                         </InputLabel>
                         <Select
-                          value={item.productUnit}
+                          value={item.itemUnit}
                           onChange={(e) =>
                             handleChangeProduct(
                               index,
-                              "productUnit",
+                              "itemUnit",
                               e.target.value
                             )
                           }
@@ -487,9 +556,9 @@ function AddPurchase() {
                           label="Chọn khu vực"
                           className="text-white border border-gray-600"
                         >
-                          {products.map((product) => (
-                            <MenuItem key={product.id} value={product.id}>
-                              {product.name}
+                          {areas.map((area) => (
+                            <MenuItem key={area.id} value={area.id}>
+                              {area.name}
                             </MenuItem>
                           ))}
                         </Select>
@@ -503,7 +572,7 @@ function AddPurchase() {
         </div>
 
         <Button type="submit" disabled={loading} className="mt-4 w-1/6">
-          {loading ? "Đang xử lý..." : "Thêm sản phẩm"}
+          {loading ? "Đang xử lý..." : id ? "Lưu thay đổi" : "Thêm mới"}
         </Button>
       </form>
     </>

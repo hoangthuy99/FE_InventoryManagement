@@ -2,7 +2,7 @@
   "gdrStatus": [
     {
       "key": 1,
-      "name": "Mới"
+      "name": "Chờ xác nhận"
     },
     {
       "key": 2,
@@ -41,7 +41,7 @@
       "name": "Hàng mới"
     },
     {
-      "key": 1,
+      "key": 2,
       "name": "Hàng lỗi"
     }
   ]

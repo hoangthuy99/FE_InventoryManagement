@@ -101,8 +101,15 @@ export const branchAPI = {
 // API Purchase Order
 export const purchaseOrderAPI = {
   addNew: (data) => api.post("/purchase-order/createPurchaseOrder", data),
+  update: (data) => api.put("/purchase-order/updatePurchaseOrder", data),
   search: (data) => api.post("/purchase-order/searchPurchaseOrder"),
   deleteById: (id) => api.delete(`/purchase-order/deleteById/${id}`),
+  getById: (id) => api.get(`/purchase-order/getById/${id}`),
+};
+
+// API Area
+export const areaAPI = {
+  getAll: () => api.get("/area/list"),
 };
 
 export default api;
