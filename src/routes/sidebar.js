@@ -40,6 +40,31 @@ const routes = [
     path: "/app/history",
     icon: "HistoryIcon",
     name: "History",
+    icon: 'OrderIcon',
+    name: 'Orders',
+    routes: [
+      { path: '/app/order/all-orders', name: 'All Orders' },
+      { path: '/app/order/all-order-detail', name: 'All OrderDetail' },
+      { path: '/app/order/add-order', name: 'Add Order' },
+      { path: '/app/order/add-order-detail', name: 'AddOrderDetail' },
+      
+    ],
+  },
+  {
+    icon: 'CustomerIcon',
+    name: 'Customer',
+    routes: [
+      { path: '/app/customer/all-customer', name: 'All Customer' },
+      { path: '/app/customer/add-customer', name: 'Add Customer' },
+    ],
+  },
+  {
+    icon: 'BranchIcon',
+    name: 'Branch',
+    routes: [
+      { path: '/app/branch/all-branch', name: 'All Branch' },
+      { path: '/app/branch/add-branch', name: 'Add Branch' },
+    ],
   },
   {
     path: "/app/buttons",

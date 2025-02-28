@@ -12,6 +12,26 @@ const api = axios.create({
 });
 
 //  Function API cho từng module
+//  API Category
+export const customerAPI = {
+    getAll: () => api.get("/customer"),
+    getAllPaginated: (page, limit) => api.get(`/customer?page=${page}&limit=${limit}`),
+    getById: (id) => api.get(`/customer/${id}`),
+    create: (data) => api.post("/customer", data),
+    update: (id, data) => api.put(`/customer/${id}`, data),
+    delete: (id) => api.delete(`/customer/${id}`),
+};
+    
+export const branchAPI = {
+    getAll: () => api.get("/branch"),
+    getAllPaginated: (page, limit) => api.get(`/branch?page=${page}&limit=${limit}`),
+    getById: (id) => api.get(`/branch/${id}`),
+    create: (data) => api.post("/branch", data),
+    update: (id, data) => api.put(`/branch/${id}`, data),
+    delete: (id) => api.delete(`/branch/${id}`),
+    getByActiveFlag: () => api.get("/branch/active"),
+    searchByName: (keyword) => api.get(`/branch/search?keyword=${keyword}`)
+};
 
 //  API Category
 export const categoryAPI = {
@@ -41,11 +61,24 @@ export const productAPI = {
   delete: (id) => api.delete(`/product/${id}`),
 };
 
-// API History
-export const historyAPI = {
-  getAll: () => api.get("/history"),
-  getById: (id) => api.get(`/history/${id}`),
+// API Order (Đơn hàng)
+export const orderAPI = {
+    getAll: (customerId) => api.get(`/order/all/${customerId}`),
+    getById: (id) => api.get(`/order/${id}`),
+    addOrder: (customer, totalPrice) => api.post("/order/add", { customer, totalPrice }),
+    saveOrder: (orderData) => api.post("/order/save", orderData),
+    searchByOrderCode: (keyword) => api.get("/order/search", { params: { keyword } }),
+    getByIdAndStatus: (customerId, orderId, status) => api.get(`/order/${customerId}/${orderId}/${status}`),
 };
+export const orderDetailAPI = {
+    getAll: () => api.get("/"),
+    getAllPaginated: (page, limit) => api.get(`?page=${page}&limit=${limit}`),
+    getById: (id) => api.get(`/${id}`),
+    getByOrderCode: (orderCode) => api.get(`/order/${orderCode}`),
+    create: (data) => api.post("/", data),
+    update: (id, data) => api.put(`/${id}`, data),
+    delete: (id) => api.delete(`/${id}`),
+  };
 
 // API Invoice
 export const invoiceAPI = {
@@ -91,11 +124,6 @@ export const authAPI = {
 // API Supplier
 export const supplierAPI = {
   getAll: () => api.get("/supplier/getAllSuppliers"),
-};
-
-// API Branch
-export const branchAPI = {
-  getAll: () => api.get("/branch/list"),
 };
 
 // API Purchase Order
