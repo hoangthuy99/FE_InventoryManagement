@@ -7,6 +7,7 @@ import { customerAPI } from "../../api/api";
 
 function AddCustomer() {
   const [formData, setFormData] = useState({
+    cusCode: "",
     name: "",
     email: "",
     phone: "",
@@ -90,8 +91,15 @@ function AddCustomer() {
         {errors.general && <HelperText valid={false}>{errors.general}</HelperText>}
 
         <form onSubmit={handleSubmit}>
-          {/* Tên khách hàng */}
+          {/* Mã khách hàng */}
           <Label>
+            <span>Mã khách hàng</span>
+            <Input className="mt-1" type="text" name="cusCode" value={formData.cusCode} onChange={handleChange} />
+            {errors.cusCode && <HelperText valid={false} className="mt-1">{errors.cusCode}</HelperText>}
+          </Label>
+
+          {/* Tên khách hàng */}
+          <Label className="mt-4">
             <span>Tên khách hàng</span>
             <Input className="mt-1" type="text" name="name" value={formData.name} onChange={handleChange} />
             {errors.name && <HelperText valid={false} className="mt-1">{errors.name}</HelperText>}

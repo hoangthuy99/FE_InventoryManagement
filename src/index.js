@@ -1,3 +1,4 @@
+
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import './assets/css/tailwind.output.css';

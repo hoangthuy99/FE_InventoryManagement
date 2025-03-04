@@ -18,6 +18,7 @@ import {
 import { EditIcon, TrashIcon } from "../../icons";
 import { productAPI } from "../../api/api";
 
+
 const AllProduct = () => {
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(0); // Backend sử dụng page = 0
@@ -28,21 +29,15 @@ const AllProduct = () => {
     const fetchProducts = async () => {
       try {
         const response = await productAPI.getAllPaginated(page, limit);
-    console.log("API Response:", response.data); // Xem API trả về gì
+        console.log("API Response:", response.data); // Xem API trả về gì
+        const data = response.data;
 
-    if (response.data && Array.isArray(response.data)) {
-      setProducts(response.data);
-      setTotalPages(response.data.totalPages || 1);
-    } else {
-      console.error("Dữ liệu API không đúng định dạng:", response.data);
-      showErrorToast("Lỗi dữ liệu API!");
-    }
-
-        if (response.data) {
-          setProducts(response.data);
-          setTotalPages(response.data.totalPages);
+        if (data && Array.isArray(data)) {
+          setProducts(data);
+          setTotalPages(data.totalPages || 1);
         } else {
-          console.error("Dữ liệu API không đúng định dạng");
+          console.error("Dữ liệu API không đúng định dạng:", response.data);
+          showErrorToast("Lỗi dữ liệu API!");
         }
       } catch (error) {
         console.error("Lỗi khi gọi API:", error);
@@ -59,7 +54,9 @@ const AllProduct = () => {
       await productAPI.delete(id);
       showSuccessToast("Sản phẩm đã được xóa thành công!");
 
-      setProducts((prevProducts) => prevProducts.filter((product) => product.id !== id));
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product.id !== id)
+      );
     } catch (error) {
       showErrorToast("Xóa sản phẩm thất bại!");
     }
@@ -89,17 +86,22 @@ const AllProduct = () => {
                 <TableCell>{page * limit + index + 1}</TableCell>
                 <TableCell>{product.code}</TableCell>
                 <TableCell>
-                <Avatar size="large" src={`http://localhost:8089/${product.img}`} alt={product.name} />
-
+                  <Avatar
+                    size="large"
+                    src={`http://localhost:8089/${product.img}`}
+                    alt={product.name}
+                  />
                 </TableCell>
                 <TableCell>{product.name}</TableCell>
+                <TableCell>{product.categories.name}</TableCell>
+
                 <TableCell>
-                {product.categories.name}
-               </TableCell>
-                
-                <TableCell>{new Date(product.createdDate).toLocaleDateString()}</TableCell>
+                  {new Date(product.createdDate).toLocaleDateString()}
+                </TableCell>
                 <TableCell>
-                  {product.updateDate ? new Date(product.updateDate).toLocaleDateString() : "Chưa cập nhật"}
+                  {product.updateDate
+                    ? new Date(product.updateDate).toLocaleDateString()
+                    : "Chưa cập nhật"}
                 </TableCell>
                 <TableCell>
                   <Badge type={product.activeFlag === 1 ? "success" : "danger"}>
@@ -112,12 +114,19 @@ const AllProduct = () => {
                       layout="link"
                       size="icon"
                       aria-label="Edit"
-                      onClick={() => (window.location.href = `http://localhost:3000/app/product/edit-product/${product.id}`)}
+                      onClick={() =>
+                        (window.location.href = `http://localhost:3000/app/product/edit-product/${product.id}`)
+                      }
                     >
                       <EditIcon className="w-5 h-5" aria-hidden="true" />
                     </Button>
 
-                    <Button layout="link" size="icon" aria-label="Delete" onClick={() => handleDelete(product.id)}>
+                    <Button
+                      layout="link"
+                      size="icon"
+                      aria-label="Delete"
+                      onClick={() => handleDelete(product.id)}
+                    >
                       <TrashIcon className="w-5 h-5" aria-hidden="true" />
                     </Button>
                   </div>

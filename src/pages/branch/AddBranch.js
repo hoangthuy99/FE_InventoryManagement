@@ -7,6 +7,7 @@ import { branchAPI } from "../../api/api";
 
 function AddBranch() {
   const [formData, setFormData] = useState({
+    branchCode: "",
     name: "",
     address: "",
     phone: "",
@@ -68,6 +69,12 @@ function AddBranch() {
         {errors.general && <HelperText valid={false}>{errors.general}</HelperText>}
         <form onSubmit={handleSubmit}>
           <Label>
+            <span>Mã chi nhánh</span>
+            <Input className="mt-1" type="text" name="branchCode" value={formData.branchCode} onChange={handleChange} />
+            {errors.branchCode && <HelperText valid={false} className="mt-1">{errors.branchCode}</HelperText>}
+          </Label>
+
+          <Label className="mt-4">
             <span>Tên chi nhánh</span>
             <Input className="mt-1" type="text" name="name" value={formData.name} onChange={handleChange} />
             {errors.name && <HelperText valid={false} className="mt-1">{errors.name}</HelperText>}

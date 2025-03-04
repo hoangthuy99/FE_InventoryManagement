@@ -1,26 +1,34 @@
-import React, { useContext, Suspense, useEffect, lazy } from 'react'
-import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
-import routes from '../routes'
 
-import Sidebar from '../components/Sidebar'
-import Header from '../components/Header'
-import Main from '../containers/Main'
-import ThemedSuspense from '../components/ThemedSuspense'
-import { SidebarContext } from '../context/SidebarContext'
+import React, { useContext, Suspense, useEffect, lazy } from "react";
+import { Switch, Route, Redirect, useLocation } from "react-router-dom";
+import routes from "../routes";
 
-const Page404 = lazy(() => import('../pages/404'))
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
+import Main from "../containers/Main";
+import ThemedSuspense from "../components/ThemedSuspense";
+import { SidebarContext } from "../context/SidebarContext";
+import { SessionProvider } from "next-auth/react";
 
-function Layout() {
-  const { isSidebarOpen, closeSidebar } = useContext(SidebarContext)
-  let location = useLocation()
+const Page404 = lazy(() => import("../pages/404"));
 
-  useEffect(() => {
-    closeSidebar()
-  }, [location],[closeSidebar])
+function Layout({ Component, pageProps }) {
+  const { isSidebarOpen, closeSidebar } = useContext(SidebarContext);
+  let location = useLocation();
+
+  useEffect(
+    () => {
+      closeSidebar();
+    },
+    [location],
+    [closeSidebar]
+  );
 
   return (
     <div
-      className={`flex h-screen bg-gray-50 dark:bg-gray-900 ${isSidebarOpen && 'overflow-hidden'}`}
+      className={`flex h-screen bg-gray-50 dark:bg-gray-900 ${
+        isSidebarOpen && "overflow-hidden"
+      }`}
     >
       <Sidebar />
 
@@ -35,9 +43,11 @@ function Layout() {
                     key={i}
                     exact={true}
                     path={`/app${route.path}`}
-                    render={(props) => <route.component {...props} />}
+                    render={(props) => (
+                      <route.component {...pageProps} {...props} />
+                    )}
                   />
-                ) : null
+                ) : null;
               })}
               <Redirect exact from="/app" to="/app/dashboard" />
               <Route component={Page404} />
@@ -46,7 +56,8 @@ function Layout() {
         </Main>
       </div>
     </div>
-  )
+  );
 }
 
-export default Layout
+export default Layout;
+
