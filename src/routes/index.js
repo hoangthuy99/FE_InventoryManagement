@@ -1,31 +1,32 @@
 import { lazy } from "react";
 import AddPurchase from "../pages/purchaseOrder/AddPurchase";
 import AllPurchase from "../pages/purchaseOrder/AllPurchase";
+import MapLayer from "../pages/map";
 
-// Import các component 
-const Dashboard = lazy(() => import('../pages/Dashboard'))
-const AllCategory = lazy(() => import('../pages/category/AllCategory'))
-const AddCategory = lazy(() => import('../pages/category/AddCategory'))
-const EditCategory = lazy(() => import('../pages/category/EditCategory'))
-const AddProductInfo = lazy(() => import('../pages/product/AddProductInfo'))
-const AllProduct = lazy(() => import('../pages/product/AllProduct'))
-const EditProduct = lazy(() => import('../pages/product/EditProduct'))
-const AddOrder = lazy(() => import('../pages/order/AddOrder'))
-const AllOrders = lazy(() => import('../pages/order/AllOrders'))
-const AllOrderDetail = lazy(() => import('../pages/order/AllOrderDetail'))
-const AddOrderDetail = lazy(() => import('../pages/order/AddOrderDetail'))
-const AddCustomer = lazy(() => import('../pages/customer/AddCustomer'))
-const AllCustomer = lazy(() => import('../pages/customer/AllCustomer'))
-const EditCustomer = lazy(() => import('../pages/customer/EditCustomer'))
-const AddBranch = lazy(() => import('../pages/branch/AddBranch'))
-const AllBranch = lazy(() => import('../pages/branch/AllBranch')) 
-const EditBranch = lazy(() => import('../pages/branch/EditBranch'))
-const Buttons = lazy(() => import('../pages/Buttons'))
-const Modals = lazy(() => import('../pages/Modals'))
-const Tables = lazy(() => import('../pages/Tables'))
-const Page404 = lazy(() => import('../pages/404'))
-const Cards = lazy(() => import('../pages/Cards'))
-const Forms = lazy(() => import('../pages/Forms'))
+// Import các component
+const Dashboard = lazy(() => import("../pages/Dashboard"));
+const AllCategory = lazy(() => import("../pages/category/AllCategory"));
+const AddCategory = lazy(() => import("../pages/category/AddCategory"));
+const EditCategory = lazy(() => import("../pages/category/Editcategory"));
+const AddProductInfo = lazy(() => import("../pages/product/AddProductInfo"));
+const AllProduct = lazy(() => import("../pages/product/AllProduct"));
+const EditProduct = lazy(() => import("../pages/product/EditProduct"));
+const AddOrder = lazy(() => import("../pages/order/AddOrder"));
+const AllOrders = lazy(() => import("../pages/order/AllOrders"));
+const AllOrderDetail = lazy(() => import("../pages/order/AllOrderDetail"));
+const AddOrderDetail = lazy(() => import("../pages/order/AddOrderDetail"));
+const AddCustomer = lazy(() => import("../pages/customer/AddCustomer"));
+const AllCustomer = lazy(() => import("../pages/customer/AllCustomer"));
+const EditCustomer = lazy(() => import("../pages/customer/EditCustomer"));
+const AddBranch = lazy(() => import("../pages/branch/AddBranch"));
+const AllBranch = lazy(() => import("../pages/branch/AllBranch"));
+const EditBranch = lazy(() => import("../pages/branch/EditBranch"));
+const Buttons = lazy(() => import("../pages/Buttons"));
+const Modals = lazy(() => import("../pages/Modals"));
+const Tables = lazy(() => import("../pages/Tables"));
+const Page404 = lazy(() => import("../pages/404"));
+const Cards = lazy(() => import("../pages/Cards"));
+const Forms = lazy(() => import("../pages/Forms"));
 
 const routes = [
   {
@@ -59,50 +60,56 @@ const routes = [
     component: EditProduct,
   },
   {
-    path: '/order/all-orders',
+    path: "/order/all-orders",
     component: AllOrders,
   },
   {
-    path: '/order/all-order-detail',
+    path: "/order/all-order-detail",
     component: AllOrderDetail,
   },
   {
-    path: '/order/add-order',
+    path: "/order/add-order",
     component: AddOrder,
   },
- {
-    path: '/order/add-order-detail',
+  {
+    path: "/order/add-order-detail",
     component: AddOrderDetail,
   },
   {
-    path: '/customer/add-customer',
+    path: "/customer/add-customer",
     component: AddCustomer,
   },
-   {
-    path: '/customer/all-customer',
+  {
+    path: "/customer/all-customer",
     component: AllCustomer,
   },
   {
-    path: '/customer/edit-customer/:id',
+    path: "/customer/edit-customer/:id",
     component: EditCustomer,
   },
   {
-    path: '/branch/add-branch',
+    path: "/branch/add-branch",
     component: AddBranch,
   },
-   {
-    path: '/branch/all-branch',
+  {
+    path: "/branch/all-branch",
     component: AllBranch,
   },
   {
-    path: '/branch/edit-branch/:id',
+    path: "/branch/edit-branch/:id",
     component: EditBranch,
+  },
+  {
     path: "/purchase/all-purchase",
     component: AllPurchase,
   },
   {
     path: "/purchase/add-purchase/:id?",
     component: AddPurchase,
+  },
+  {
+    path: "/map",
+    component: MapLayer,
   },
   {
     path: "/history",

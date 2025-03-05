@@ -16,34 +16,32 @@ import {
 } from "@windmill/react-ui";
 import { EditIcon, TrashIcon } from "../../icons";
 import { branchAPI } from "../../api/api";
+import { Box } from "@mui/material";
+import ImportExcel from "../../components/ImportExcel";
 
 function AllBranch() {
   const [branches, setBranches] = useState([]);
-  const [page, setPage] = useState(0); 
-  const [limit] = useState(10); 
-  const [totalPages, setTotalPages] = useState(1); 
+  const [page, setPage] = useState(0);
+  const [limit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [sampleFile, setSampleFile] = useState("");
 
-  // Fetch danh sách chi nhánh có phân trang
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const response = await branchAPI.getAllPaginated(page, limit);
-        console.log("API Response:", response.data);
+  const fetchBranches = async () => {
+    try {
+      const response = await branchAPI.getAllPaginated(page, limit);
+      console.log("API Response:", response.data);
 
-        // Kiểm tra nếu API trả về một mảng chi nhánh
-        if (Array.isArray(response.data)) {
-          setBranches(response.data);
-          setTotalPages(response.data.totalPages || 1);
-        } else {
-          console.error("Dữ liệu API không đúng định dạng:", response.data);
-        }
-      } catch (error) {
-        console.error("Lỗi khi gọi API:", error);
+      // Kiểm tra nếu API trả về một mảng chi nhánh
+      if (Array.isArray(response.data)) {
+        setBranches(response.data);
+        setTotalPages(response.data.totalPages || 1);
+      } else {
+        console.error("Dữ liệu API không đúng định dạng:", response.data);
       }
-    };
-
-    fetchBranches();
-  }, [page]); // Khi `page` thay đổi, gọi API mới
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa chi nhánh này?")) return;
@@ -61,10 +59,52 @@ function AllBranch() {
     }
   };
 
+  const handleImportExcel = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+
+    try {
+      const res = await branchAPI.importExcel(formData);
+
+      if (res.data?.code === 200) {
+        showSuccessToast("Thêm mới danh mục thành công!");
+        fetchBranches();
+        return true;
+      } else {
+        showErrorToast(res.data?.message);
+      }
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
+  const fetchSampleFile = async () => {
+    try {
+      const res = await branchAPI.getSampleFile();
+
+      if (res.data?.code === 200) {
+        setSampleFile(res.data.data);
+      } else {
+        showErrorToast(res.data?.message);
+      }
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
+  // Fetch danh sách chi nhánh có phân trang
+  useEffect(() => {
+    fetchBranches();
+    fetchSampleFile();
+  }, [page]); // Khi `page` thay đổi, gọi API mới
+
   return (
     <>
       <PageTitle>Danh sách chi nhánh</PageTitle>
-
+      <Box className="mb-4" display={"flex"} justifyContent={"end"}>
+        <ImportExcel action={handleImportExcel} sampleFile={sampleFile} />
+      </Box>
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>

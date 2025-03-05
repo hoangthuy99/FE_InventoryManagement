@@ -16,36 +16,34 @@ import {
 } from "@windmill/react-ui";
 import { EditIcon, TrashIcon } from "../../icons";
 import { categoryAPI } from "../../api/api";
+import { Box } from "@mui/material";
+import ImportExcel from "../../components/ImportExcel";
 
 function Category() {
   const [categories, setCategories] = useState([]);
   const [page, setPage] = useState(0); // Backend sử dụng page = 0 (zero-based index)
   const [limit] = useState(10); // Số danh mục mỗi trang
   const [totalPages, setTotalPages] = useState(1); // Tổng số trang
+  const [sampleFile, setSampleFile] = useState("");
 
-  // Fetch danh mục có phân trang
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await categoryAPI.getAllPaginated(page, limit);
-        console.log("API Response:", response.data);
+  const fetchCategories = async () => {
+    try {
+      const response = await categoryAPI.getAllPaginated(page, limit);
+      console.log("API Response:", response.data);
 
-        // Kiểm tra nếu API trả về một mảng danh mục
-        if (Array.isArray(response.data?.content)) {
-          setCategories(response.data?.content);
+      // Kiểm tra nếu API trả về một mảng danh mục
+      if (Array.isArray(response.data)) {
+        setCategories(response.data);
 
-          // Nếu API không trả về totalPages, tính toán từ số lượng dữ liệu
-          setTotalPages(Math.ceil(response.data.length / limit));
-        } else {
-          console.error("Dữ liệu API không đúng định dạng:", response.data);
-        }
-      } catch (error) {
-        console.error("Lỗi khi gọi API:", error);
+        // Nếu API không trả về totalPages, tính toán từ số lượng dữ liệu
+        setTotalPages(Math.ceil(response.data.length / limit));
+      } else {
+        console.error("Dữ liệu API không đúng định dạng:", response.data);
       }
-    };
-
-    fetchCategories();
-  }, [page]); // Khi `page` thay đổi, gọi API mới
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
@@ -63,10 +61,52 @@ function Category() {
     }
   };
 
+  const handleImportExcel = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+
+    try {
+      const res = await categoryAPI.importExcel(formData);
+
+      if (res.data?.code === 200) {
+        showSuccessToast("Thêm mới danh mục thành công!");
+        fetchCategories();
+        return true;
+      } else {
+        showErrorToast(res.data?.message);
+      }
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
+  const fetchSampleFile = async () => {
+    try {
+      const res = await categoryAPI.getSampleFile();
+
+      if (res.data?.code === 200) {
+        setSampleFile(res.data.data);
+      } else {
+        showErrorToast(res.data?.message);
+      }
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
+  // Fetch danh mục có phân trang
+  useEffect(() => {
+    fetchCategories();
+    fetchSampleFile();
+  }, [page]); // Khi `page` thay đổi, gọi API mới
+
   return (
     <>
       <PageTitle>Danh sách danh mục</PageTitle>
-
+      <Box className="mb-4" display={"flex"} justifyContent={"end"}>
+        <ImportExcel action={handleImportExcel} sampleFile={sampleFile} />
+      </Box>
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>
@@ -136,7 +176,7 @@ function Category() {
           <Pagination
             totalResults={totalPages * limit} // Tổng số kết quả
             resultsPerPage={limit}
-            onChange={(p) => setPage(p - 1)} 
+            onChange={(p) => setPage(p - 1)}
             label="Table navigation"
           />
         </TableFooter>

@@ -17,35 +17,33 @@ import {
 } from "@windmill/react-ui";
 import { EditIcon, TrashIcon } from "../../icons";
 import { productAPI } from "../../api/api";
-
+import { Box, Container, Input } from "@mui/material";
+import ImportExcel from "../../components/ImportExcel";
 
 const AllProduct = () => {
   const [products, setProducts] = useState([]);
+  const [sampleFile, setSampleFile] = useState("");
   const [page, setPage] = useState(0); // Backend sử dụng page = 0
   const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await productAPI.getAllPaginated(page, limit);
-        console.log("API Response:", response.data); // Xem API trả về gì
-        const data = response.data;
+  const fetchProducts = async () => {
+    try {
+      const response = await productAPI.getAllPaginated(page, limit);
+      console.log("API Response:", response.data); // Xem API trả về gì
+      const data = response.data;
 
-        if (data && Array.isArray(data)) {
-          setProducts(data);
-          setTotalPages(data.totalPages || 1);
-        } else {
-          console.error("Dữ liệu API không đúng định dạng:", response.data);
-          showErrorToast("Lỗi dữ liệu API!");
-        }
-      } catch (error) {
-        console.error("Lỗi khi gọi API:", error);
+      if (data && Array.isArray(data)) {
+        setProducts(data);
+        setTotalPages(data.totalPages || 1);
+      } else {
+        console.error("Dữ liệu API không đúng định dạng:", response.data);
+        showErrorToast("Lỗi dữ liệu API!");
       }
-    };
-
-    fetchProducts();
-  }, [page]);
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
@@ -62,9 +60,50 @@ const AllProduct = () => {
     }
   };
 
+  useEffect(() => {
+    fetchProducts();
+    fetchSampleFile();
+  }, [page]);
+
+  const handleImportExcel = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+
+    try {
+      const res = await productAPI.importExcel(formData);
+
+      if (res.data?.code === 200) {
+        showSuccessToast("Thêm mới sản phẩm thành công!");
+        fetchProducts();
+      } else {
+        showErrorToast(res.data?.message);
+      }
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
+  const fetchSampleFile = async () => {
+    try {
+      const res = await productAPI.getSampleFile();
+
+      if (res.data?.code === 200) {
+        setSampleFile(res.data.data);
+      } else {
+        showErrorToast(res.data?.message);
+      }
+    } catch (error) {
+      showErrorToast(error);
+    }
+  };
+
   return (
     <>
       <PageTitle>Danh sách sản phẩm</PageTitle>
+      <Box className="mb-4" display={"flex"} justifyContent={"end"}>
+        <ImportExcel action={handleImportExcel} sampleFile={sampleFile} />
+      </Box>
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>

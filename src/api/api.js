@@ -14,23 +14,39 @@ const api = axios.create({
 //  Function API cho từng module
 //  API Category
 export const customerAPI = {
-    getAll: () => api.get("/customer"),
-    getAllPaginated: (page, limit) => api.get(`/customer?page=${page}&limit=${limit}`),
-    getById: (id) => api.get(`/customer/${id}`),
-    create: (data) => api.post("/customer", data),
-    update: (id, data) => api.put(`/customer/${id}`, data),
-    delete: (id) => api.delete(`/customer/${id}`),
+  getAll: () => api.get("/customer"),
+  getAllPaginated: (page, limit) =>
+    api.get(`/customer?page=${page}&limit=${limit}`),
+  getById: (id) => api.get(`/customer/${id}`),
+  create: (data) => api.post("/customer", data),
+  update: (id, data) => api.put(`/customer/${id}`, data),
+  delete: (id) => api.delete(`/customer/${id}`),
+  getSampleFile: () => api.get("/customer/sampleExcel"),
+  importExcel: (data) =>
+    api.post("/customer/importExcel", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
 };
-    
+
 export const branchAPI = {
-    getAll: () => api.get("/branch"),
-    getAllPaginated: (page, limit) => api.get(`/branch?page=${page}&limit=${limit}`),
-    getById: (id) => api.get(`/branch/${id}`),
-    create: (data) => api.post("/branch", data),
-    update: (id, data) => api.put(`/branch/${id}`, data),
-    delete: (id) => api.delete(`/branch/${id}`),
-    getByActiveFlag: () => api.get("/branch/active"),
-    searchByName: (keyword) => api.get(`/branch/search?keyword=${keyword}`)
+  getAll: () => api.get("/branch"),
+  getAllPaginated: (page, limit) =>
+    api.get(`/branch?page=${page}&limit=${limit}`),
+  getById: (id) => api.get(`/branch/${id}`),
+  create: (data) => api.post("/branch", data),
+  update: (id, data) => api.put(`/branch/${id}`, data),
+  delete: (id) => api.delete(`/branch/${id}`),
+  getByActiveFlag: () => api.get("/branch/active"),
+  searchByName: (keyword) => api.get(`/branch/search?keyword=${keyword}`),
+  getSampleFile: () => api.get("/branch/sampleExcel"),
+  importExcel: (data) =>
+    api.post("/branch/importExcel", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
 };
 
 //  API Category
@@ -42,6 +58,13 @@ export const categoryAPI = {
   create: (data) => api.post("/category/add-category", data),
   update: (id, data) => api.put(`/category/${id}`, data),
   delete: (id) => api.delete(`/category/${id}`),
+  getSampleFile: () => api.get("/category/sampleExcel"),
+  importExcel: (data) =>
+    api.post("/category/importExcel", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
 };
 
 //  API Product
@@ -59,26 +82,36 @@ export const productAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   delete: (id) => api.delete(`/product/${id}`),
+  importExcel: (data) =>
+    api.post("/product/importExcel", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
+  getSampleFile: () => api.get("/product/sampleExcel"),
 };
 
 // API Order (Đơn hàng)
 export const orderAPI = {
-    getAll: (customerId) => api.get(`/order/all/${customerId}`),
-    getById: (id) => api.get(`/order/${id}`),
-    addOrder: (customer, totalPrice) => api.post("/order/add", { customer, totalPrice }),
-    saveOrder: (orderData) => api.post("/order/save", orderData),
-    searchByOrderCode: (keyword) => api.get("/order/search", { params: { keyword } }),
-    getByIdAndStatus: (customerId, orderId, status) => api.get(`/order/${customerId}/${orderId}/${status}`),
+  getAll: (customerId) => api.get(`/order/all/${customerId}`),
+  getById: (id) => api.get(`/order/${id}`),
+  addOrder: (customer, totalPrice) =>
+    api.post("/order/add", { customer, totalPrice }),
+  saveOrder: (orderData) => api.post("/order/save", orderData),
+  searchByOrderCode: (keyword) =>
+    api.get("/order/search", { params: { keyword } }),
+  getByIdAndStatus: (customerId, orderId, status) =>
+    api.get(`/order/${customerId}/${orderId}/${status}`),
 };
 export const orderDetailAPI = {
-    getAll: () => api.get("/"),
-    getAllPaginated: (page, limit) => api.get(`?page=${page}&limit=${limit}`),
-    getById: (id) => api.get(`/${id}`),
-    getByOrderCode: (orderCode) => api.get(`/order/${orderCode}`),
-    create: (data) => api.post("/", data),
-    update: (id, data) => api.put(`/${id}`, data),
-    delete: (id) => api.delete(`/${id}`),
-  };
+  getAll: () => api.get("/"),
+  getAllPaginated: (page, limit) => api.get(`?page=${page}&limit=${limit}`),
+  getById: (id) => api.get(`/${id}`),
+  getByOrderCode: (orderCode) => api.get(`/order/${orderCode}`),
+  create: (data) => api.post("/", data),
+  update: (id, data) => api.put(`/${id}`, data),
+  delete: (id) => api.delete(`/${id}`),
+};
 
 // API Invoice
 export const invoiceAPI = {

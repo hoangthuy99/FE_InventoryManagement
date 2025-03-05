@@ -15,10 +15,18 @@ import {
   Button,
   Pagination,
 } from "@windmill/react-ui";
-import { EditIcon, TrashIcon } from "../../icons";
+import { ButtonsIcon, EditIcon, SearchIcon, TrashIcon } from "../../icons";
 import { productAPI, purchaseOrderAPI } from "../../api/api";
 import data from "../../assets/data.json";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import {
+  Autocomplete,
+  Box,
+  IconButton,
+  InputBase,
+  Paper,
+  TextField,
+} from "@mui/material";
 
 const AllPurchase = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -67,6 +75,23 @@ const AllPurchase = () => {
   return (
     <>
       <PageTitle>Danh sách đơn nhập kho</PageTitle>
+      <Box className="mb-4" display={"flex"} alignItems={"center"} gap={5}>
+        <Box display={"flex"} alignItems={"center"} gap={1}>
+          <TextField size="small" placeholder="search text..." />
+          <Button>
+            <SearchIcon width={20} height={20} fontSize={14} />
+          </Button>
+        </Box>
+
+        <Box display={"flex"} alignItems={"center"} gap={1}>
+          <Autocomplete
+            size="small"
+            disablePortal
+            sx={{ width: 300 }}
+            renderInput={(params) => <TextField {...params} label="Movie" />}
+          />
+        </Box>
+      </Box>
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>
@@ -104,7 +129,9 @@ const AllPurchase = () => {
                         layout="link"
                         size="icon"
                         aria-label="Edit"
-                        onClick={() => history.push(`/app/purchase/add-purchase/${order.id}`)}
+                        onClick={() =>
+                          history.push(`/app/purchase/add-purchase/${order.id}`)
+                        }
                       >
                         <EditIcon className="w-5 h-5" aria-hidden="true" />
                       </Button>

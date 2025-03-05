@@ -52,8 +52,6 @@ function AddPurchase() {
   const history = useHistory();
   const { id } = useParams();
 
-  console.log(id);
-
   const fetchAllProducts = async () => {
     try {
       const response = await productAPI.getAll();
@@ -77,7 +75,7 @@ function AddPurchase() {
   const fetchAllBranchs = async () => {
     try {
       const response = await branchAPI.getAll();
-      setBranchs(Array.isArray(response.data?.data) ? response.data?.data : []);
+      setBranchs(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Lỗi khi gọi API danh mục:", error);
     }
@@ -143,8 +141,6 @@ function AddPurchase() {
     setOrderItems(updateItems);
   };
 
-  console.log(order);
-
   const handleAddItem = (item) => {
     setOrderItems([...orderItems, item]);
   };
@@ -161,7 +157,7 @@ function AddPurchase() {
     orderDateActual: yup.date(dayjs()),
     supplierId: yup.number().required("Nhà cung cấp là bắt buộc"),
     branchId: yup.number().required("Chi nhánh là bắt buộc"),
-    status: yup.number().required("Trạng thái là bắt buộc"),
+    status: yup.number(),
     note: yup.string(),
   });
 
@@ -193,6 +189,7 @@ function AddPurchase() {
 
     try {
       let res;
+      console.log(dataRequest);
 
       if (id) {
         res = await purchaseOrderAPI.update(dataRequest);
@@ -214,17 +211,17 @@ function AddPurchase() {
   return (
     <>
       <SectionTitle>Thông tin nhập kho</SectionTitle>
-      <form onSubmit={handleSubmit(submitForm)} className="p-4 text-white">
-        <div className="px-4 py-3 mb-8  rounded-lg shadow-md dark:bg-gray-800">
+      <form onSubmit={handleSubmit(submitForm)} className="p-4">
+        <div className="px-4 py-3 mb-8  rounded-lg shadow-md dark:bg-gray-800 text-gray-600 dark:text-gray-300">
           <Grid container spacing={2}>
             <Grid item xs={6} className="flex items-center gap-10">
-              <span className="w-1/2">Nhà cung cấp </span>
+              <span className="w-1/2 ">Nhà cung cấp </span>
               <Controller
                 name="supplierId"
                 control={control}
                 render={(renderProps) => (
                   <FormControl fullWidth>
-                    <InputLabel className="text-white ">
+                    <InputLabel className="text-gray-600 dark:text-gray-300">
                       Chọn nhà cung cấp
                     </InputLabel>
                     <Select
@@ -232,7 +229,7 @@ function AddPurchase() {
                       value={renderProps.field.value || ""}
                       onChange={renderProps.field.onChange}
                       label="Chọn nhà cung cấp"
-                      className="text-white border border-gray-600"
+                      className=" border border-gray-600 text-gray-600 dark:text-gray-300text-gray-600 dark:text-gray-300"
                     >
                       <MenuItem selected value="">
                         -- Chọn nhà cung cấp --
@@ -259,7 +256,7 @@ function AddPurchase() {
                 control={control}
                 render={(renderProps) => (
                   <FormControl fullWidth>
-                    <InputLabel className="text-white">
+                    <InputLabel className="text-gray-600 dark:text-gray-300">
                       Chọn chi nhánh
                     </InputLabel>
                     <Select
@@ -267,7 +264,7 @@ function AddPurchase() {
                       value={renderProps.field.value || ""}
                       onChange={renderProps.field.onChange}
                       label="Nhà cung cấp"
-                      className="text-white border border-gray-600"
+                      className="text-gray-600 dark:text-gray-300 border border-gray-600"
                     >
                       {branchs.map((branch) => (
                         <MenuItem key={branch.id} value={branch.id}>
@@ -289,17 +286,20 @@ function AddPurchase() {
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DateTimePicker
                   minDateTime={dayjs()}
-                  value={getValues("orderDatePlan")}
+                  value={getValues("orderDatePlan") || dayjs()}
                   onChange={(newValue) =>
                     setValue("orderDatePlan", newValue, {
                       shouldValidate: true,
                     })
                   }
+                  sx={{ width: "100% " }}
+                  className="border border-gray-600"
                   renderInput={(params) => (
                     <TextField
                       error={errors.orderDatePlan}
                       {...register("orderDatePlan")}
                       {...params}
+                      className="border border-gray-600"
                       fullWidth
                     />
                   )}
@@ -311,29 +311,22 @@ function AddPurchase() {
                 )}
               </LocalizationProvider>
             </Grid>
-            <Grid sx={{
-              "&. .MuiInputBase-root.MuiOutlinedInput-root": {
-                color: "#fff"
-              }
-            }} item xs={6} className="flex items-center">
+            <Grid item xs={6} className="flex items-center gap-10">
               <span className="w-1/2">Ngày nhập kho </span>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DemoContainer components={["DateTimePicker"]}>
-                  <DateTimePicker
-                    minDateTime={dayjs()}
-                    value={getValues("orderDateActual")}
-                    onChange={(newValue) =>
-                      setValue("orderDateActual", newValue)
-                    }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        {...register("orderDateActual")}
-                        fullWidth
-                      />
-                    )}
-                  />
-                </DemoContainer>
+                <DateTimePicker
+                  minDateTime={dayjs()}
+                  value={getValues("orderDateActual") || dayjs()}
+                  onChange={(newValue) => setValue("orderDateActual", newValue)}
+                  sx={{ width: "100% " }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      {...register("orderDateActual")}
+                      fullWidth
+                    />
+                  )}
+                />
               </LocalizationProvider>
             </Grid>
             {id && (
@@ -344,9 +337,7 @@ function AddPurchase() {
                   control={control}
                   render={(renderProps) => (
                     <FormControl fullWidth>
-                      <InputLabel className="text-white">
-                        Chọn trạng thái
-                      </InputLabel>
+                      <InputLabel>Chọn trạng thái</InputLabel>
                       <Select
                         error={renderProps.fieldState.error}
                         value={renderProps.field.value || ""}
@@ -370,9 +361,13 @@ function AddPurchase() {
                 />
               </Grid>
             )}
-            <Grid item xs={6} className="flex items-center gap-10">
+            <Grid item xs={6} className="flex items-center gap-10 ">
               <span className="w-1/2">Ghi chú </span>
-              <Textarea {...register("note")} minRows={1} />
+              <Textarea
+                className="border border-gray-600"
+                {...register("note")}
+                minRows={1}
+              />
             </Grid>
           </Grid>
         </div>
@@ -397,20 +392,34 @@ function AddPurchase() {
                       <AddCircleOutlineIcon />
                     </Button>
                   </TableCell>
-                  <TableCell className="text-white" width="15%">
+                  <TableCell
+                    className=" text-gray-600 dark:text-gray-300"
+                    width="15%"
+                  >
                     Sản phẩm
                   </TableCell>
-                  <TableCell className="text-white" width="15%">
+                  <TableCell
+                    className=" text-gray-600 dark:text-gray-300"
+                    width="15%"
+                  >
                     Đơn vị
                   </TableCell>
-                  <TableCell className="text-white" width="15%">
+                  <TableCell
+                    className=" text-gray-600 dark:text-gray-300"
+                    width="15%"
+                  >
                     Loại tồn kho
                   </TableCell>
-                  <TableCell className="text-white">
+                  <TableCell className=" text-gray-600 dark:text-gray-300">
                     Số lượng kế hoạch
                   </TableCell>
-                  <TableCell className="text-white">Số lượng</TableCell>
-                  <TableCell className="text-white" width="15%">
+                  <TableCell className=" text-gray-600 dark:text-gray-300">
+                    Số lượng
+                  </TableCell>
+                  <TableCell
+                    className=" text-gray-600 dark:text-gray-300"
+                    width="15%"
+                  >
                     Khu vực kế hoạch
                   </TableCell>
                 </TableRow>
@@ -428,13 +437,13 @@ function AddPurchase() {
                         <RemoveCircleOutlineIcon />
                       </Button>
                     </TableCell>
-                    <TableCell className="text-white">
+                    <TableCell>
                       <FormControl fullWidth>
-                        <InputLabel className="text-white">
+                        <InputLabel className=" text-gray-600 dark:text-gray-300">
                           Chọn product
                         </InputLabel>
                         <Select
-                          value={item.productId}
+                          value={item.productId || ""}
                           onChange={(e) =>
                             handleChangeProduct(
                               index,
@@ -443,7 +452,7 @@ function AddPurchase() {
                             )
                           }
                           label="Chọn product"
-                          className="text-white border border-gray-600"
+                          className="text-gray-600 dark:text-gray-300 border border-gray-600"
                         >
                           {products.map((product) => (
                             <MenuItem key={product.id} value={product.id}>
@@ -455,11 +464,11 @@ function AddPurchase() {
                     </TableCell>
                     <TableCell>
                       <FormControl fullWidth>
-                        <InputLabel className="text-white">
+                        <InputLabel className="text-gray-600 dark:text-gray-300">
                           Chọn đơn vị
                         </InputLabel>
                         <Select
-                          value={item.itemUnit}
+                          value={item.itemUnit || ""}
                           onChange={(e) =>
                             handleChangeProduct(
                               index,
@@ -468,7 +477,7 @@ function AddPurchase() {
                             )
                           }
                           label="Chọn đơn vị"
-                          className="text-white border border-gray-600"
+                          className="text-gray-600 dark:text-gray-300 border border-gray-600"
                         >
                           {productUnit.map((unit) => (
                             <MenuItem key={unit.key} value={unit.key}>
@@ -480,11 +489,11 @@ function AddPurchase() {
                     </TableCell>
                     <TableCell>
                       <FormControl fullWidth>
-                        <InputLabel className="text-white">
+                        <InputLabel className="text-gray-600 dark:text-gray-300">
                           Chọn loại tồn kho
                         </InputLabel>
                         <Select
-                          value={item.stockType}
+                          value={item.stockType || ""}
                           onChange={(e) =>
                             handleChangeProduct(
                               index,
@@ -493,7 +502,7 @@ function AddPurchase() {
                             )
                           }
                           label="Chọn loại tồn kho"
-                          className="text-white border border-gray-600"
+                          className="text-gray-600 dark:text-gray-300 border border-gray-600"
                         >
                           {stockStatus.map((status) => (
                             <MenuItem key={status.key} value={status.key}>
@@ -509,7 +518,7 @@ function AddPurchase() {
                         type="number"
                         size="small"
                         defaultValue={0}
-                        className="text-white border border-gray-600"
+                        className="text-gray-600 dark:text-gray-300 border border-gray-600"
                         value={item.quantityPlan}
                         onChange={(e) =>
                           handleChangeProduct(
@@ -520,7 +529,8 @@ function AddPurchase() {
                         }
                         fullWidth
                         inputProps={{
-                          className: "text-white border border-gray-600",
+                          className:
+                            "text-gray-600 dark:text-gray-300 border border-gray-600",
                         }}
                       />
                     </TableCell>
@@ -539,22 +549,23 @@ function AddPurchase() {
                         }
                         fullWidth
                         inputProps={{
-                          className: "text-white border border-gray-600",
+                          className:
+                            "text-gray-600 dark:text-gray-300 border border-gray-600",
                         }}
                       />
                     </TableCell>
                     <TableCell>
                       <FormControl fullWidth>
-                        <InputLabel className="text-white">
+                        <InputLabel className="text-gray-600 dark:text-gray-300">
                           Chọn khu vực
                         </InputLabel>
                         <Select
-                          value={item.areaId}
+                          value={item.areaId || ""}
                           onChange={(e) =>
                             handleChangeProduct(index, "areaId", e.target.value)
                           }
                           label="Chọn khu vực"
-                          className="text-white border border-gray-600"
+                          className="text-gray-600 dark:text-gray-300 border border-gray-600"
                         >
                           {areas.map((area) => (
                             <MenuItem key={area.id} value={area.id}>
