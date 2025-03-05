@@ -19,6 +19,9 @@ const EditCustomer = lazy(() => import('../pages/customer/EditCustomer'))
 const AddBranch = lazy(() => import('../pages/branch/AddBranch'))
 const AllBranch = lazy(() => import('../pages/branch/AllBranch')) 
 const EditBranch = lazy(() => import('../pages/branch/EditBranch'))
+const AddSupplier = lazy(() => import('../pages/supplier/AddSupplier'))
+const AllSupplier = lazy(() => import('../pages/supplier/AllSupplier'))
+const EditSupplier = lazy(() => import('../pages/supplier/EditSupplier'))
 const Buttons = lazy(() => import('../pages/Buttons'))
 const Modals = lazy(() => import('../pages/Modals'))
 const Tables = lazy(() => import('../pages/Tables'))
@@ -99,6 +102,19 @@ const routes = [
   {
     path: "/purchase/all-purchase",
     component: AllPurchase,
+  },
+  {
+    path: '/supplier/add-supplier',
+    component: AddSupplier,
+  },
+   {
+    path: '/supplier/all-supplier',
+    component: AllSupplier,
+  },
+  {
+    path: '/supplier/edit-supplier/:id',
+    component: EditSupplier,
+   
   },
   {
     path: "/buttons",

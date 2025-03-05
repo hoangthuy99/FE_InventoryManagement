@@ -124,7 +124,12 @@ export const authAPI = {
 
 // API Supplier
 export const supplierAPI = {
-  getAll: () => api.get("/supplier/getAllSuppliers"),
+  getAll: () => api.get("/supplier/getAll"),
+  getById: (id) => api.get(`/supplier/getSupplier/${id}`),
+  getAllPaginated: (page, limit) => api.get(`/supplier/getAll?page=${page}&limit=${limit}`),
+  add: (supplierData) => api.post("/supplier/add", supplierData),
+  update: (id, supplierData) => api.put(`/supplier/update/${id}`, supplierData),
+  delete: (id) => api.delete(`/supplier/delete/${id}`),
 };
 
 // API Purchase Order

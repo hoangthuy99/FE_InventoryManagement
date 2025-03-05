@@ -24,7 +24,7 @@ function AddCustomer() {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === "activeFlag" ? Number(value) : value.trim(),
+      [name]: name === "activeFlag" ? Number(value) : value,
     });
   };
 
