@@ -1,10 +1,3 @@
-/**
- * ⚠ These are used just to render the Sidebar!
- * You can include any link here, local or external.
- *
- * If you're looking to actual Router routes, go to
- * `routes/index.js`
- */
 
 const routes = [
   {
@@ -34,6 +27,14 @@ const routes = [
     routes: [
       { path: "/app/purchase/all-purchase", name: "All Purchase" },
       { path: "/app/purchase/add-purchase", name: "Add Purchase" },
+    ],
+  },
+  {
+    icon: "ProductIcon",
+    name: "Purchase Order",
+    routes: [
+      { path: '/app/order/all-orders', name: 'All Orders' },
+      { path: '/app/order/add-order', name: 'Add Order' },
     ],
   },
   {
@@ -70,6 +71,14 @@ const routes = [
     name: "Map",
     routes: [
       { path: "/app/map", name: "Area-Map" },
+    ]
+  },
+    {
+    icon: 'CustomerIcon',
+    name: 'Supplier',
+    routes: [
+      { path: '/app/supplier/all-supplier', name: 'All Supplier' },
+      { path: '/app/supplier/add-supplier', name: 'Add Supplier' },
     ],
   },
   {

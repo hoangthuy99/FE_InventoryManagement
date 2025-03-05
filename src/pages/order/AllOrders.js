@@ -4,28 +4,35 @@ import { EditIcon, TrashIcon } from "../../icons";
 import PageTitle from "../../components/Typography/PageTitle";
 import axios from "axios";
 
+const orderStatusMap = {
+  PENDING: "Chờ xác nhận",
+  CONFIRMED: "Đã xác nhận",
+  READY_FOR_EXPORT: "Sẵn sàng xuất kho",
+  EXPORTED: "Đã xuất kho",
+  COMPLETED: "Hoàn thành",
+  CANCELLED: "Đã hủy",
+};
+
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
   const resultsPerPage = 10;
   const [totalResults, setTotalResults] = useState(0);
 
-  // Giả định customerId, có thể lấy từ context hoặc props
-  const customerId = 1;
-
-  // Lấy danh sách đơn hàng theo customerId
   useEffect(() => {
-    axios.get(`/app/order/all/${customerId}`)
-      .then(response => {
-        setOrders(response.data);
-        setTotalResults(response.data.length);
-      })
-      .catch(error => console.error("Lỗi khi lấy danh sách đơn hàng:", error));
-  }, [customerId]);
+    fetchOrders();
+  }, [page]);
 
-  // Xử lý phân trang
-  const onPageChange = (p) => setPage(p);
-  
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get(`/app/order/all`);
+      setOrders(response.data);
+      setTotalResults(response.data.length);
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách đơn hàng:", error);
+    }
+  };
+
   const paginatedOrders = orders.slice((page - 1) * resultsPerPage, page * resultsPerPage);
 
   return (
@@ -37,6 +44,7 @@ const Orders = () => {
             <tr>
               <TableCell>Mã đơn hàng</TableCell>
               <TableCell>Khách hàng</TableCell>
+              <TableCell>Chi nhánh</TableCell>
               <TableCell>Tổng tiền</TableCell>
               <TableCell>Trạng thái</TableCell>
               <TableCell>Ngày tạo</TableCell>
@@ -48,9 +56,12 @@ const Orders = () => {
               <TableRow key={index}>
                 <TableCell>{order.orderCode}</TableCell>
                 <TableCell>{order.customer?.name || "N/A"}</TableCell>
-                <TableCell>${order.totalPrice}</TableCell>
+                <TableCell>{order.branch?.name || "N/A"}</TableCell>
+                <TableCell>{order.totalPrice?.toLocaleString()} VNĐ</TableCell>
                 <TableCell>
-                  <Badge type={order.status}>{order.status}</Badge>
+                  <Badge type={order.status === "COMPLETED" ? "success" : order.status === "CANCELLED" ? "danger" : "warning"}>
+                    {orderStatusMap[order.status] || "Không xác định"}
+                  </Badge>
                 </TableCell>
                 <TableCell>{new Date(order.createdDate).toLocaleDateString()}</TableCell>
                 <TableCell>
@@ -71,7 +82,7 @@ const Orders = () => {
           <Pagination
             totalResults={totalResults}
             resultsPerPage={resultsPerPage}
-            onChange={onPageChange}
+            onChange={(p) => setPage(p)}
             label="Table navigation"
           />
         </TableFooter>
