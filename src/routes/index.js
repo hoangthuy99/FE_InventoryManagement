@@ -2,6 +2,7 @@
 import { lazy } from "react";
 import AddPurchase from "../pages/purchaseOrder/AddPurchase";
 import AllPurchase from "../pages/purchaseOrder/AllPurchase";
+import MapLayer from "../pages/map";
 
 // Import các component 
 const Dashboard = lazy(() => import('../pages/Dashboard'))

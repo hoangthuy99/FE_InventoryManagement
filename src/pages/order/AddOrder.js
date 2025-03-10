@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import SectionTitle from "../../components/Typography/SectionTitle";
-import { Button} from "@windmill/react-ui";
+import { Button } from "@windmill/react-ui";
 
 import {
   FormControl,
@@ -33,6 +33,7 @@ import {
   customerAPI,
   branchAPI,
   orderDetailAPI,
+  productAPI,
 } from "../../api/api";
 import CloseIcon from "@mui/icons-material/Close";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -48,8 +49,6 @@ const schema = yup.object().shape({
 });
 
 function AddOrder() {
-  
-
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -57,30 +56,30 @@ function AddOrder() {
   const [openModal, setOpenModal] = useState(false);
   const [page, setPage] = useState(1);
   const resultsPerPage = 10;
-  const { orStatus, productUnit, stockStatus } = data;
+  const { gdrStatus, productUnit, stockStatus } = data;
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const [customerRes, branchRes] = await Promise.all([
-          customerAPI.getAll(),  
-          branchAPI.getAll(),    
+          customerAPI.getAll(),
+          branchAPI.getAll(),
         ]);
         console.log("Customers:", customerRes.data);
         console.log("Branches:", branchRes.data);
-  
-        setCustomers(customerRes.data || []);  
-        setBranches(branchRes.data || []);  
-        
+
+        setCustomers(customerRes.data || []);
+        setBranches(branchRes.data || []);
       } catch (error) {
         console.error("Lỗi khi gọi API:", error);
         showErrorToast("Không thể tải dữ liệu!");
       }
     }
     fetchData();
+    fetchAllProducts();
   }, []);
-  
+
   useEffect(() => {
     fetchOrderDetails();
   }, [page]);
@@ -119,9 +118,7 @@ function AddOrder() {
     resolver: yupResolver(schema),
   });
   const handleRemoveItem = (index) => {
-    setOrderDetails(
-      (items) => items.filter((_, i) => i !== index) 
-    );
+    setOrderDetails((items) => items.filter((_, i) => i !== index));
   };
 
   const submitForm = async (data) => {
@@ -129,21 +126,29 @@ function AddOrder() {
     console.log("Tổng tiền tự động tính:", totalPrice);
 
     try {
-        const res = await orderAPI.saveOrder({ 
-            customer: data.customerId, 
-            totalPrice, 
-            orderDetails 
-        });
+      const res = await orderAPI.saveOrder({
+        customer: data.customerId,
+        totalPrice,
+        orderDetails,
+      });
 
-        if (res.status === 200) {
-            showSuccessToast("Tạo đơn hàng thành công");
-        }
+      if (res.status === 200) {
+        showSuccessToast("Tạo đơn hàng thành công");
+      }
     } catch (error) {
-        console.error("Lỗi API:", error.response?.data || error.message);
-        showErrorToast("Lỗi khi tạo đơn hàng");
+      console.error("Lỗi API:", error.response?.data || error.message);
+      showErrorToast("Lỗi khi tạo đơn hàng");
     }
   };
-  
+
+  const fetchAllProducts = async () => {
+    try {
+      const response = await productAPI.getAll();
+      setProducts(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Lỗi khi gọi API danh mục:", error);
+    }
+  };
 
   return (
     <>
@@ -152,7 +157,6 @@ function AddOrder() {
         onSubmit={handleSubmit(submitForm)}
         className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800"
       >
-       
         <Controller
           name="customerId"
           control={control}
@@ -160,7 +164,7 @@ function AddOrder() {
             <FormControl fullWidth margin="normal" error={!!errors.customerId}>
               <InputLabel>Khách hàng</InputLabel>
               <Select {...field}>
-                {customers.map((customer) => (
+                {customers?.map((customer) => (
                   <MenuItem key={customer.id} value={customer.id}>
                     {customer.name}
                   </MenuItem>
@@ -177,7 +181,7 @@ function AddOrder() {
             <FormControl fullWidth margin="normal" error={!!errors.branchId}>
               <InputLabel>Chọn chi nhánh</InputLabel>
               <Select {...field}>
-                {branches.map((branch) => (
+                {branches?.map((branch) => (
                   <MenuItem key={branch.id} value={branch.id}>
                     {branch.name}
                   </MenuItem>
@@ -230,7 +234,7 @@ function AddOrder() {
             <FormControl fullWidth margin="normal" error={!!errors.status}>
               <InputLabel>Chọn tình trạng đơn hàng</InputLabel>
               <Select {...field} value={field.value || ""}>
-                {orStatus.map((status) => (
+                {gdrStatus?.map((status) => (
                   <MenuItem key={status.key} value={status.key}>
                     {status.name}
                   </MenuItem>
@@ -288,7 +292,7 @@ function AddOrder() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orderDetails.map((detail) => (
+                {orderDetails?.map((detail) => (
                   <TableRow key={detail.id}>
                     <TableCell>{detail.id}</TableCell>
                     <TableCell>{detail.orderCode}</TableCell>
@@ -311,12 +315,11 @@ function AddOrder() {
 
       <SectionTitle>Thêm chi tiết nhập kho</SectionTitle>
       <div className="px-4 py-3 mb-8 rounded-lg shadow-md dark:bg-gray-800">
-      
         <TableContainer>
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead>
               <TableRow>
-                <TableCell  className="border border-gray-600 ">
+                <TableCell className="border border-gray-600 ">
                   <Button
                     size="small"
                     variant="contained"
@@ -340,14 +343,18 @@ function AddOrder() {
                 <TableCell className="border border-gray-600 " width="15%">
                   Số lương
                 </TableCell>
-                <TableCell className="border border-gray-600 ">Đơn giá</TableCell>
-                <TableCell className="border border-gray-600 ">Tổng tiền</TableCell>
+                <TableCell className="border border-gray-600 ">
+                  Đơn giá
+                </TableCell>
+                <TableCell className="border border-gray-600 ">
+                  Tổng tiền
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {orderDetails.map((item, index) => (
+              {orderDetails?.map((item, index) => (
                 <TableRow key={item.id}>
-                  <TableCell  className="border border-gray-600 ">
+                  <TableCell className="border border-gray-600 ">
                     <Button
                       variant="contained"
                       color="primary"
@@ -359,9 +366,7 @@ function AddOrder() {
                   </TableCell>
                   <TableCell className="border border-gray-600 ">
                     <FormControl fullWidth>
-                      <InputLabel >
-                        Chọn product
-                      </InputLabel>
+                      <InputLabel>Chọn product</InputLabel>
                       <Select
                         value={item.productId || ""}
                         onChange={(e) =>
@@ -374,7 +379,7 @@ function AddOrder() {
                         label="Chọn product"
                         className="border border-gray-600 "
                       >
-                        {products.map((product) => (
+                        {products?.map((product) => (
                           <MenuItem key={product.id} value={product.id}>
                             {product.name}
                           </MenuItem>
@@ -382,24 +387,18 @@ function AddOrder() {
                       </Select>
                     </FormControl>
                   </TableCell>
-                  <TableCell  className="border border-gray-600 ">
+                  <TableCell className="border border-gray-600 ">
                     <FormControl fullWidth>
-                      <InputLabel className="">
-                        Chọn đơn hàng
-                      </InputLabel>
-                      
+                      <InputLabel className="">Chọn đơn hàng</InputLabel>
                     </FormControl>
                   </TableCell>
                   <TableCell className="border border-gray-600 ">
                     <FormControl fullWidth>
-                      <InputLabel className="">
-                        Số lượng
-                      </InputLabel>
-                     
+                      <InputLabel className="">Số lượng</InputLabel>
                     </FormControl>
                   </TableCell>
 
-                  <TableCell  className="border border-gray-600 ">
+                  <TableCell className="border border-gray-600 ">
                     <TextField
                       type="number"
                       size="small"
@@ -414,13 +413,12 @@ function AddOrder() {
                       }}
                     />
                   </TableCell>
-                  <TableCell  className="border border-gray-600 ">
+                  <TableCell className="border border-gray-600 ">
                     {(
                       (item.price || 0) * (item.quantity || 0)
                     ).toLocaleString()}{" "}
                     VNĐ
                   </TableCell>
-                  
                 </TableRow>
               ))}
             </TableBody>

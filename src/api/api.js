@@ -1,16 +1,10 @@
-
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
 import { useAuth } from "../context/AuthContext";
 
 const BASE_URL = "http://localhost:8089/app";
 
 //  Cấu hình Axios để dễ dàng tái sử dụng
 const api = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
@@ -81,18 +75,8 @@ export const productAPI = {
   getById: (id) => api.get(`/product/${id}`),
   create: (data) =>
     api.post("/product/add-product", data, {
-      headers: { "Content-Type": "multipart/form-data" }, // Đảm bảo hỗ trợ upload file
-  getAll: () => api.get("/product"),
-  getAllPaginated: (page, limit) =>
-    api.get(`/product?page=${page}&limit=${limit}`),
-  getById: (id) => api.get(`/product/${id}`),
-  create: (data) =>
-    api.post("/product/add-product", data, {
-      headers: { "Content-Type": "multipart/form-data" }, // Đảm bảo hỗ trợ upload file
-    }),
-  update: (id, data) =>
-    api.put(`/product/${id}`, data, {
       headers: { "Content-Type": "multipart/form-data" },
+    }), // Đảm bảo hỗ trợ upload file
   update: (id, data) =>
     api.put(`/product/${id}`, data, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -110,10 +94,13 @@ export const productAPI = {
 export const orderAPI = {
   getAll: (customerId) => api.get(`/order/all/${customerId}`),
   getById: (id) => api.get(`/order/${id}`),
-  addOrder: (customer, totalPrice) => api.post("/order/add", { customer, totalPrice }),
+  addOrder: (customer, totalPrice) =>
+    api.post("/order/add", { customer, totalPrice }),
   saveOrder: (orderData) => api.post("/order/save", orderData),
-  searchByOrderCode: (keyword) => api.get("/order/search", { params: { keyword } }),
-  getByIdAndStatus: (customerId, orderId, status) => api.get(`/order/${customerId}/${orderId}/${status}`),
+  searchByOrderCode: (keyword) =>
+    api.get("/order/search", { params: { keyword } }),
+  getByIdAndStatus: (customerId, orderId, status) =>
+    api.get(`/order/${customerId}/${orderId}/${status}`),
 };
 
 export const orderDetailAPI = {
@@ -131,18 +118,10 @@ export const invoiceAPI = {
   getAll: () => api.get("/invoice"),
   getById: (id) => api.get(`/invoice/${id}`),
   create: (data) => api.post("/invoice", data),
-  getAll: () => api.get("/invoice"),
-  getById: (id) => api.get(`/invoice/${id}`),
-  create: (data) => api.post("/invoice", data),
 };
 
 //  API User
 export const userAPI = {
-  getAll: () => api.get("/user"),
-  getById: (id) => api.get(`/user/${id}`),
-  create: (data) => api.post("/user", data),
-  update: (id, data) => api.put(`/user/${id}`, data),
-  delete: (id) => api.delete(`/user/${id}`),
   getAll: () => api.get("/user"),
   getById: (id) => api.get(`/user/${id}`),
   create: (data) => api.post("/user", data),
@@ -179,7 +158,8 @@ export const authAPI = {
 export const supplierAPI = {
   getAll: () => api.get("/supplier/getAll"),
   getById: (id) => api.get(`/supplier/getSupplier/${id}`),
-  getAllPaginated: (page, limit) => api.get(`/supplier/getAll?page=${page}&limit=${limit}`),
+  getAllPaginated: (page, limit) =>
+    api.get(`/supplier/getAll?page=${page}&limit=${limit}`),
   add: (supplierData) => api.post("/supplier/add", supplierData),
   update: (id, supplierData) => api.put(`/supplier/update/${id}`, supplierData),
   delete: (id) => api.delete(`/supplier/delete/${id}`),
@@ -197,7 +177,9 @@ export const purchaseOrderAPI = {
 // API Area
 export const areaAPI = {
   getAll: () => api.get("/area/list"),
+  getByBranch: (branchId) => api.get(`/area/getByBranch/${branchId}`),
+  createOrUpdate: (branchId, data) =>
+    api.post(`/area/createOrUpdate/${branchId}`, data),
 };
 
 export default api;
-
