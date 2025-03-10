@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import SectionTitle from "../../components/Typography/SectionTitle";
-import { Button } from "@windmill/react-ui";
+import { Button, Textarea } from "@windmill/react-ui";
+
 
 import {
   FormControl,
@@ -10,10 +11,6 @@ import {
   MenuItem,
   TextField,
   FormHelperText,
-  Box,
-  Typography,
-  IconButton,
-  Modal,
   Table,
   TableBody,
   TableCell,
@@ -49,15 +46,15 @@ const schema = yup.object().shape({
 });
 
 function AddOrder() {
-  const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [branches, setBranches] = useState([]);
+  const [users, setUsers] = useState([]);
   const [orderDetails, setOrderDetails] = useState([]);
-  const [openModal, setOpenModal] = useState(false);
   const [page, setPage] = useState(1);
-  const resultsPerPage = 10;
   const { gdrStatus, productUnit, stockStatus } = data;
+  const resultsPerPage = 10;
   const [products, setProducts] = useState([]);
+  const userRole = localStorage.getItem("userRole");
 
   useEffect(() => {
     async function fetchData() {
@@ -141,32 +138,20 @@ function AddOrder() {
     }
   };
 
-  const fetchAllProducts = async () => {
-    try {
-      const response = await productAPI.getAll();
-      setProducts(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Lỗi khi gọi API danh mục:", error);
-    }
-  };
-
   return (
     <>
       <SectionTitle>Thêm Đơn Hàng</SectionTitle>
-      <form
-        onSubmit={handleSubmit(submitForm)}
-        className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800"
-      >
+      <form onSubmit={handleSubmit(submitForm)}>
         <Controller
           name="customerId"
           control={control}
           render={({ field }) => (
             <FormControl fullWidth margin="normal" error={!!errors.customerId}>
               <InputLabel>Khách hàng</InputLabel>
-              <Select {...field}>
-                {customers?.map((customer) => (
-                  <MenuItem key={customer.id} value={customer.id}>
-                    {customer.name}
+              <Select {...field} label="Khách hàng">
+                {customers.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.name}
                   </MenuItem>
                 ))}
               </Select>
@@ -174,16 +159,17 @@ function AddOrder() {
             </FormControl>
           )}
         />
+
         <Controller
           name="branchId"
           control={control}
           render={({ field }) => (
             <FormControl fullWidth margin="normal" error={!!errors.branchId}>
-              <InputLabel>Chọn chi nhánh</InputLabel>
-              <Select {...field}>
-                {branches?.map((branch) => (
-                  <MenuItem key={branch.id} value={branch.id}>
-                    {branch.name}
+              <InputLabel>Chi nhánh</InputLabel>
+              <Select {...field} label="Chi nhánh">
+                {branches.map((b) => (
+                  <MenuItem key={b.id} value={b.id}>
+                    {b.name}
                   </MenuItem>
                 ))}
               </Select>
@@ -191,129 +177,105 @@ function AddOrder() {
             </FormControl>
           )}
         />
+ <Controller
+          name="userId"
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth margin="normal" error={!!errors.userId}>
+              <InputLabel>Người tạo</InputLabel>
+              <Select {...field} label="Người tạo">
+                {branches.map((u) => (
+                  <MenuItem key={u.id} value={u.id}>
+                    {u.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>{errors.userId?.message}</FormHelperText>
+            </FormControl>
+          )}
+        />
         <Controller
           name="plannedExportDate"
           control={control}
           render={({ field }) => (
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateTimePicker
-                label="Ngày dự kiến xuất hàng"
-                value={field.value ? dayjs(field.value) : null}
-                onChange={(date) => field.onChange(date)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    fullWidth
-                    margin="normal"
-                    error={!!errors.plannedExportDate}
-                    helperText={errors.plannedExportDate?.message}
-                  />
-                )}
-              />
-            </LocalizationProvider>
-          )}
-        />
-        <Controller
-          name="totalPrice"
-          control={control}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              label="Tổng tiền"
+            <FormControl
               fullWidth
               margin="normal"
-              error={!!errors.totalPrice}
-              helperText={errors.totalPrice?.message}
-            />
-          )}
-        />
-        <Controller
-          name="status"
-          control={control}
-          render={({ field }) => (
-            <FormControl fullWidth margin="normal" error={!!errors.status}>
-              <InputLabel>Chọn tình trạng đơn hàng</InputLabel>
-              <Select {...field} value={field.value || ""}>
-                {gdrStatus?.map((status) => (
-                  <MenuItem key={status.key} value={status.key}>
-                    {status.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FormHelperText>{errors.status?.message}</FormHelperText>
+              error={!!errors.plannedExportDate}
+            >
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DateTimePicker
+                  label="Ngày xuất kho kế hoạch"
+                  value={field.value ? dayjs(field.value) : null}
+                  onChange={field.onChange}
+                />
+              </LocalizationProvider>
+              <FormHelperText>
+                {errors.plannedExportDate?.message}
+              </FormHelperText>
             </FormControl>
           )}
         />
 
-        <br></br>
-        <Button
-          type="submit"
-          variant="contained"
-          className="p-4 mt-4 mb-4 "
-          style={{ width: "150px" }}
-          color="primary"
-        >
-          Lưu đơn hàng
-        </Button>
+        <Controller
+          name="actualExportDate"
+          control={control}
+          render={({ field }) => (
+            <FormControl fullWidth margin="normal">
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DateTimePicker
+                  label="Ngày xuất kho thực tế"
+                  value={field.value ? dayjs(field.value) : null}
+                  onChange={field.onChange}
+                />
+              </LocalizationProvider>
+            </FormControl>
+          )}
+        />
+
+        <Controller
+          name="deliveryAddress"
+          control={control}
+          render={({ field }) => (
+            <FormControl
+              fullWidth
+              margin="normal"
+              error={!!errors.deliveryAddress}
+            >
+              <Textarea {...field} placeholder="Địa chỉ giao hàng" />
+              <FormHelperText>{errors.deliveryAddress?.message}</FormHelperText>
+            </FormControl>
+          )}
+        />
+
+        {userRole === "admin" && (
+          <Controller
+            name="inChargeUser"
+            control={control}
+            render={({ field }) => (
+              <FormControl
+                fullWidth
+                margin="normal"
+                error={!!errors.inChargeUser}
+              >
+                <InputLabel>Người phụ trách</InputLabel>
+                <Select {...field} label="Người phụ trách">
+                  {users.map((u) => (
+                    <MenuItem key={u.id} value={u.id}>
+                      {u.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText>{errors.inChargeUser?.message}</FormHelperText>
+              </FormControl>
+            )}
+          />
+        )}
+
+        <Button type="submit">Lưu đơn hàng</Button>
       </form>
 
-      {/* Chi tiết đơn hàng */}
-      <SectionTitle>Chi tiết đơn hàng</SectionTitle>
-      <Button
-        startIcon={<AddCircleOutlineIcon />}
-        variant="contained"
-        className="p-4 mt-4 mb-4"
-        color="primary"
-        onClick={() => setOpenModal(true)}
-        style={{ width: "150px" }}
-      >
-        Xem chi tiết
-      </Button>
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box sx={{ p: 4, bgcolor: "white", borderRadius: "10px" }}>
-          <IconButton
-            sx={{ position: "absolute", right: 10, top: 10 }}
-            onClick={() => setOpenModal(false)}
-          >
-            <CloseIcon />
-          </IconButton>
-          <Typography variant="h6">Chi tiết đơn hàng</Typography>
-
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Mã đơn hàng</TableCell>
-                  <TableCell>Sản phẩm</TableCell>
-                  <TableCell>Số lượng</TableCell>
-                  <TableCell>Giá</TableCell>
-                  <TableCell>Tổng tiền</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {orderDetails?.map((detail) => (
-                  <TableRow key={detail.id}>
-                    <TableCell>{detail.id}</TableCell>
-                    <TableCell>{detail.orderCode}</TableCell>
-                    <TableCell>{detail.productName}</TableCell>
-                    <TableCell>{detail.quantity}</TableCell>
-                    <TableCell>
-                      {detail.price?.toLocaleString() || "N/A"} VNĐ
-                    </TableCell>
-                    <TableCell>
-                      {(detail.quantity * (detail.price || 0)).toLocaleString()}{" "}
-                      VNĐ
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      </Modal>
-
-      <SectionTitle>Thêm chi tiết nhập kho</SectionTitle>
+      <SectionTitle>Chi tiết xuất kho</SectionTitle>
       <div className="px-4 py-3 mb-8 rounded-lg shadow-md dark:bg-gray-800">
         <TableContainer>
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -338,7 +300,7 @@ function AddOrder() {
                   Sản phẩm
                 </TableCell>
                 <TableCell className="border border-gray-600 " width="15%">
-                  Đơn hàng
+                  Đơn vị
                 </TableCell>
                 <TableCell className="border border-gray-600 " width="15%">
                   Số lương
@@ -388,15 +350,36 @@ function AddOrder() {
                     </FormControl>
                   </TableCell>
                   <TableCell className="border border-gray-600 ">
-                    <FormControl fullWidth>
-                      <InputLabel className="">Chọn đơn hàng</InputLabel>
-                    </FormControl>
+                    <TextField
+                      type="number"
+                      size="small"
+                      defaultValue={0}
+                      value={productUnit.value}
+                      onChange={(e) =>
+                        handleChangeProduct(index, "product", e.target.value)
+                      }
+                      fullWidth
+                      inputProps={{
+                        className: " border border-gray-600",
+                      }}
+                    />
                   </TableCell>
                   <TableCell className="border border-gray-600 ">
-                    <FormControl fullWidth>
-                      <InputLabel className="">Số lượng</InputLabel>
-                    </FormControl>
+                    <TextField
+                      type="number"
+                      size="small"
+                      defaultValue={0}
+                      value={item.price}
+                      onChange={(e) =>
+                        handleChangeProduct(index, "price", e.target.value)
+                      }
+                      fullWidth
+                      inputProps={{
+                        className: " border border-gray-600",
+                      }}
+                    />
                   </TableCell>
+                
 
                   <TableCell className="border border-gray-600 ">
                     <TextField
