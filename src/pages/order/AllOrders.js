@@ -38,7 +38,7 @@ const AllOrder = () => {
 
         if (Array.isArray(response.data)) {
           setOrders(response.data);
-          setTotalPages(1); // Giả định chỉ có 1 trang
+          setTotalPages(1);
         } else if (response.data && response.data.orders) {
           // Trường hợp dữ liệu có đúng format
           setOrders(response.data.orders);
