@@ -567,7 +567,7 @@ function AddPurchase() {
                           label="Chọn khu vực"
                           className="text-gray-600 dark:text-gray-300 border border-gray-600"
                         >
-                          {areas.map((area) => (
+                          {areas?.map((area) => (
                             <MenuItem key={area.id} value={area.id}>
                               {area.name}
                             </MenuItem>

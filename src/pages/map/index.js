@@ -1,21 +1,6 @@
-import { Popover } from "bootstrap";
-import Feature from "ol/Feature.js";
-import Map from "ol/Map.js";
-import Overlay from "ol/Overlay.js";
-import View from "ol/View.js";
-import Point from "ol/geom/Point.js";
-import VectorLayer from "ol/layer/Vector.js";
-import VectorSource from "ol/source/Vector.js";
-import Icon from "ol/style/Icon.js";
-import ImageLayer from "ol/layer/Image.js";
-import { ImageStatic } from "ol/source";
-import { getCenter } from "ol/extent";
 import "ol/ol.css";
-import { useEffect, useRef, useState } from "react";
-import { Projection } from "ol/proj";
-import Style from "ol/style/Style";
-import Modify from "ol/interaction/Modify.js";
-import { areaAPI, branchAPI } from "../../api/api";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { areaAPI } from "../../api/api";
 import {
   Box,
   Button,
@@ -26,107 +11,100 @@ import {
   TextField,
 } from "@mui/material";
 import { showSuccessToast } from "../../components/Toast";
+import * as yup from "yup";
+import MapInner from "./MapInner";
+import useMapStore from "../../store/useMapStore";
 
-const imageExtent = [0, 0, 1000, 1000];
-const projection = new Projection({
-  code: "xkcd-image",
-  units: "pixels",
-  extent: imageExtent,
-});
+const Map = React.memo(MapInner);
 
-const map = new Map({
-  view: new View({
-    center: getCenter(imageExtent),
-    zoom: 1,
-    minZoom: 1,
-    maxZoom: 8,
-    projection: projection,
-  }),
-});
-
-const center = map.getView().getCenter();
-
-const baseData = {
-  id: 0,
-  name: "",
-  posX: center[0] + Math.random() * 5,
-  posY: center[1] + Math.random() * 5,
-  capacity: 0,
-  description: "",
-  branchId: 0,
-  isNew: true,
-};
+const modeOptions = [
+  {
+    label: "Readonly",
+    value: 1,
+  },
+  {
+    label: "Create",
+    value: 2,
+  },
+  {
+    label: "Update",
+    value: 3,
+  },
+  {
+    label: "Delete",
+    value: 4,
+  },
+];
 
 function MapLayer() {
-  const mapRef = useRef();
-  const popupRef = useRef();
-  const [areas, setAreas] = useState();
-  const [areaSelected, setAreaSelected] = useState(baseData);
-  const [branchs, setBranchs] = useState();
-  const [branchSelected, setBranchSelected] = useState();
+  const {
+    areas,
+    setAreas,
+    branchs,
+    branchSelected,
+    fetchAllBranch,
+    fetchAreaByBranch,
+    setBranchSelected,
+    areaSelected,
+    setAreaSelected,
+    resetAreaSelected,
+    mode,
+    mapMode,
+    setMode,
+  } = useMapStore();
+  const [errors, setErrors] = useState({});
 
-  const fetchAreaByBranch = async (branchId) => {
-    try {
-      const response = await areaAPI.getByBranch(branchId);
-      const data = response.data?.data;
-      console.log(data);
+  // Change mode readonly, create, update of map
+  const handleChangeMode = (mode) => {
+    setAreas(
+      areas.map((a) => {
+        return {
+          ...a,
+          isModify: mode === mapMode.update ? true : false,
+        };
+      })
+    );
+    setMode(mode);
+    setErrors({});
+  };
 
-      if (data) {
-        setAreas(data);
-      }
-    } catch (error) {
-      console.error("Lỗi khi gọi API khu vực:", error);
+  // create new area on map
+  const handleAddArea = async (newArea) => {
+    const isValidForm = await handleValidateSchema();
+
+    if (isValidForm) {
+      setAreas([...areas, newArea]);
+      resetAreaSelected();
     }
   };
 
-  const fetchAllBranch = async () => {
-    try {
-      const response = await branchAPI.getAll();
-      const data = response.data;
-      if (data) {
-        setBranchs(data);
-        setBranchSelected(data[0]?.id);
-      }
-    } catch (error) {
-      console.error("Lỗi khi gọi API chi nhánh:", error);
+  // update area on map
+  const handleUpdateArea = async () => {
+    const isValidForm = await handleValidateSchema();
+    if (isValidForm) {
+      const newAreas = areas?.map((a) => {
+        if (a?.id === areaSelected?.id) {
+          return areaSelected;
+        }
+
+        return a;
+      });
+
+      setAreas([...newAreas]);
+      resetAreaSelected();
     }
   };
-  // create new area
-  const handleAddArea = () => {
-    const newArea = {
-      id: areas[areas.length - 1].id + 1,
-      name: areaSelected.name,
-      posX: center[0] + Math.random() * 5,
-      posY: center[1] + Math.random() * 5,
-      capacity: areaSelected.capacity,
-      description: areaSelected.description,
-      branchId: branchSelected,
-      isNew: true,
-    };
 
-    setAreas([...areas, newArea]);
-    setAreaSelected(baseData);
-  };
+  // delete area
+  const handleDeleteArea = () => {
+    
+  }
 
-  // update area
-  const handleUpdateArea = () => {
-    const newAreas = areas?.map((a) => {
-      if (a?.id === areaSelected?.id) {
-        return areaSelected;
-      }
-
-      return a;
-    });
-
-    setAreas([...newAreas]);
-    setAreaSelected(baseData);
-  };
-
-  // Submit areas
+  // Submit areas with 2 cases are create and update
   const handleSubmit = async () => {
-    const data = areas?.map((a) => {
+    let data = areas?.map((a) => {
       return {
-        id: a?.isNew ? "" : a?.id,
+        id: a?.id,
         name: a?.name,
         posX: a?.posX,
         posY: a?.posY,
@@ -135,12 +113,16 @@ function MapLayer() {
       };
     });
 
+    if (mode === mapMode.create) {
+      data = data.filter((d) => d.id === "");
+    }
+
     try {
       const response = await areaAPI.createOrUpdate(branchSelected, data);
       const dataResponse = response.data?.data;
 
       if (dataResponse && response.data.code === 200) {
-        setAreas(dataResponse);
+        fetchAreaByBranch(branchSelected);
         showSuccessToast("Thêm khu vực thành công");
       }
     } catch (error) {
@@ -158,247 +140,194 @@ function MapLayer() {
     }
   }, [branchSelected]);
 
-  useEffect(() => {
-    if (areas) {
-      const featerList = areas?.map((a) => {
-        const feater = new Feature({
-          id: a?.id,
-          geometry: new Point([a?.posX, a?.posY]),
-          name: a?.name,
-          capacity: a?.capacity,
-          description: a?.description,
-          isNew: a?.isNew,
-        });
+  // Valdate schema
+  const schema = yup.object({
+    name: yup.string().required("Tên khu vực là bắt buộc"),
+    description: yup.string().required("Mô tả là bắt buộc"),
+    capacity: yup.number().min(1, "Tải trọng là bắt buộc"),
+  });
 
-        const iconStyle = new Style({
-          image: new Icon({
-            anchor: [0.5, 46],
-            anchorXUnits: "fraction",
-            anchorYUnits: "pixels",
-            src: "/images/mapIcon.svg",
-            scale: 0.07,
-            color: a?.isNew ? "#00abed" : "#000",
-          }),
-        });
+  const handleValidateSchema = async () => {
+    try {
+      // check validate with schema
+      const content = {
+        name: areaSelected.name,
+        description: areaSelected.description,
+        capacity: areaSelected.capacity,
+      };
 
-        feater.setStyle(iconStyle);
-
-        return feater;
-      });
-
-      // Set layer and source for map
-      const vectorSource = new VectorSource({
-        features: featerList,
-      });
-
-      const vectorLayer = new VectorLayer({
-        source: vectorSource,
-      });
-
-      const rasterLayer = new ImageLayer({
-        source: new ImageStatic({
-          url: "/images/map.webp",
-          imageExtent: imageExtent,
-          projection: projection,
-        }),
-      });
-      map.setTarget(mapRef.current);
-      map.setLayers([rasterLayer, vectorLayer]);
-
-      // Set popup for map
-      const popup = new Overlay({
-        element: popupRef.current,
-        positioning: "top",
-        stopEvent: false,
-      });
-      map.addOverlay(popup);
-
-      let popover;
-      function disposePopover() {
-        if (popover) {
-          popover.dispose();
-          popover = undefined;
-        }
+      const result = await schema.validate(content, { abortEarly: false });
+      if (result) {
+        setErrors({});
+        return true;
       }
+    } catch (error) {
+      const newErrors = error.inner?.reduce((prev, val, index) => {
+        prev[val.path] = val.message;
+        return prev;
+      }, {});
 
-      // handle selecte area when click on map
-      map.on("click", function (evt) {
-        const feature = map.forEachFeatureAtPixel(
-          evt.pixel,
-          function (feature) {
-            return feature;
-          }
-        );
-
-        if (feature) {
-          const area = areas?.find((a) => {
-            return a.id === feature.get("id");
-          });
-
-          setAreaSelected(area);
-        }
-      });
-
-      // display popup on click
-      map.on("pointermove", function (evt) {
-        const hit = map.hasFeatureAtPixel(evt.pixel);
-        map.getTarget().style.cursor = hit ? "pointer" : "";
-
-        const feature = map.forEachFeatureAtPixel(
-          evt.pixel,
-          function (feature) {
-            return feature;
-          }
-        );
-
-        disposePopover();
-        if (!feature) {
-          return;
-        }
-
-        const content = `
-        <div class="bg-gray-400 text-sm font-mono px-3 py-2 border border-blue-500 rounded-md" >
-          <h3>${feature.get("name")}</h3>
-          <p>Capacity: ${feature.get("capacity")}</p>
-        </div>
-        `;
-
-        popup.setPosition(evt.coordinate);
-        popover = new Popover(popupRef.current, {
-          placement: "top",
-          html: true,
-          content: content,
-          animation: true,
-        });
-        popover.show();
-      });
-
-      // Close the popup when the map is moved
-      map.on("movestart", disposePopover);
-
-      // Move point on the map
-      const modify = new Modify({
-        hitDetection: vectorLayer,
-        source: vectorSource,
-        style: null,
-        condition: (event) => {
-          const feater = map.forEachFeatureAtPixel(event.pixel, (f) => f);
-          return feater?.get("isNew");
-        },
-      });
-      modify.on(["modifystart", "modifyend"], function (evt) {
-        if (evt.type === "modifyend") {
-          const featureSelected = evt.features.getArray()[0];
-
-          // Get new coordinates at the end of the move point
-          const newCoordinates = featureSelected.getGeometry().getCoordinates();
-          console.log(newCoordinates);
-
-          const modifedArea = areas?.map((a) => {
-            if (a.id === featureSelected.values_.id) {
-              a["posX"] = parseFloat(newCoordinates[0]).toFixed(3);
-              a["posY"] = parseFloat(newCoordinates[1]).toFixed(3);
-            }
-
-            return a;
-          });
-
-          setAreas([...modifedArea]);
-        }
-
-        mapRef.current.style.cursor =
-          evt.type === "modifystart" ? "grabbing" : "pointer";
-      });
-      modify.setActive(true);
-
-      // Add and remove feater event
-      const overlaySource = modify.getOverlay().getSource();
-      overlaySource.on(["addfeature", "removefeature"], function (evt) {
-        mapRef.current.style.cursor =
-          evt.type === "addfeature" ? "pointer" : "";
-      });
-
-      map.addInteraction(modify);
+      setErrors(newErrors);
+      return false;
     }
-  }, [areas]);
+  };
+
+  // Hanlde store delete area
+  const handleStoreDelete = useCallback(
+    (area) => {
+      console.log(areas);
+
+      setAreas(
+        areas?.map((a) =>
+          a?.id === area?.id ? { ...a, isDelete: !a.isDelete } : a
+        )
+      );
+    },
+    [areas, setAreas]
+  );
 
   return (
-    <Box display={"flex"} gap={2} paddingTop={2}>
-      <div
-        style={{
-          position: "relative",
-          width: "70%",
-          height: "600px",
-          border: "1px solid",
-        }}
+    <Box>
+      <Box
+        className="pt-5 w-1/2"
+        display={"flex"}
+        alignItems={"center"}
+        gap={2}
       >
-        <div ref={mapRef} style={{ width: "100%", height: "100%" }}></div>
-        <div ref={popupRef} id="popup" style={{ position: "absolute" }}></div>
-      </div>
+        <FormControl fullWidth>
+          <InputLabel id="mapMode">Map mode</InputLabel>
+          <Select
+            labelId="mapMode"
+            value={mode}
+            label="Map mode"
+            size="small"
+            onChange={(e) => handleChangeMode(e.target.value)}
+          >
+            {modeOptions.map((m, i) => {
+              return (
+                <MenuItem key={i} value={m.value}>
+                  {m.label}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </FormControl>
 
-      <Box flex={1} display={"flex"} flexDirection={"column"} gap={2}>
-        <Box display={"flex"} alignItems={"center"} gap={2}>
-          {areaSelected?.id > 0 ? (
-            <Button variant="contained" size="small" onClick={handleUpdateArea}>
-              Update area
-            </Button>
-          ) : (
-            <Button variant="contained" size="small" onClick={handleAddArea}>
-              Add area
-            </Button>
-          )}
+        <FormControl fullWidth>
+          <InputLabel id="branch">Branch</InputLabel>
+          <Select
+            labelId="branch"
+            value={branchSelected || ""}
+            label="Branch"
+            onChange={(e) => {
+              setBranchSelected(e.target.value);
+            }}
+            size="small"
+          >
+            {branchs?.map((b, i) => {
+              return (
+                <MenuItem key={i} value={b?.id}>
+                  {b?.name}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="branch">Branch</InputLabel>
-            <Select
-              labelId="branch"
-              value={branchSelected || ""}
-              label="Branch"
-              onChange={(e) => {
-                setBranchSelected(e.target.value);
-              }}
-            >
-              {branchs?.map((b, i) => {
-                return (
-                  <MenuItem key={i} value={b?.id}>
-                    {b?.name}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-        </Box>
+        {![mapMode.readonly, mapMode.delete].includes(mode) && (
+          <Button variant="contained" color="success" onClick={handleSubmit}>
+            Save
+          </Button>
+        )}
+        {mapMode.delete === mode && (
+          <Button variant="contained" color="error" className="px-8">
+            Delete
+          </Button>
+        )}
+      </Box>
 
-        <Box display={"flex"} flexDirection={"column"} gap={2}>
-          <TextField
-            value={areaSelected?.name || ""}
-            onChange={(e) =>
-              setAreaSelected({ ...areaSelected, name: e.target.value })
-            }
-            fullWidth
-            label="Area name"
-          />
-          <TextField
-            value={areaSelected?.description || ""}
-            onChange={(e) =>
-              setAreaSelected({ ...areaSelected, description: e.target.value })
-            }
-            fullWidth
-            label="Description"
-          />
-          <TextField
-            value={areaSelected?.capacity || ""}
-            onChange={(e) =>
-              setAreaSelected({ ...areaSelected, capacity: e.target.value })
-            }
-            fullWidth
-            label="Capacity"
-          />
-        </Box>
+      <Box display={"flex"} gap={2} paddingTop={2}>
+        <Map handleStoreDelete={handleStoreDelete} />
 
-        <Button variant="contained" color="success" onClick={handleSubmit}>
-          Submit
-        </Button>
+        {![mapMode.readonly, mapMode.delete].includes(mode) && (
+          <div className="w-1/3">
+            <Box flex={1} display={"flex"} flexDirection={"column"} gap={2}>
+              <Box display={"flex"} flexDirection={"column"} gap={2}>
+                <TextField
+                  value={areaSelected?.name || ""}
+                  onChange={(e) =>
+                    setAreaSelected({ ...areaSelected, name: e.target.value })
+                  }
+                  fullWidth
+                  label="Area name"
+                  error={errors?.name || false}
+                  helperText={errors?.name || ""}
+                  FormHelperTextProps={{
+                    style: {
+                      marginLeft: "unset",
+                    },
+                  }}
+                />
+                <TextField
+                  value={areaSelected?.description || ""}
+                  onChange={(e) =>
+                    setAreaSelected({
+                      ...areaSelected,
+                      description: e.target.value,
+                    })
+                  }
+                  fullWidth
+                  label="Description"
+                  error={errors?.description || false}
+                  helperText={errors?.description || ""}
+                  FormHelperTextProps={{
+                    style: {
+                      marginLeft: "unset",
+                    },
+                  }}
+                />
+                <TextField
+                  value={areaSelected?.capacity || ""}
+                  onChange={(e) =>
+                    setAreaSelected({
+                      ...areaSelected,
+                      capacity: e.target.value,
+                    })
+                  }
+                  fullWidth
+                  label="Capacity"
+                  error={errors?.capacity || false}
+                  helperText={errors?.capacity || ""}
+                  FormHelperTextProps={{
+                    style: {
+                      marginLeft: "unset",
+                    },
+                  }}
+                />
+              </Box>
+
+              <Box display={"flex"} alignItems={"center"} gap={2}>
+                {areaSelected?.isModify || mode === mapMode.update ? (
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    onClick={handleUpdateArea}
+                  >
+                    Update to map
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    onClick={handleAddArea}
+                  >
+                    Add to map
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          </div>
+        )}
       </Box>
     </Box>
   );

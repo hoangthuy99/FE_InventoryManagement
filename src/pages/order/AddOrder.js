@@ -3,7 +3,6 @@ import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import SectionTitle from "../../components/Typography/SectionTitle";
 import { Button, Textarea } from "@windmill/react-ui";
 
-
 import {
   FormControl,
   InputLabel,
@@ -74,12 +73,29 @@ function AddOrder() {
       }
     }
     fetchData();
-    fetchAllProducts();
+    fetchProducts()
   }, []);
 
   useEffect(() => {
     fetchOrderDetails();
   }, [page]);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await productAPI.getAll();
+      console.log("API Response:", response.data); // Xem API trả về gì
+      const data = response.data;
+
+      if (data && Array.isArray(data)) {
+        setProducts(data);
+      } else {
+        console.error("Dữ liệu API không đúng định dạng:", response.data);
+        showErrorToast("Lỗi dữ liệu API!");
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+    }
+  };
 
   const fetchOrderDetails = async () => {
     try {
@@ -177,7 +193,7 @@ function AddOrder() {
             </FormControl>
           )}
         />
- <Controller
+        <Controller
           name="userId"
           control={control}
           render={({ field }) => (
@@ -379,7 +395,6 @@ function AddOrder() {
                       }}
                     />
                   </TableCell>
-                
 
                   <TableCell className="border border-gray-600 ">
                     <TextField

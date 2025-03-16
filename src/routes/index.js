@@ -118,7 +118,6 @@ const routes = [
    
   },
   {
-    path: "/buttons",
     path: "/purchase/all-purchase",
     component: AllPurchase,
   },
