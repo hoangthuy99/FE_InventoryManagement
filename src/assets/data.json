@@ -17,6 +17,45 @@
       "name": "Đã hủy"
     }
   ],
+  "orStatus": [
+    {
+      "key": 1,
+      "name": "Chờ duyệt"
+    },
+    {
+      "key": 2,
+      "name": "Đã duyệt"
+    },
+    {
+      "key": 3,
+      "name": "Từ chối"
+    },
+    {
+      "key": 4,
+      "name": "Đang chọn hàng"
+    },
+    {
+      "key": 5,
+      "name": "Đang đóng gói"
+    },
+    {
+      "key": 6,
+      "name": "Đang chờ giao"
+    },
+    {
+      "key": 7,
+      "name": "Đã giao"
+    },
+    {
+      "key": 8,
+      "name": "Đã hủy"
+    },
+    {
+      "key": 9,
+      "name": "Đã hoà thành"
+    }
+
+  ],
   "productUnit": [
     {
       "key": 1,

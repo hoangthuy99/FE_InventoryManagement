@@ -92,26 +92,15 @@ export const productAPI = {
 };
 
 export const orderAPI = {
-  getAll: (customerId) => api.get(`/order/all/${customerId}`),
+  getAll: () => api.get("/order/"),
+  getAllPaginated: (page, limit) => api.get(`/order/?page=${page}&limit=${limit}`),
   getById: (id) => api.get(`/order/${id}`),
-  addOrder: (customer, totalPrice) =>
-    api.post("/order/add", { customer, totalPrice }),
   saveOrder: (orderData) => api.post("/order/save", orderData),
-  searchByOrderCode: (keyword) =>
-    api.get("/order/search", { params: { keyword } }),
-  getByIdAndStatus: (customerId, orderId, status) =>
-    api.get(`/order/${customerId}/${orderId}/${status}`),
+  searchByOrderCode: (keyword) => api.get("/order/search", { params: { keyword } }),
+  getByIdAndStatus: (customerId, orderId, status) => api.get(`/order/${customerId}/${orderId}/${status}`)
 };
 
-export const orderDetailAPI = {
-  getAll: () => api.get("/"),
-  getAllPaginated: (page, limit) => api.get(`?page=${page}&limit=${limit}`),
-  getById: (id) => api.get(`/${id}`),
-  getByOrderCode: (orderCode) => api.get(`/order/${orderCode}`),
-  create: (data) => api.post("/", data),
-  update: (id, data) => api.put(`/${id}`, data),
-  delete: (id) => api.delete(`/${id}`),
-};
+
 
 // API Invoice
 export const invoiceAPI = {
