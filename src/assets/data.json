@@ -1,0 +1,96 @@
+{
+  "gdrStatus": [
+    {
+      "key": 1,
+      "name": "Chờ xác nhận"
+    },
+    {
+      "key": 2,
+      "name": "Đã xác nhận"
+    },
+    {
+      "key": 3,
+      "name": "Đã từ chối"
+    },
+    {
+      "key": 4,
+      "name": "Đã hủy"
+    }
+  ],
+  "orStatus": [
+    {
+      "key": 1,
+      "name": "Chờ duyệt"
+    },
+    {
+      "key": 2,
+      "name": "Đã duyệt"
+    },
+    {
+      "key": 3,
+      "name": "Từ chối"
+    },
+    {
+      "key": 4,
+      "name": "Đang chọn hàng"
+    },
+    {
+      "key": 5,
+      "name": "Đang đóng gói"
+    },
+    {
+      "key": 6,
+      "name": "Đang chờ giao"
+    },
+    {
+      "key": 7,
+      "name": "Đã giao"
+    },
+    {
+      "key": 8,
+      "name": "Đã hủy"
+    },
+    {
+      "key": 9,
+      "name": "Đã hoà thành"
+    }
+  ],
+  "productUnit": [
+    {
+      "key": 1,
+      "name": "Gói"
+    },
+    {
+      "key": 2,
+      "name": "Chiếc"
+    },
+    {
+      "key": 3,
+      "name": "Thùng"
+    },
+    {
+      "key": 4,
+      "name": "KG"
+    }
+  ],
+  "stockStatus": [
+    {
+      "key": 1,
+      "name": "Hàng mới"
+    },
+    {
+      "key": 2,
+      "name": "Hàng lỗi"
+    }
+  ],
+  "activeStatus": [
+    {
+      "key": 1,
+      "name": "Hoạt động"
+    },
+    {
+      "key": 0,
+      "name": "Ngừng hoạt động"
+    }
+  ]
+}
