@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { showSuccessToast, showErrorToast } from "../../components/Toast";
+
 import {
   Table,
   TableHeader,
@@ -7,7 +9,6 @@ import {
   TableRow,
   TableFooter,
   TableContainer,
-  Badge,
   Button,
   Pagination,
 } from "@windmill/react-ui";
@@ -15,54 +16,47 @@ import { EditIcon, TrashIcon } from "../../icons";
 import PageTitle from "../../components/Typography/PageTitle";
 import { orderAPI } from "../../api/api";
 
-const orderStatusMap = {
-  PENDING: "Chờ xác nhận",
-  CONFIRMED: "Đã xác nhận",
-  READY_FOR_EXPORT: "Sẵn sàng xuất kho",
-  EXPORTED: "Đã xuất kho",
-  COMPLETED: "Hoàn thành",
-  CANCELLED: "Đã hủy",
-};
-
 const AllOrder = () => {
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const resultsPerPage = 10;
+  const [limit] = useState(5);
+  const [totalOrders, setTotalOrders] = useState(1);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await orderAPI.getAllPaginated(page, resultsPerPage);
-        console.log("API Response:", response.data);
+        const response = await orderAPI.getAllPaginated(page - 1, limit);
+        console.log("Dữ liệu API trả về:", response.data);
 
-        if (Array.isArray(response.data)) {
+        if (response.data && Array.isArray(response.data)) {
           setOrders(response.data);
-          setTotalPages(1);
-        } else if (response.data && response.data.orders) {
-          // Trường hợp dữ liệu có đúng format
-          setOrders(response.data.orders);
-          setTotalPages(response.data.totalPages);
+          setTotalOrders(response.data.totalElements);
         } else {
-          console.error("Dữ liệu API không đúng định dạng:", response.data);
+          setOrders([]);
+          setTotalOrders(0);
         }
       } catch (error) {
         console.error("Lỗi khi gọi API:", error);
+        setOrders([]);
+        setTotalOrders(0);
       }
     };
 
     fetchOrders();
-  }, [page]);
+  }, [page, limit]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn huỷ đơn hàng này?")) return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa đơn hàng?")) return;
 
     try {
       await orderAPI.delete(id);
-      setOrders((prevOrders) => prevOrders.filter((order) => order.id !== id));
-      alert("Đơn hàng đã được xóa thành công!");
+      showSuccessToast("Đơn hàng đã được xóa thành công!");
+
+      setOrders((prevOrders) =>
+        prevOrders.filter((orders) => orders.id !== id)
+      );
     } catch (error) {
-      alert("Xóa đơn hàng thất bại!");
+      showErrorToast("Xóa đơn hàng thất bại!");
     }
   };
 
@@ -77,7 +71,7 @@ const AllOrder = () => {
               <TableCell>Khách hàng</TableCell>
               <TableCell>Chi nhánh</TableCell>
               <TableCell>Tổng tiền</TableCell>
-              <TableCell >Địa chỉ giao hàng</TableCell>
+              <TableCell>Địa chỉ giao hàng</TableCell>
               <TableCell>Trạng thái</TableCell>
               <TableCell>Ngày xuất hàng kế hoạch</TableCell>
               <TableCell>Ngày xuất hàng thực tế</TableCell>
@@ -85,36 +79,35 @@ const AllOrder = () => {
             </tr>
           </TableHeader>
           <TableBody>
-            {orders.map((order, index) => (
-              <TableRow key={index}>
+            {orders.map((order) => (
+              <TableRow key={order.id}>
                 <TableCell>{order.orderCode}</TableCell>
                 <TableCell>{order.customer?.name || "N/A"}</TableCell>
                 <TableCell>{order.branch?.name || "N/A"}</TableCell>
-                <TableCell>{order.totalPrice?.toLocaleString()} VNĐ</TableCell>
-                <TableCell  className="text-center break-words whitespace-normal">
-  {order.deliveryAddress}
-</TableCell>
-
                 <TableCell>
-                  <Badge
-                    type={
-                      order.status === "COMPLETED"
-                        ? "success"
-                        : order.status === "CANCELLED"
-                        ? "danger"
-                        : "warning"
-                    }
-                  >
-                    {orderStatusMap[order.status] || "Không xác định"}
-                  </Badge>
+                  {order.totalPrice
+                    ? order.totalPrice.toLocaleString() + " VNĐ"
+                    : "0 VNĐ"}
                 </TableCell>
-                <TableCell>{order.plannedExportDate}</TableCell>
-                <TableCell>{order.actualExportDate}</TableCell>
+                <TableCell className="text-center break-words whitespace-normal">
+                  {order.deliveryAddress || "N/A"}
+                </TableCell>
+                <TableCell>{order.status || "N/A"}</TableCell>
+                <TableCell>{order.plannedExportDate || "N/A"}</TableCell>
+                <TableCell>{order.actualExportDate || "N/A"}</TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-4">
-                    <Button layout="link" size="icon" aria-label="Edit">
+                    <Button
+                      layout="link"
+                      size="icon"
+                      aria-label="Edit"
+                      onClick={() =>
+                        (window.location.href = `http://localhost:3000/app/order/edit-order/${order.id}`)
+                      }
+                    >
                       <EditIcon className="w-5 h-5" aria-hidden="true" />
                     </Button>
+
                     <Button
                       layout="link"
                       size="icon"
@@ -131,8 +124,8 @@ const AllOrder = () => {
         </Table>
         <TableFooter>
           <Pagination
-            totalResults={totalPages * resultsPerPage}
-            resultsPerPage={resultsPerPage}
+            totalResults={totalOrders}
+            resultsPerPage={limit}
             onChange={(p) => setPage(p)}
             label="Table navigation"
           />

@@ -42,12 +42,10 @@ const rasterLayer = new ImageLayer({
   }),
 });
 
-function MapInner({ handleStoreDelete }) {
+function MapPicker({ handleStoreDelete }) {
   const mapRef = useRef();
   const popupRef = useRef();
   const { areas, setAreas, setAreaSelected, mode, mapMode } = useMapStore();
-
-  console.log(areas);
 
   useEffect(() => {
     if (areas) {
@@ -234,4 +232,4 @@ function MapInner({ handleStoreDelete }) {
   );
 }
 
-export default MapInner;
+export default MapPicker;

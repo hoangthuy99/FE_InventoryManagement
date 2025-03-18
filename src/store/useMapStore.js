@@ -2,14 +2,14 @@ import { create } from "zustand";
 import { areaAPI, branchAPI } from "../api/api";
 
 var baseData = {
-  id: 0,
+  id: "",
   name: "",
   posX: 500 + Math.random() * 5,
   posY: 500 + Math.random() * 5,
   capacity: 0,
   description: "",
   branchId: 0,
-  isNew: true,
+  isModify: true,
 };
 
 const mapMode = {

@@ -19,6 +19,7 @@ import { EditIcon, TrashIcon } from "../../icons";
 import { productAPI } from "../../api/api";
 import { Box, Container, Input } from "@mui/material";
 import ImportExcel from "../../components/ImportExcel";
+import Invoice from "../../components/Invoice";
 
 const AllProduct = () => {
   const [products, setProducts] = useState([]);
@@ -97,6 +98,7 @@ const AllProduct = () => {
       showErrorToast(error);
     }
   };
+
 
   return (
     <>

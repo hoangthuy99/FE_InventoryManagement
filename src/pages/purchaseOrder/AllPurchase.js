@@ -10,41 +10,38 @@ import {
   TableRow,
   TableFooter,
   TableContainer,
-  Badge,
-  Avatar,
   Button,
   Pagination,
 } from "@windmill/react-ui";
-import { ButtonsIcon, EditIcon, SearchIcon, TrashIcon } from "../../icons";
-import { productAPI, purchaseOrderAPI } from "../../api/api";
+import { EditIcon, TrashIcon } from "../../icons";
+import { purchaseOrderAPI } from "../../api/api";
 import data from "../../assets/data.json";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-import {
-  Autocomplete,
-  Box,
-  IconButton,
-  InputBase,
-  Paper,
-  TextField,
-} from "@mui/material";
+import FilterBox from "../../components/FilterBox";
 
 const AllPurchase = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
-  const [page, setPage] = useState(0); // Backend sử dụng page = 0
-  const [limit] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(1);
+  const [searchModel, setSearchModel] = useState({
+    searchKey: "",
+    status: 0,
+    sortBy: "id",
+    sortType: "desc",
+    pageNum: -1,
+    pageSize: 5,
+  });
   const { gdrStatus } = data;
   const history = useHistory();
 
-  const fetchAllPurchase = async () => {
+  const searchPurchase = async () => {
     try {
-      const response = await purchaseOrderAPI.search();
+      const response = await purchaseOrderAPI.search(searchModel);
       console.log("API Response:", response.data); // Xem API trả về gì
       const data = response.data?.data;
 
-      if (data && Array.isArray(data)) {
-        setPurchaseOrders(data);
-        setTotalPages(data.totalPages || 1);
+      if (data.content && Array.isArray(data.content)) {
+        setPurchaseOrders(data.content);
+        setTotalElements(data.totalElements);
       } else {
         console.error("Dữ liệu API không đúng định dạng:", response.data);
         showErrorToast("Lỗi dữ liệu API!");
@@ -55,8 +52,8 @@ const AllPurchase = () => {
   };
 
   useEffect(() => {
-    fetchAllPurchase();
-  }, [page]);
+    searchPurchase();
+  }, [searchModel.status, searchModel.pageNum]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa đơn nhập kho này?")) return;
@@ -66,32 +63,38 @@ const AllPurchase = () => {
       if (res.data?.code === 200)
         showSuccessToast("Đơn nhập kho đã được xóa thành công!");
 
-      fetchAllPurchase();
+      searchPurchase();
     } catch (error) {
       showErrorToast("Xóa đơn nhập kho thất bại!");
     }
   };
 
+  const handleChangeStatus = (status) => {
+    console.log(status);
+
+    setSearchModel({ ...searchModel, status });
+  };
+
+  const handleChangeSearchKey = (searchText) => {
+    setSearchModel({ ...searchModel, searchKey: searchText });
+  };
+
+  const handlePaginate = (page) => {
+    setSearchModel({ ...searchModel, pageNum: page - 1 });
+  };
+
   return (
     <>
       <PageTitle>Danh sách đơn nhập kho</PageTitle>
-      <Box className="mb-4" display={"flex"} alignItems={"center"} gap={5}>
-        <Box display={"flex"} alignItems={"center"} gap={1}>
-          <TextField size="small" placeholder="search text..." />
-          <Button>
-            <SearchIcon width={20} height={20} fontSize={14} />
-          </Button>
-        </Box>
-
-        <Box display={"flex"} alignItems={"center"} gap={1}>
-          <Autocomplete
-            size="small"
-            disablePortal
-            sx={{ width: 300 }}
-            renderInput={(params) => <TextField {...params} label="Movie" />}
-          />
-        </Box>
-      </Box>
+      <FilterBox
+        options={gdrStatus.map((s) => {
+          return { id: s.key, title: s.name };
+        })}
+        optionSelected={searchModel.status}
+        handleChangeOption={handleChangeStatus}
+        handleSearch={searchPurchase}
+        handleChangeSearchKey={handleChangeSearchKey}
+      />
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>
@@ -153,10 +156,10 @@ const AllPurchase = () => {
         </Table>
         <TableFooter>
           <Pagination
-            totalResults={totalPages * limit}
-            resultsPerPage={limit}
-            onChange={(p) => setPage(p - 1)}
-            label="Table navigation"
+            totalResults={totalElements}
+            resultsPerPage={searchModel.pageSize || 0}
+            onChange={handlePaginate}
+            label="Page navigation"
           />
         </TableFooter>
       </TableContainer>

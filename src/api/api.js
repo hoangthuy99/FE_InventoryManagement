@@ -65,6 +65,7 @@ export const categoryAPI = {
         "Content-Type": "multipart/form-data",
       },
     }),
+  searchCategories: (data) => api.post("/category/searchCategories", data),
 };
 
 //  API Product
@@ -93,14 +94,15 @@ export const productAPI = {
 
 export const orderAPI = {
   getAll: () => api.get("/order/"),
-  getAllPaginated: (page, limit) => api.get(`/order/?page=${page}&limit=${limit}`),
+  getAllPaginated: (page, limit) =>
+    api.get(`/order/?page=${page}&limit=${limit}`),
   getById: (id) => api.get(`/order/${id}`),
   saveOrder: (orderData) => api.post("/order/save", orderData),
-  searchByOrderCode: (keyword) => api.get("/order/search", { params: { keyword } }),
-  getByIdAndStatus: (customerId, orderId, status) => api.get(`/order/${customerId}/${orderId}/${status}`)
+  searchByOrderCode: (keyword) =>
+    api.get("/order/search", { params: { keyword } }),
+  getByIdAndStatus: (customerId, orderId, status) =>
+    api.get(`/order/${customerId}/${orderId}/${status}`),
 };
-
-
 
 // API Invoice
 export const invoiceAPI = {
@@ -158,7 +160,7 @@ export const supplierAPI = {
 export const purchaseOrderAPI = {
   addNew: (data) => api.post("/purchase-order/createPurchaseOrder", data),
   update: (data) => api.put("/purchase-order/updatePurchaseOrder", data),
-  search: (data) => api.post("/purchase-order/searchPurchaseOrder"),
+  search: (data) => api.post("/purchase-order/searchPurchaseOrder", data),
   deleteById: (id) => api.delete(`/purchase-order/deleteById/${id}`),
   getById: (id) => api.get(`/purchase-order/getById/${id}`),
 };
@@ -169,6 +171,7 @@ export const areaAPI = {
   getByBranch: (branchId) => api.get(`/area/getByBranch/${branchId}`),
   createOrUpdate: (branchId, data) =>
     api.post(`/area/createOrUpdate/${branchId}`, data),
+  deleteMulti: (id) => api.delete(`/area/delete?ids=${id}`),
 };
 
 export default api;

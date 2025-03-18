@@ -1,34 +1,34 @@
-
 import { lazy } from "react";
 import AddPurchase from "../pages/purchaseOrder/AddPurchase";
 import AllPurchase from "../pages/purchaseOrder/AllPurchase";
 import MapLayer from "../pages/map";
+import EditOrder from "../pages/order/EditOrder";
 
-// Import các component 
-const Dashboard = lazy(() => import('../pages/Dashboard'))
-const AllCategory = lazy(() => import('../pages/category/AllCategory'))
-const AddCategory = lazy(() => import('../pages/category/AddCategory'))
-const EditCategory = lazy(() => import('../pages/category/Editcategory'))
-const AddProductInfo = lazy(() => import('../pages/product/AddProductInfo'))
-const AllProduct = lazy(() => import('../pages/product/AllProduct'))
-const EditProduct = lazy(() => import('../pages/product/EditProduct'))
-const AddOrder = lazy(() => import('../pages/order/AddOrder'))
-const AllOrders = lazy(() => import('../pages/order/AllOrders'))
-const AddCustomer = lazy(() => import('../pages/customer/AddCustomer'))
-const AllCustomer = lazy(() => import('../pages/customer/AllCustomer'))
-const EditCustomer = lazy(() => import('../pages/customer/EditCustomer'))
-const AddBranch = lazy(() => import('../pages/branch/AddBranch'))
-const AllBranch = lazy(() => import('../pages/branch/AllBranch')) 
-const EditBranch = lazy(() => import('../pages/branch/EditBranch'))
-const AddSupplier = lazy(() => import('../pages/supplier/AddSupplier'))
-const AllSupplier = lazy(() => import('../pages/supplier/AllSupplier'))
-const EditSupplier = lazy(() => import('../pages/supplier/EditSupplier'))
-const Buttons = lazy(() => import('../pages/Buttons'))
-const Modals = lazy(() => import('../pages/Modals'))
-const Tables = lazy(() => import('../pages/Tables'))
-const Page404 = lazy(() => import('../pages/404'))
-const Cards = lazy(() => import('../pages/Cards'))
-const Forms = lazy(() => import('../pages/Forms'))
+// Import các component
+const Dashboard = lazy(() => import("../pages/Dashboard"));
+const AllCategory = lazy(() => import("../pages/category/AllCategory"));
+const AddCategory = lazy(() => import("../pages/category/AddCategory"));
+const EditCategory = lazy(() => import("../pages/category/Editcategory"));
+const AddProductInfo = lazy(() => import("../pages/product/AddProductInfo"));
+const AllProduct = lazy(() => import("../pages/product/AllProduct"));
+const EditProduct = lazy(() => import("../pages/product/EditProduct"));
+const AddOrder = lazy(() => import("../pages/order/AddOrder"));
+const AllOrders = lazy(() => import("../pages/order/AllOrders"));
+const AddCustomer = lazy(() => import("../pages/customer/AddCustomer"));
+const AllCustomer = lazy(() => import("../pages/customer/AllCustomer"));
+const EditCustomer = lazy(() => import("../pages/customer/EditCustomer"));
+const AddBranch = lazy(() => import("../pages/branch/AddBranch"));
+const AllBranch = lazy(() => import("../pages/branch/AllBranch"));
+const EditBranch = lazy(() => import("../pages/branch/EditBranch"));
+const AddSupplier = lazy(() => import("../pages/supplier/AddSupplier"));
+const AllSupplier = lazy(() => import("../pages/supplier/AllSupplier"));
+const EditSupplier = lazy(() => import("../pages/supplier/EditSupplier"));
+const Buttons = lazy(() => import("../pages/Buttons"));
+const Modals = lazy(() => import("../pages/Modals"));
+const Tables = lazy(() => import("../pages/Tables"));
+const Page404 = lazy(() => import("../pages/404"));
+const Cards = lazy(() => import("../pages/Cards"));
+const Forms = lazy(() => import("../pages/Forms"));
 
 const routes = [
   {
@@ -65,10 +65,14 @@ const routes = [
     path: "/order/all-orders",
     component: AllOrders,
   },
-  
+
   {
     path: "/order/add-order",
     component: AddOrder,
+  },
+  {
+    path: "/order/edit-order/:id",
+    component: EditOrder,
   },
 
   {
@@ -94,7 +98,6 @@ const routes = [
   {
     path: "/branch/edit-branch/:id",
     component: EditBranch,
-   
   },
   {
     path: "/purchase/add-purchase/:id?",
@@ -105,17 +108,16 @@ const routes = [
     component: AllPurchase,
   },
   {
-    path: '/supplier/add-supplier',
+    path: "/supplier/add-supplier",
     component: AddSupplier,
   },
-   {
-    path: '/supplier/all-supplier',
+  {
+    path: "/supplier/all-supplier",
     component: AllSupplier,
   },
   {
-    path: '/supplier/edit-supplier/:id',
+    path: "/supplier/edit-supplier/:id",
     component: EditSupplier,
-   
   },
   {
     path: "/purchase/all-purchase",
@@ -160,4 +162,3 @@ const routes = [
 ];
 
 export default routes;
-

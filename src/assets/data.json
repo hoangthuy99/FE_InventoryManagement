@@ -54,7 +54,6 @@
       "key": 9,
       "name": "Đã hoà thành"
     }
-
   ],
   "productUnit": [
     {
@@ -82,6 +81,16 @@
     {
       "key": 2,
       "name": "Hàng lỗi"
+    }
+  ],
+  "activeStatus": [
+    {
+      "key": 1,
+      "name": "Hoạt động"
+    },
+    {
+      "key": 0,
+      "name": "Ngừng hoạt động"
     }
   ]
 }

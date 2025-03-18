@@ -12,10 +12,10 @@ import {
 } from "@mui/material";
 import { showSuccessToast } from "../../components/Toast";
 import * as yup from "yup";
-import MapInner from "./MapInner";
+import MapPicker from "./MapPicker";
 import useMapStore from "../../store/useMapStore";
 
-const Map = React.memo(MapInner);
+const Map = React.memo(MapPicker);
 
 const modeOptions = [
   {
@@ -69,11 +69,11 @@ function MapLayer() {
   };
 
   // create new area on map
-  const handleAddArea = async (newArea) => {
+  const handleAddArea = async () => {
     const isValidForm = await handleValidateSchema();
 
     if (isValidForm) {
-      setAreas([...areas, newArea]);
+      setAreas([...areas, areaSelected]);
       resetAreaSelected();
     }
   };
@@ -96,9 +96,24 @@ function MapLayer() {
   };
 
   // delete area
-  const handleDeleteArea = () => {
-    
-  }
+  const handleDeleteArea = async () => {
+    const payload = areas
+      .filter((a) => a.isDelete)
+      .map((a) => a.id)
+      .join(",");
+
+    try {
+      const response = await areaAPI.deleteMulti(payload);
+      const isDeleted = response.data?.data;
+
+      if (isDeleted && response.data.code === 200) {
+        fetchAreaByBranch(branchSelected);
+        showSuccessToast("Xóa khu vực thành công");
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API khu vực:", error);
+    }
+  };
 
   // Submit areas with 2 cases are create and update
   const handleSubmit = async () => {
@@ -173,18 +188,14 @@ function MapLayer() {
   };
 
   // Hanlde store delete area
-  const handleStoreDelete = useCallback(
-    (area) => {
-      console.log(areas);
+  const handleStoreDelete = (area) => {
+    const updateAreas = areas?.map((a) =>
+      a?.id === area?.id ? { ...a, isDelete: !area.isDelete } : a
+    );
+    console.log(updateAreas);
 
-      setAreas(
-        areas?.map((a) =>
-          a?.id === area?.id ? { ...a, isDelete: !a.isDelete } : a
-        )
-      );
-    },
-    [areas, setAreas]
-  );
+    setAreas(updateAreas);
+  };
 
   return (
     <Box>
@@ -240,7 +251,12 @@ function MapLayer() {
           </Button>
         )}
         {mapMode.delete === mode && (
-          <Button variant="contained" color="error" className="px-8">
+          <Button
+            variant="contained"
+            color="error"
+            className="px-8"
+            onClick={handleDeleteArea}
+          >
             Delete
           </Button>
         )}
@@ -307,7 +323,7 @@ function MapLayer() {
               </Box>
 
               <Box display={"flex"} alignItems={"center"} gap={2}>
-                {areaSelected?.isModify || mode === mapMode.update ? (
+                {mode === mapMode.update && (
                   <Button
                     variant="contained"
                     size="medium"
@@ -315,7 +331,9 @@ function MapLayer() {
                   >
                     Update to map
                   </Button>
-                ) : (
+                )}
+
+                {mode === mapMode.create && (
                   <Button
                     variant="contained"
                     size="medium"
