@@ -8,12 +8,16 @@ import Main from "../containers/Main";
 import ThemedSuspense from "../components/ThemedSuspense";
 import { SidebarContext } from "../context/SidebarContext";
 import { SessionProvider } from "next-auth/react";
+import { useAuth } from "../context/AuthContext";
 
 const Page404 = lazy(() => import("../pages/404"));
+const Page401 = lazy(() => import("../pages/401"));
 
 function Layout({ Component, pageProps }) {
   const { isSidebarOpen, closeSidebar } = useContext(SidebarContext);
   let location = useLocation();
+  const { getTokenInfo } = useAuth();
+  const tokenInfo = getTokenInfo();
 
   useEffect(
     () => {
@@ -37,7 +41,8 @@ function Layout({ Component, pageProps }) {
           <Suspense fallback={<ThemedSuspense />}>
             <Switch>
               {routes.map((route, i) => {
-                return route.component ? (
+                return route.component &&
+                  route.roles?.includes(...tokenInfo.roles) ? (
                   <Route
                     key={i}
                     exact={true}
@@ -46,7 +51,9 @@ function Layout({ Component, pageProps }) {
                       <route.component {...pageProps} {...props} />
                     )}
                   />
-                ) : null;
+                ) : (
+                  <Route component={Page401} />
+                );
               })}
               <Redirect exact from="/app" to="/app/dashboard" />
               <Route component={Page404} />

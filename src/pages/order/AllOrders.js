@@ -15,12 +15,17 @@ import {
 import { EditIcon, TrashIcon } from "../../icons";
 import PageTitle from "../../components/Typography/PageTitle";
 import { orderAPI } from "../../api/api";
+import { Checkbox } from "@mui/material";
+import Invoice from "../../components/Invoice";
+import data from "../../assets/data.json";
 
 const AllOrder = () => {
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
   const [limit] = useState(5);
   const [totalOrders, setTotalOrders] = useState(1);
+  const [invoiceData, setInvoiceData] = useState();
+  const { productUnit } = data;
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -60,13 +65,45 @@ const AllOrder = () => {
     }
   };
 
+  const handlSelectCheckbox = (value, isCheck) => {
+    console.log(value);
+
+    if (isCheck) {
+      console.log(orders);
+
+      const data = orders.find((o) => {
+        return o.id === Number(value);
+      });
+
+      setInvoiceData({
+        branchName: data.branch.name,
+        title: "Hóa đơn xuất hàng",
+        invoiceNumber: data.orderCode,
+        date: new Date(Date.now()).toLocaleDateString("vi-VN"),
+        customerName: data.customer.name,
+        customerAddress: data.customer.address,
+        items: data.orderDetails.map((o) => {
+          return {
+            name: o.productInfo.name,
+            unit: productUnit.find((u) => u.key === o.productUnit)?.name,
+            quantity: o.productInfo.qty,
+            price: o.productInfo.price,
+          };
+        }),
+        total: data.totalPrice,
+      });
+    }
+  };
+
   return (
     <>
       <PageTitle>Danh sách đơn hàng</PageTitle>
+      <Invoice type={"gdi"} invoiceData={invoiceData} />
       <TableContainer className="mt-4 mb-8">
         <Table>
           <TableHeader>
             <tr>
+              <TableCell></TableCell>
               <TableCell>Mã đơn hàng</TableCell>
               <TableCell>Khách hàng</TableCell>
               <TableCell>Chi nhánh</TableCell>
@@ -81,6 +118,14 @@ const AllOrder = () => {
           <TableBody>
             {orders.map((order) => (
               <TableRow key={order.id}>
+                <TableCell>
+                  <Checkbox
+                    onChange={(e) =>
+                      handlSelectCheckbox(e.target.value, e.target.checked)
+                    }
+                    value={order.id}
+                  />
+                </TableCell>
                 <TableCell>{order.orderCode}</TableCell>
                 <TableCell>{order.customer?.name || "N/A"}</TableCell>
                 <TableCell>{order.branch?.name || "N/A"}</TableCell>

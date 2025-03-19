@@ -16,8 +16,12 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
+  const getTokenInfo = () => {
+    return JSON.parse(token);
+  };
+
   return (
-    <AuthContext.Provider value={{ token, login, logout }}>
+    <AuthContext.Provider value={{ token, login, logout, getTokenInfo }}>
       {children}
     </AuthContext.Provider>
   );
