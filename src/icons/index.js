@@ -30,6 +30,10 @@ import { ReactComponent as ProductIcon } from './product.svg'
 import { ReactComponent as OrderIcon} from './order.svg'
 import { ReactComponent as CustomerIcon} from './customer.svg'
 import { ReactComponent as BranchIcon} from './branch.svg'
+import { ReactComponent as ReceiptIcon} from './receipt.svg'
+import { ReactComponent as IssueIcon} from './issue.svg'
+import { ReactComponent as MapIcon} from './map.svg'
+import { ReactComponent as SupplierIcon} from './supplier.svg'
 
 export {
   ButtonsIcon,
@@ -63,5 +67,9 @@ export {
   ProductIcon,
   OrderIcon,
   CustomerIcon,
-  BranchIcon
+  BranchIcon,
+  ReceiptIcon,
+  IssueIcon,
+  MapIcon,
+SupplierIcon
 }

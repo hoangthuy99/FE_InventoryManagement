@@ -28,7 +28,7 @@ const routes = [
     roles: [roleTags.role_amdin],
   },
   {
-    icon: "ProductIcon",
+    icon: "ReceiptIcon",
     name: "Good Receipt",
     routes: [
       { path: "/app/purchase/all-purchase", name: "All Purchase" },
@@ -37,7 +37,7 @@ const routes = [
     roles: [roleTags.role_amdin, roleTags.role_staff],
   },
   {
-    icon: "ProductIcon",
+    icon: "IssueIcon",
     name: "Good Issue",
     routes: [
       { path: "/app/order/all-orders", name: "All Orders" },
@@ -64,13 +64,13 @@ const routes = [
     roles: [roleTags.role_amdin],
   },
   {
-    icon: "BranchIcon",
+    icon: "MapIcon",
     name: "Map",
     routes: [{ path: "/app/map", name: "Area-Map" }],
     roles: [roleTags.role_amdin],
   },
   {
-    icon: "CustomerIcon",
+    icon: "SupplierIcon",
     name: "Supplier",
     routes: [
       { path: "/app/supplier/all-supplier", name: "All Supplier" },
@@ -78,31 +78,7 @@ const routes = [
     ],
     roles: [roleTags.role_amdin],
   },
-  {
-    path: "/app/buttons",
-    icon: "ButtonsIcon",
-    name: "Buttons",
-  },
-  {
-    path: "/app/modals",
-    icon: "ModalsIcon",
-    name: "Modals",
-  },
-  {
-    path: "/app/tables",
-    icon: "TablesIcon",
-    name: "Menu",
-  },
-  {
-    path: "/app/cards",
-    icon: "TablesIcon",
-    name: "Cards",
-  },
-  {
-    path: "/app/forms",
-    icon: "TablesIcon",
-    name: "Forms",
-  },
+  
   {
     icon: "PagesIcon",
     name: "Account",
