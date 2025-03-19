@@ -21,7 +21,7 @@ const routes = [
     ],
   },
   {
-    icon: "ProductIcon",
+    icon: "ReceiptIcon",
     name: "Good Receipt",
     routes: [
       { path: "/app/purchase/all-purchase", name: "All Purchase" },
@@ -29,7 +29,7 @@ const routes = [
     ],
   },
   {
-    icon: "ProductIcon",
+    icon: "IssueIcon",
     name: "Good Issue",
     routes: [
       { path: "/app/order/all-orders", name: "All Orders" },
@@ -53,43 +53,19 @@ const routes = [
     ],
   },
   {
-    icon: "BranchIcon",
+    icon: "MapIcon",
     name: "Map",
     routes: [{ path: "/app/map", name: "Area-Map" }],
   },
   {
-    icon: "CustomerIcon",
+    icon: "SupplierIcon",
     name: "Supplier",
     routes: [
       { path: "/app/supplier/all-supplier", name: "All Supplier" },
       { path: "/app/supplier/add-supplier", name: "Add Supplier" },
     ],
   },
-  {
-    path: "/app/buttons",
-    icon: "ButtonsIcon",
-    name: "Buttons",
-  },
-  {
-    path: "/app/modals",
-    icon: "ModalsIcon",
-    name: "Modals",
-  },
-  {
-    path: "/app/tables",
-    icon: "TablesIcon",
-    name: "Menu",
-  },
-  {
-    path: "/app/cards",
-    icon: "TablesIcon",
-    name: "Cards",
-  },
-  {
-    path: "/app/forms",
-    icon: "TablesIcon",
-    name: "Forms",
-  },
+  
   {
     icon: "PagesIcon",
     name: "Account",
