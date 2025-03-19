@@ -19,7 +19,7 @@ function FilterBox({
   handleChangeSearchKey
 }) {
   return (
-    <Box className="mb-4" display={"flex"} alignItems={"center"} gap={5}>
+    <Box className="" display={"flex"} alignItems={"center"} gap={5}>
       <Box display={"flex"} alignItems={"center"} gap={1}>
         <TextField
           value={searchKey}

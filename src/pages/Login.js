@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 
 import ImageLight from "../assets/img/login-office.jpeg";
 import ImageDark from "../assets/img/login-office-dark.jpeg";
-import { GithubIcon, FacebookIcon } from "../icons";
 import { Label, Input, Button, HelperText } from "@windmill/react-ui";
 import { authAPI } from "../api/api";
 import { GoogleLogin } from "@react-oauth/google";
@@ -33,6 +32,7 @@ function Login() {
         const token = JSON.stringify({
           accessToken: response.credential,
           expiration: Date.now() + exp,
+          ...res.data?.data,
         });
         login(token);
         history.push("/app/dashboard");
@@ -69,7 +69,7 @@ function Login() {
         const accessToken = res.data?.data?.accessToken;
         const { exp } = jwtDecode(accessToken); // Kiểm tra lỗi
         const tokenStorage = JSON.stringify({
-          accessToken,
+          ...res.data?.data,
           expiration: Date.now() + exp,
         });
         login(tokenStorage);
