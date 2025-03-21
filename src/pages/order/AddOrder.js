@@ -23,8 +23,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useHistory } from "react-router-dom";
 import * as yup from "yup";
 import dayjs from "dayjs";
+import Grid from "@mui/material/Grid";
 import {
   orderAPI,
   customerAPI,
@@ -37,6 +39,7 @@ import data from "../../assets/data.json";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import { useParams } from "react-router-dom";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -49,7 +52,9 @@ function AddOrder() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const userRole = localStorage.getItem("userRole");
-  const id = null;
+  const history = useHistory();
+
+  const { id } = useParams();
   const schema = yup.object().shape({
     customerId: yup.number().required("Khách hàng là bắt buộc"),
     branchId: yup.number().required("Chi nhánh là bắt buộc"),
@@ -83,25 +88,44 @@ function AddOrder() {
     handleSubmit,
     formState: { errors },
     setValue,
+    getValue,
+    reset,
   } = useForm({
     resolver: yupResolver(schema),
   });
   const [location, setLocation] = useState([10.7769, 106.7009]);
-  const [markerPos, setMarkerPos] = useState([10.7769, 106.7009]); 
-
+  const [markerPos, setMarkerPos] = useState([10.7769, 106.7009]);
 
   // Cập nhật địa chỉ khi chọn trên bản đồ
   const handleSelectAddress = (address, coords) => {
     setValue("deliveryAddress", address);
     setLocation(coords);
   };
+  const handleChangeProduct = (index, field, value) => {
+    const updatedItems = [...orderDetails];
+    updatedItems[index][field] = value;
 
+    if (field === "productId") {
+      const selectedProduct = products.find((p) => p.id === value);
+      if (selectedProduct) {
+        updatedItems[index].unitPrice = selectedProduct.price;
+      }
+    }
+    // Kiểm tra nếu đã có `total` từ OrderDetail, ưu tiên sử dụng thay vì tính lại
+    if (field === "qty" || field === "productId") {
+      updatedItems[index].totalPrice =
+        updatedItems[index].total ??
+        (updatedItems[index].unitPrice || 0) * (updatedItems[index].qty || 0);
+    }
+
+    setOrderDetails(updatedItems);
+  };
   // Xử lý khi nhập địa chỉ vào input
   const handleInputChange = async (e, field) => {
     const address = e.target.value;
     field.onChange(address);
     setValue("deliveryAddress", address);
-  
+
     if (address.length > 3) {
       try {
         const res = await fetch(
@@ -109,7 +133,7 @@ function AddOrder() {
         );
         const data = await res.json();
         console.log("Kết quả từ API:", data); // Kiểm tra phản hồi từ API
-  
+
         if (data.length > 0) {
           const { lat, lon } = data[0];
           const newLocation = [parseFloat(lat), parseFloat(lon)];
@@ -122,8 +146,60 @@ function AddOrder() {
       }
     }
   };
-  
-  
+  const calculateTotalPrice = () => {
+    return orderDetails.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+  };
+
+  const handleAddItem = (item) => {
+    setOrderDetails([...orderDetails, item]);
+  };
+
+  const handleRemoveItem = (index) => {
+    setOrderDetails((items) => items.filter((_, i) => i !== index));
+  };
+
+  const fetchOrderById = async () => {
+    try {
+      const response = await orderAPI.getById(id);
+
+      if (!response || !response.data) {
+        console.error("API không trả về dữ liệu hợp lệ", response);
+        return;
+      }
+
+      const data = response.data;
+
+      if (!data) {
+        console.error("Dữ liệu đơn hàng không tồn tại", data);
+        return;
+      }
+
+      const getStatusKey = (status) => {
+        const found = orStatus.find(
+          (item) => item.name === status || item.key === status
+        );
+        return found ? found.key : "";
+      };
+
+      reset({
+        customerId: data.customer?.id || "",
+        branchId: data.branch?.id || "",
+        plannedExportDate: dayjs(data.plannedExportDate) || dayjs(),
+        actualExportDate: dayjs(data.actualExportDate) || dayjs(),
+        status: getStatusKey(data.status),
+        note: data.note || "",
+        orderDetailsRequest:
+          data.orderDetails?.map((item) => ({
+            productId: item.productId,
+            qty: item.qty,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+          })) || [],
+      });
+    } catch (error) {
+      console.error("Lỗi khi gọi API đơn hàng:", error);
+    }
+  };
 
   useEffect(() => {
     if (typeof setValue === "function") {
@@ -154,39 +230,10 @@ function AddOrder() {
     if (location) {
       setMarkerPos(location);
     }
-  }, [orderDetails,location]);
-
-  const handleChangeProduct = (index, field, value) => {
-    const updatedItems = [...orderDetails];
-    updatedItems[index][field] = value;
-
-    if (field === "productId") {
-      const selectedProduct = products.find((p) => p.id === value);
-      if (selectedProduct) {
-        updatedItems[index].unitPrice = selectedProduct.price;
-      }
+    if (id) {
+      fetchOrderById();
     }
-    // Kiểm tra nếu đã có `total` từ OrderDetail, ưu tiên sử dụng thay vì tính lại
-    if (field === "qty" || field === "productId") {
-      updatedItems[index].totalPrice =
-        updatedItems[index].total ??
-        (updatedItems[index].unitPrice || 0) * (updatedItems[index].qty || 0);
-    }
-
-    setOrderDetails(updatedItems);
-  };
-
-  const calculateTotalPrice = () => {
-    return orderDetails.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
-  };
-
-  const handleAddItem = (item) => {
-    setOrderDetails([...orderDetails, item]);
-  };
-
-  const handleRemoveItem = (index) => {
-    setOrderDetails((items) => items.filter((_, i) => i !== index));
-  };
+  }, [orderDetails, location, id]);
 
   const submitForm = async (data) => {
     console.log(data);
@@ -194,6 +241,7 @@ function AddOrder() {
     try {
       const totalPrice = calculateTotalPrice();
       const dataRequest = {
+        id: id || "",
         customerId: data.customerId,
         branchId: data.branchId,
         plannedExportDate: data.plannedExportDate,
@@ -214,8 +262,9 @@ function AddOrder() {
       console.log(res);
       console.log("Địa chỉ:", data.deliveryAddress);
       console.log("Tọa độ:", location);
-      if (res.status === 200) {
-        showSuccessToast("Tạo đơn hàng thành công");
+      if (res.data?.code === 200) {
+        history.push("/app/order/all-order");
+        showSuccessToast(`${id ? "Update" : "Create"} order successfully`);
       } else {
         showErrorToast("Lỗi khi tạo đơn hàng");
       }
@@ -228,109 +277,144 @@ function AddOrder() {
     <>
       <SectionTitle>Thêm Đơn Hàng</SectionTitle>
       <form onSubmit={handleSubmit(submitForm)}>
-        <Controller
-          name="customerId"
-          control={control}
-          render={({ field }) => (
-            <FormControl fullWidth margin="normal" error={!!errors.customerId}>
-              <InputLabel>Khách hàng</InputLabel>
-              <Select
-                value={field.value || ""}
-                onChange={field.onChange}
-                label="Khách hàng"
-              >
-                {customers.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FormHelperText>{errors.customerId?.message}</FormHelperText>
-            </FormControl>
-          )}
-        />
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Controller
+              name="customerId"
+              control={control}
+              render={({ field }) => (
+                <FormControl
+                  fullWidth
+                  margin="normal"
+                  error={!!errors.customerId}
+                >
+                  <InputLabel>Khách hàng</InputLabel>
+                  <Select
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    label="Khách hàng"
+                  >
+                    {customers.map((c) => (
+                      <MenuItem key={c.id} value={c.id}>
+                        {c.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>{errors.customerId?.message}</FormHelperText>
+                </FormControl>
+              )}
+            />
+          </Grid>
 
-        <Controller
-          name="branchId"
-          control={control}
-          render={({ field }) => (
-            <FormControl fullWidth margin="normal" error={!!errors.branchId}>
-              <InputLabel>Chi nhánh</InputLabel>
-              <Select
-                value={field.value || ""}
-                onChange={field.onChange}
-                label="Chi nhánh"
-              >
-                {branches.map((b) => (
-                  <MenuItem key={b.id} value={b.id}>
-                    {b.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FormHelperText>{errors.branchId?.message}</FormHelperText>
-            </FormControl>
-          )}
-        />
-        <Controller
-          name="plannedExportDate"
-          control={control}
-          render={({ field }) => (
-            <FormControl
-              fullWidth
-              margin="normal"
-              error={!!errors.plannedExportDate}
-            >
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DateTimePicker
-                  label="Ngày xuất kho kế hoạch"
-                  value={field.value ? dayjs(field.value) : null}
-                  onChange={field.onChange}
-                  timezone="America/New_York"
-                />
-              </LocalizationProvider>
-              <FormHelperText>
-                {errors.plannedExportDate?.message}
-              </FormHelperText>
-            </FormControl>
-          )}
-        />
+          <Grid item xs={6}>
+            <Controller
+              name="branchId"
+              control={control}
+              render={({ field }) => (
+                <FormControl
+                  fullWidth
+                  margin="normal"
+                  error={!!errors.branchId}
+                >
+                  <InputLabel>Chi nhánh</InputLabel>
+                  <Select
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    label="Chi nhánh"
+                  >
+                    {branches.map((b) => (
+                      <MenuItem key={b.id} value={b.id}>
+                        {b.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>{errors.branchId?.message}</FormHelperText>
+                </FormControl>
+              )}
+            />
+          </Grid>
+        </Grid>
 
-        <Controller
-          name="actualExportDate"
-          control={control}
-          render={({ field }) => (
-            <FormControl fullWidth margin="normal">
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DateTimePicker
-                  label="Ngày xuất kho thực tế"
-                  value={field.value ? dayjs(field.value) : null}
-                  onChange={field.onChange}
-                />
-              </LocalizationProvider>
-            </FormControl>
-          )}
-        />
-        <Controller
-          name="status"
-          control={control}
-          render={({ field }) => (
-            <FormControl fullWidth margin="normal" error={!!errors.status}>
-              <InputLabel>Trạng thái</InputLabel>
-              <Select
-                value={field.value || ""}
-                onChange={field.onChange}
-                label="Chọn trạng thái"
-              >
-                {orStatus.map((status) => (
-                  <MenuItem key={status.key} value={status.key}>
-                    {status.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FormHelperText>{errors.status?.message}</FormHelperText>
-            </FormControl>
-          )}
-        />
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Controller
+              name="plannedExportDate"
+              control={control}
+              render={({ field }) => (
+                <FormControl
+                  fullWidth
+                  margin="normal"
+                  error={!!errors.plannedExportDate}
+                >
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DateTimePicker
+                      label="Ngày xuất kho kế hoạch"
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={field.onChange}
+                      timezone="America/New_York"
+                    />
+                  </LocalizationProvider>
+                  <FormHelperText>
+                    {errors.plannedExportDate?.message}
+                  </FormHelperText>
+                </FormControl>
+              )}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <Controller
+              name="actualExportDate"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth margin="normal">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DateTimePicker
+                      label="Ngày xuất kho thực tế"
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={field.onChange}
+                    />
+                  </LocalizationProvider>
+                </FormControl>
+              )}
+            />
+          </Grid>
+        </Grid>
+
+        {id && (
+          <>
+            <span className="w-1/2">Trạng thái</span>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field, fieldState }) => (
+                <FormControl fullWidth error={!!fieldState.error}>
+                  <InputLabel>Chọn trạng thái</InputLabel>
+                  <Select
+                    value={field.value ?? ""}
+                    onChange={(event) =>
+                      field.onChange(Number(event.target.value))
+                    }
+                    label="Chọn trạng thái"
+                    className="text-white border border-gray-600"
+                  >
+                    {Array.isArray(orStatus) &&
+                      orStatus.map((status) => (
+                        <MenuItem key={status.key} value={status.key}>
+                          {status.name}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                  {fieldState.error && (
+                    <FormHelperText className="text-red-600">
+                      {fieldState.error.message}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              )}
+            />
+          </>
+        )}
+
         <Controller
           name="deliveryAddress"
           control={control}

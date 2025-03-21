@@ -15,35 +15,82 @@ import {
 import { EditIcon, TrashIcon } from "../../icons";
 import PageTitle from "../../components/Typography/PageTitle";
 import { orderAPI } from "../../api/api";
+import data from "../../assets/data.json";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import FilterBox from "../../components/FilterBox";
 
 const AllOrder = () => {
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(1);
   const [limit] = useState(5);
   const [totalOrders, setTotalOrders] = useState(1);
-
-  useEffect(() => {
-    const fetchOrders = async () => {
+  const history = useHistory();
+  const { orStatus } = data;
+    const [searchModel, setSearchModel] = useState({
+      searchKey: "",
+      status: 0,
+      sortBy: "id",
+      sortType: "desc",
+      pageNum: -1,
+      pageSize: 5,
+    });
+    const handleChangeStatus = (status) => {
+      console.log(status);
+  
+      setSearchModel({ ...searchModel, status });
+    };
+  
+    const handleChangeSearchKey = (searchText) => {
+      setSearchModel({ ...searchModel, searchKey: searchText });
+    };
+  
+    const handlePaginate = (page) => {
+      setSearchModel({ ...searchModel, pageNum: page - 1 });
+    };
+    
+    const searchOrder = async () => {
       try {
-        const response = await orderAPI.getAllPaginated(page - 1, limit);
-        console.log("Dữ liệu API trả về:", response.data);
-
-        if (response.data && Array.isArray(response.data)) {
-          setOrders(response.data);
-          setTotalOrders(response.data.totalElements);
+        const response = await orderAPI.search(searchModel);
+        console.log("API Response:", response.data); 
+    
+        const data = response.data?.data;
+    
+        if (data.content && Array.isArray(data.content)) {
+          setOrders(data.content);
+          setTotalOrders(data.totalElements); 
         } else {
-          setOrders([]);
-          setTotalOrders(0);
+          console.error("Dữ liệu API không đúng định dạng:", response.data);
+          showErrorToast("Lỗi dữ liệu API!");
         }
       } catch (error) {
         console.error("Lỗi khi gọi API:", error);
-        setOrders([]);
-        setTotalOrders(0);
       }
     };
+    
 
-    fetchOrders();
-  }, [page, limit]);
+    useEffect(() => {
+      const fetchOrders = async () => {
+        try {
+          const response = await orderAPI.getAllPaginated(page - 1, limit);
+          console.log("Dữ liệu API trả về:", response.data);
+    
+          if (response.data && response.data) {
+            setOrders(response.data);
+            setTotalOrders(response.data.totalElements);
+          } else {
+            setOrders([]);
+            setTotalOrders(0);
+          }
+        } catch (error) {
+          console.error("Lỗi khi gọi API:", error);
+          setOrders([]);
+          setTotalOrders(0);
+        }
+      };
+    
+      fetchOrders();
+    }, [page, limit]);
+    
 
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa đơn hàng?")) return;
@@ -63,6 +110,16 @@ const AllOrder = () => {
   return (
     <>
       <PageTitle>Danh sách đơn hàng</PageTitle>
+      <FilterBox
+  options={orStatus.map((s) => {
+    return { id: s.key, title: s.name };
+  })}
+  optionSelected={searchModel.status}
+  handleChangeOption={handleChangeStatus}
+  handleSearch={searchOrder} 
+  handleChangeSearchKey={handleChangeSearchKey}
+/>
+
       <TableContainer className="mt-4 mb-8">
         <Table>
           <TableHeader>
@@ -92,31 +149,35 @@ const AllOrder = () => {
                 <TableCell className="text-center break-words whitespace-normal">
                   {order.deliveryAddress || "N/A"}
                 </TableCell>
-                <TableCell>{order.status || "N/A"}</TableCell>
+                <TableCell>
+                  {orStatus?.find((s) => s.key === order?.status)?.name}
+                </TableCell>
                 <TableCell>{order.plannedExportDate || "N/A"}</TableCell>
                 <TableCell>{order.actualExportDate || "N/A"}</TableCell>
                 <TableCell>
-                  <div className="flex items-center space-x-4">
-                    <Button
-                      layout="link"
-                      size="icon"
-                      aria-label="Edit"
-                      onClick={() =>
-                        (window.location.href = `http://localhost:3000/app/order/edit-order/${order.id}`)
-                      }
-                    >
-                      <EditIcon className="w-5 h-5" aria-hidden="true" />
-                    </Button>
+                  <TableCell>
+                    <div className="flex items-center space-x-4">
+                      <Button
+                        layout="link"
+                        size="icon"
+                        aria-label="Edit"
+                        onClick={() =>
+                          history.push(`/app/order/add-order/${order.id}`)
+                        }
+                      >
+                        <EditIcon className="w-5 h-5" aria-hidden="true" />
+                      </Button>
 
-                    <Button
-                      layout="link"
-                      size="icon"
-                      aria-label="Delete"
-                      onClick={() => handleDelete(order.id)}
-                    >
-                      <TrashIcon className="w-5 h-5" aria-hidden="true" />
-                    </Button>
-                  </div>
+                      <Button
+                        layout="link"
+                        size="icon"
+                        aria-label="Delete"
+                        onClick={() => handleDelete(order.id)}
+                      >
+                        <TrashIcon className="w-5 h-5" aria-hidden="true" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableCell>
               </TableRow>
             ))}

@@ -2,7 +2,6 @@ import { lazy } from "react";
 import AddPurchase from "../pages/purchaseOrder/AddPurchase";
 import AllPurchase from "../pages/purchaseOrder/AllPurchase";
 import MapLayer from "../pages/map";
-import EditOrder from "../pages/order/EditOrder";
 
 // Import các component
 const Dashboard = lazy(() => import("../pages/Dashboard"));
@@ -67,13 +66,10 @@ const routes = [
   },
 
   {
-    path: "/order/add-order",
+    path: "/order/add-order/:id?",
     component: AddOrder,
   },
-  {
-    path: "/order/edit-order/:id",
-    component: EditOrder,
-  },
+ 
 
   {
     path: "/customer/add-customer",
@@ -131,30 +127,7 @@ const routes = [
     path: "/map",
     component: MapLayer,
   },
-  {
-    path: "/history",
-    component: History,
-  },
-  {
-    path: "/buttons",
-    component: Buttons,
-  },
-  {
-    path: "/modals",
-    component: Modals,
-  },
-  {
-    path: "/tables",
-    component: Tables,
-  },
-  {
-    path: "/cards",
-    component: Cards,
-  },
-  {
-    path: "/forms",
-    component: Forms,
-  },
+  
   {
     path: "*",
     component: Page404,
