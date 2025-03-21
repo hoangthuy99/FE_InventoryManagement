@@ -77,7 +77,7 @@ const routes = [
   },
 
   {
-    path: "/order/add-order",
+    path: "/order/add-order/:id?",
     component: AddOrder,
     roles: [roleTags.role_amdin, roleTags.role_staff],
   },
@@ -86,7 +86,6 @@ const routes = [
     component: EditOrder,
     roles: [roleTags.role_amdin, roleTags.role_staff],
   },
-
   {
     path: "/customer/add-customer",
     component: AddCustomer,
@@ -147,30 +146,7 @@ const routes = [
     component: MapLayer,
     roles: [roleTags.role_amdin],
   },
-  {
-    path: "/history",
-    component: History,
-  },
-  {
-    path: "/buttons",
-    component: Buttons,
-  },
-  {
-    path: "/modals",
-    component: Modals,
-  },
-  {
-    path: "/tables",
-    component: Tables,
-  },
-  {
-    path: "/cards",
-    component: Cards,
-  },
-  {
-    path: "/forms",
-    component: Forms,
-  },
+  
   {
     path: "*",
     component: Page404,

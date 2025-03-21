@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import PageTitle from "../../components/Typography/PageTitle";
 import SectionTitle from "../../components/Typography/SectionTitle";
-import { Input, Label, Textarea, Button, HelperText } from "@windmill/react-ui";
+import {  Textarea, Button, HelperText } from "@windmill/react-ui";
 import {
   productAPI,
-  categoryAPI,
   supplierAPI,
   branchAPI,
   purchaseOrderAPI,
@@ -211,7 +210,7 @@ function AddPurchase() {
     <>
       <SectionTitle>Thông tin nhập kho</SectionTitle>
       <form onSubmit={handleSubmit(submitForm)} className="p-4">
-        <div className="px-4 py-3 mb-8  rounded-lg shadow-md dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+        <div className="px-4 py-3 mb-8 text-gray-600 rounded-lg shadow-md dark:bg-gray-800 dark:text-gray-300">
           <Grid container spacing={2}>
             <Grid item xs={6} className="flex items-center gap-10">
               <span className="w-1/2 ">Nhà cung cấp </span>
@@ -228,7 +227,7 @@ function AddPurchase() {
                       value={renderProps.field.value || ""}
                       onChange={renderProps.field.onChange}
                       label="Chọn nhà cung cấp"
-                      className=" border border-gray-600 text-gray-600 dark:text-gray-300text-gray-600 dark:text-gray-300"
+                      className="text-gray-600 border border-gray-600 dark:text-gray-300text-gray-600 dark:text-gray-300"
                     >
                       <MenuItem selected value="">
                         -- Chọn nhà cung cấp --
@@ -263,7 +262,7 @@ function AddPurchase() {
                       value={renderProps.field.value || ""}
                       onChange={renderProps.field.onChange}
                       label="Nhà cung cấp"
-                      className="text-gray-600 dark:text-gray-300 border border-gray-600"
+                      className="text-gray-600 border border-gray-600 dark:text-gray-300"
                     >
                       {branchs.map((branch) => (
                         <MenuItem key={branch.id} value={branch.id}>
@@ -392,31 +391,31 @@ function AddPurchase() {
                     </Button>
                   </TableCell>
                   <TableCell
-                    className=" text-gray-600 dark:text-gray-300"
+                    className="text-gray-600 dark:text-gray-300"
                     width="15%"
                   >
                     Sản phẩm
                   </TableCell>
                   <TableCell
-                    className=" text-gray-600 dark:text-gray-300"
+                    className="text-gray-600 dark:text-gray-300"
                     width="15%"
                   >
                     Đơn vị
                   </TableCell>
                   <TableCell
-                    className=" text-gray-600 dark:text-gray-300"
+                    className="text-gray-600 dark:text-gray-300"
                     width="15%"
                   >
                     Loại tồn kho
                   </TableCell>
-                  <TableCell className=" text-gray-600 dark:text-gray-300">
+                  <TableCell className="text-gray-600 dark:text-gray-300">
                     Số lượng kế hoạch
                   </TableCell>
-                  <TableCell className=" text-gray-600 dark:text-gray-300">
+                  <TableCell className="text-gray-600 dark:text-gray-300">
                     Số lượng
                   </TableCell>
                   <TableCell
-                    className=" text-gray-600 dark:text-gray-300"
+                    className="text-gray-600 dark:text-gray-300"
                     width="15%"
                   >
                     Khu vực kế hoạch
@@ -438,7 +437,7 @@ function AddPurchase() {
                     </TableCell>
                     <TableCell>
                       <FormControl fullWidth>
-                        <InputLabel className=" text-gray-600 dark:text-gray-300">
+                        <InputLabel className="text-gray-600 dark:text-gray-300">
                           Chọn product
                         </InputLabel>
                         <Select
@@ -451,7 +450,7 @@ function AddPurchase() {
                             )
                           }
                           label="Chọn product"
-                          className="text-gray-600 dark:text-gray-300 border border-gray-600"
+                          className="text-gray-600 border border-gray-600 dark:text-gray-300"
                         >
                           {products.map((product) => (
                             <MenuItem key={product.id} value={product.id}>
@@ -476,7 +475,7 @@ function AddPurchase() {
                             )
                           }
                           label="Chọn đơn vị"
-                          className="text-gray-600 dark:text-gray-300 border border-gray-600"
+                          className="text-gray-600 border border-gray-600 dark:text-gray-300"
                         >
                           {productUnit.map((unit) => (
                             <MenuItem key={unit.key} value={unit.key}>
@@ -501,7 +500,7 @@ function AddPurchase() {
                             )
                           }
                           label="Chọn loại tồn kho"
-                          className="text-gray-600 dark:text-gray-300 border border-gray-600"
+                          className="text-gray-600 border border-gray-600 dark:text-gray-300"
                         >
                           {stockStatus.map((status) => (
                             <MenuItem key={status.key} value={status.key}>
@@ -517,7 +516,7 @@ function AddPurchase() {
                         type="number"
                         size="small"
                         defaultValue={0}
-                        className="text-gray-600 dark:text-gray-300 border border-gray-600"
+                        className="text-gray-600 border border-gray-600 dark:text-gray-300"
                         value={item.quantityPlan}
                         onChange={(e) =>
                           handleChangeProduct(
@@ -564,7 +563,7 @@ function AddPurchase() {
                             handleChangeProduct(index, "areaId", e.target.value)
                           }
                           label="Chọn khu vực"
-                          className="text-gray-600 dark:text-gray-300 border border-gray-600"
+                          className="text-gray-600 border border-gray-600 dark:text-gray-300"
                         >
                           {areas?.map((area) => (
                             <MenuItem key={area.id} value={area.id}>
@@ -581,7 +580,7 @@ function AddPurchase() {
           </TableContainer>
         </div>
 
-        <Button type="submit" disabled={loading} className="mt-4 w-1/6">
+        <Button type="submit" disabled={loading} className="w-1/6 mt-4">
           {loading ? "Đang xử lý..." : id ? "Lưu thay đổi" : "Thêm mới"}
         </Button>
       </form>
