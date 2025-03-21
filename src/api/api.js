@@ -174,4 +174,11 @@ export const areaAPI = {
   deleteMulti: (id) => api.delete(`/area/delete?ids=${id}`),
 };
 
+// API Dashboard
+export const dashboardAPI = {
+  getTotalBussiness : () => api.get("/statistic/getTotalBussiness"),
+  getTotalOrderStatus : () => api.get("/statistic/getTotalOrderStatus")
+}
+
+
 export default api;

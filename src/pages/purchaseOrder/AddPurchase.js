@@ -38,7 +38,6 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import data from "../../assets/data.json";
 import { useHistory } from "react-router-dom";
 import { useParams } from "react-router-dom/cjs/react-router-dom";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 
 function AddPurchase() {
   const [products, setProducts] = useState([]);
@@ -130,7 +129,9 @@ function AddPurchase() {
     fetchAllSuppliers();
     fetchAllBranchs();
     fetchAllAreas();
-    fetchOrderById();
+    if(id){
+      fetchOrderById();
+    }
   }, []);
 
   const handleChangeProduct = (index, field, value) => {

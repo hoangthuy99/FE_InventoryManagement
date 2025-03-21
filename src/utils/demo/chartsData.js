@@ -1,7 +1,7 @@
 export const doughnutLegends = [
-  { title: 'Shirts', color: 'bg-blue-500' },
-  { title: 'Shoes', color: 'bg-teal-600' },
-  { title: 'Bags', color: 'bg-purple-600' },
+  { title: 'Pending', color: 'bg-blue-500' },
+  { title: 'Cancel', color: 'bg-teal-600' },
+  { title: 'Done', color: 'bg-purple-600' },
 ]
 
 export const lineLegends = [
