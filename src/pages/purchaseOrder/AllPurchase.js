@@ -18,20 +18,23 @@ import { purchaseOrderAPI } from "../../api/api";
 import data from "../../assets/data.json";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import FilterBox from "../../components/FilterBox";
+import Invoice from "../../components/Invoice";
+import { Box, Checkbox } from "@mui/material";
 
 const AllPurchase = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [totalElements, setTotalElements] = useState(1);
   const [searchModel, setSearchModel] = useState({
     searchKey: "",
-    status: 0,
+    status: -1,
     sortBy: "id",
     sortType: "desc",
-    pageNum: -1,
+    pageNum: 0,
     pageSize: 5,
   });
-  const { gdrStatus } = data;
+  const { gdrStatus, productUnit } = data;
   const history = useHistory();
+  const [invoiceData, setInvoiceData] = useState();
 
   const searchPurchase = async () => {
     try {
@@ -83,22 +86,62 @@ const AllPurchase = () => {
     setSearchModel({ ...searchModel, pageNum: page - 1 });
   };
 
+  const handlSelectCheckbox = (value, isCheck) => {
+    console.log(value);
+
+    if (isCheck) {
+      console.log(purchaseOrders);
+
+      const data = purchaseOrders.find((o) => {
+        return o.id === Number(value);
+      });
+
+      setInvoiceData({
+        branchName: data.branch.name,
+        title: "Hóa đơn nhập hàng",
+        invoiceNumber: data.code,
+        date: new Date(Date.now()).toLocaleDateString("vi-VN"),
+        supplierName: data.supplier.name,
+        supplierAddress: data.supplier.address,
+        items: data.purchaseOrderItems.map((o) => {
+          return {
+            name: o.product.name,
+            unit: productUnit.find((u) => u.key === o.itemUnit).name,
+            quantity: o.product.qty,
+            price: o.product.price,
+          };
+        }),
+        total: data.totalAmount,
+      });
+    }
+  };
+
   return (
     <>
       <PageTitle>Danh sách đơn nhập kho</PageTitle>
-      <FilterBox
-        options={gdrStatus.map((s) => {
-          return { id: s.key, title: s.name };
-        })}
-        optionSelected={searchModel.status}
-        handleChangeOption={handleChangeStatus}
-        handleSearch={searchPurchase}
-        handleChangeSearchKey={handleChangeSearchKey}
-      />
+      <Box
+        marginBottom={3}
+        display={"flex"}
+        alignItems={"center"}
+        justifyContent={"space-between"}
+      >
+        <FilterBox
+          options={gdrStatus.map((s) => {
+            return { id: s.key, title: s.name };
+          })}
+          optionSelected={searchModel.status}
+          handleChangeOption={handleChangeStatus}
+          handleSearch={searchPurchase}
+          handleChangeSearchKey={handleChangeSearchKey}
+        />
+        <Invoice type={"gdr"} invoiceData={invoiceData} />
+      </Box>
+
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>
             <tr>
+              <TableCell></TableCell>
               <TableCell>STT</TableCell>
               <TableCell>Mã Code</TableCell>
               <TableCell>Nhà cung cấp</TableCell>
@@ -114,6 +157,14 @@ const AllPurchase = () => {
           <TableBody>
             {purchaseOrders?.map((order, index) => (
               <TableRow key={order?.id}>
+                <TableCell>
+                  <Checkbox
+                    onChange={(e) =>
+                      handlSelectCheckbox(e.target.value, e.target.checked)
+                    }
+                    value={order.id}
+                  />
+                </TableCell>
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{order?.code}</TableCell>
                 <TableCell>{order?.supplier.name}</TableCell>

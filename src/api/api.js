@@ -147,7 +147,7 @@ export const authAPI = {
 
 // API Supplier
 export const supplierAPI = {
-  getAll: () => api.get("/supplier/getAll"),
+  getAll: () => api.get("/supplier/getAllSuppliers"),
   getById: (id) => api.get(`/supplier/getSupplier/${id}`),
   getAllPaginated: (page, limit) =>
     api.get(`/supplier/getAll?page=${page}&limit=${limit}`),

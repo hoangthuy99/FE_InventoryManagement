@@ -92,5 +92,9 @@
       "key": 0,
       "name": "Ngừng hoạt động"
     }
-  ]
+  ],
+  "roleTags": {
+    "role_amdin": "ROLE_ADMIN",
+    "role_staff": "ROLE_STAFF"
+  }
 }

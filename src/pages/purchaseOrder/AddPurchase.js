@@ -85,8 +85,6 @@ function AddPurchase() {
       const response = await purchaseOrderAPI.getById(id);
       const data = response.data?.data;
 
-      console.log(data);
-
       if (data) {
         reset({
           supplierId: data?.supplier.id || "",
@@ -342,7 +340,7 @@ function AddPurchase() {
                         value={renderProps.field.value || ""}
                         onChange={renderProps.field.onChange}
                         label="Chọn trạng thái"
-                        className="text-white border border-gray-600"
+                        className=" border border-gray-600 text-gray-600 dark:text-gray-300text-gray-600 dark:text-gray-300"
                       >
                         {gdrStatus.map((status) => (
                           <MenuItem key={status.key} value={status.key}>
