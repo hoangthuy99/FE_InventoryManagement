@@ -20,7 +20,6 @@ import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import FilterBox from "../../components/FilterBox";
 import { Checkbox } from "@mui/material";
 import Invoice from "../../components/Invoice";
-import data from "../../assets/data.json";
 
 const AllOrder = () => {
   const [orders, setOrders] = useState([]);
@@ -29,43 +28,44 @@ const AllOrder = () => {
   const [totalOrders, setTotalOrders] = useState(1);
   const history = useHistory();
   const { orStatus } = data;
-    const [searchModel, setSearchModel] = useState({
-      searchKey: "",
-      status: 0,
-      sortBy: "id",
-      sortType: "desc",
-      pageNum: -1,
-      pageSize: 5,
-    });
-    const handleChangeStatus = (status) => {
-      console.log(status);
-  
-      setSearchModel({ ...searchModel, status });
-    };
-  
-    const handleChangeSearchKey = (searchText) => {
-      setSearchModel({ ...searchModel, searchKey: searchText });
-    };
-  
-    const handlePaginate = (page) => {
-      setSearchModel({ ...searchModel, pageNum: page - 1 });
-    };
-    
-    const searchOrder = async () => {
+  const [searchModel, setSearchModel] = useState({
+    searchKey: "",
+    status: 0,
+    sortBy: "id",
+    sortType: "desc",
+    pageNum: -1,
+    pageSize: 5,
+  });
   const [invoiceData, setInvoiceData] = useState();
   const { productUnit } = data;
+
+  const handleChangeStatus = (status) => {
+    console.log(status);
+
+    setSearchModel({ ...searchModel, status });
+  };
+
+  const handleChangeSearchKey = (searchText) => {
+    setSearchModel({ ...searchModel, searchKey: searchText });
+  };
+
+  const handlePaginate = (page) => {
+    setSearchModel({ ...searchModel, pageNum: page - 1 });
+  };
+
+  const searchOrder = async () => {};
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const response = await orderAPI.search(searchModel);
-        console.log("API Response:", response.data); 
-    
+        console.log("API Response:", response.data);
+
         const data = response.data?.data;
-    
+
         if (data.content && Array.isArray(data.content)) {
           setOrders(data.content);
-          setTotalOrders(data.totalElements); 
+          setTotalOrders(data.totalElements);
         } else {
           console.error("Dữ liệu API không đúng định dạng:", response.data);
           showErrorToast("Lỗi dữ liệu API!");
@@ -74,31 +74,30 @@ const AllOrder = () => {
         console.error("Lỗi khi gọi API:", error);
       }
     };
-    
+  });
 
-    useEffect(() => {
-      const fetchOrders = async () => {
-        try {
-          const response = await orderAPI.getAllPaginated(page - 1, limit);
-          console.log("Dữ liệu API trả về:", response.data);
-    
-          if (response.data && response.data) {
-            setOrders(response.data);
-            setTotalOrders(response.data.totalElements);
-          } else {
-            setOrders([]);
-            setTotalOrders(0);
-          }
-        } catch (error) {
-          console.error("Lỗi khi gọi API:", error);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await orderAPI.getAllPaginated(page - 1, limit);
+        console.log("Dữ liệu API trả về:", response.data);
+
+        if (response.data && response.data) {
+          setOrders(response.data);
+          setTotalOrders(response.data.totalElements);
+        } else {
           setOrders([]);
           setTotalOrders(0);
         }
-      };
-    
-      fetchOrders();
-    }, [page, limit]);
-    
+      } catch (error) {
+        console.error("Lỗi khi gọi API:", error);
+        setOrders([]);
+        setTotalOrders(0);
+      }
+    };
+
+    fetchOrders();
+  }, [page, limit]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa đơn hàng?")) return;
@@ -149,14 +148,14 @@ const AllOrder = () => {
     <>
       <PageTitle>Danh sách đơn hàng</PageTitle>
       <FilterBox
-  options={orStatus.map((s) => {
-    return { id: s.key, title: s.name };
-  })}
-  optionSelected={searchModel.status}
-  handleChangeOption={handleChangeStatus}
-  handleSearch={searchOrder} 
-  handleChangeSearchKey={handleChangeSearchKey}
-/>
+        options={orStatus.map((s) => {
+          return { id: s.key, title: s.name };
+        })}
+        optionSelected={searchModel.status}
+        handleChangeOption={handleChangeStatus}
+        handleSearch={searchOrder}
+        handleChangeSearchKey={handleChangeSearchKey}
+      />
 
       <Invoice type={"gdi"} invoiceData={invoiceData} />
       <TableContainer className="mt-4 mb-8">
@@ -198,7 +197,7 @@ const AllOrder = () => {
                   {order.deliveryAddress || "N/A"}
                 </TableCell>
                 <TableCell>
-                  {orStatus?.find((s) => s.key === order?.status)?.name}
+                {orStatus?.find((s) => s.key === order?.status)?.name}
                 </TableCell>
                 <TableCell>{order.plannedExportDate || "N/A"}</TableCell>
                 <TableCell>{order.actualExportDate || "N/A"}</TableCell>
