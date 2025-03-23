@@ -197,7 +197,7 @@ const AllOrder = () => {
                   {order.deliveryAddress || "N/A"}
                 </TableCell>
                 <TableCell>
-                  {orStatus?.find((s) => s.key === order?.status)?.name}
+                {orStatus?.find((s) => s.key === order?.status)?.name}
                 </TableCell>
                 <TableCell>{order.plannedExportDate || "N/A"}</TableCell>
                 <TableCell>{order.actualExportDate || "N/A"}</TableCell>

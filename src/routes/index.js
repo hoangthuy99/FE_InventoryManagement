@@ -24,12 +24,10 @@ const EditBranch = lazy(() => import("../pages/branch/EditBranch"));
 const AddSupplier = lazy(() => import("../pages/supplier/AddSupplier"));
 const AllSupplier = lazy(() => import("../pages/supplier/AllSupplier"));
 const EditSupplier = lazy(() => import("../pages/supplier/EditSupplier"));
-const Buttons = lazy(() => import("../pages/Buttons"));
-const Modals = lazy(() => import("../pages/Modals"));
-const Tables = lazy(() => import("../pages/Tables"));
+const AddUser = lazy(() => import("../pages/user/AddUser"));
+const AllUser = lazy(() => import("../pages/user/AllUser"));
+const EditUser = lazy(() => import("../pages/user/EditUser"));
 const Page404 = lazy(() => import("../pages/404"));
-const Cards = lazy(() => import("../pages/Cards"));
-const Forms = lazy(() => import("../pages/Forms"));
 const { roleTags } = data;
 
 const routes = [
@@ -142,6 +140,19 @@ const routes = [
     roles: [roleTags.role_amdin],
   },
   {
+    path: "/user/add-user",
+    component: AddUser,
+  },
+  {
+    path: "/user/all-user",
+    component: AllUser,
+  },
+  {
+    path: "/user/edit-user/:id",
+    component: EditUser,
+  },
+  
+  {
     path: "/map",
     component: MapLayer,
     roles: [roleTags.role_amdin],
@@ -149,7 +160,7 @@ const routes = [
   
   {
     path: "*",
-    component: Page404,
+    component:404,
   },
 ];
 
