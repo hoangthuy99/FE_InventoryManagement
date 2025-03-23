@@ -2,7 +2,7 @@ import { lazy } from "react";
 import AddPurchase from "../pages/purchaseOrder/AddPurchase";
 import AllPurchase from "../pages/purchaseOrder/AllPurchase";
 import MapLayer from "../pages/map";
-import EditOrder from "../pages/order/EditOrder";
+import EditOrder from "../pages/order/AddOrder";
 import data from "../assets/data.json";
 
 // Import các component

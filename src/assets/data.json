@@ -15,6 +15,10 @@
     {
       "key": 4,
       "name": "Đã hủy"
+    },
+    {
+      "key": 5,
+      "name": "Đã hoàn thành"
     }
   ],
   "orStatus": [

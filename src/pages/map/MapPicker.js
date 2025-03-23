@@ -42,10 +42,20 @@ const rasterLayer = new ImageLayer({
   }),
 });
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
 function MapPicker({ handleStoreDelete }) {
   const mapRef = useRef();
   const popupRef = useRef();
-  const { areas, setAreas, setAreaSelected, mode, mapMode } = useMapStore();
+  const {
+    areas,
+    setAreas,
+    setAreaSelected,
+    mode,
+    mapMode,
+    branchs,
+    branchSelected,
+  } = useMapStore();
 
   useEffect(() => {
     if (areas) {
@@ -92,6 +102,16 @@ function MapPicker({ handleStoreDelete }) {
         source: vectorSource,
       });
 
+      const imageUrl = branchs.find((b) => {              
+        return b.id === branchSelected;
+      })?.mapImage;
+      rasterLayer.setSource(
+        new ImageStatic({
+          url: `${BASE_URL}/${imageUrl}`,
+          imageExtent: imageExtent,
+          projection: projection,
+        })
+      );
       map.setTarget(mapRef.current);
       map.setLayers([rasterLayer, vectorLayer]);
 

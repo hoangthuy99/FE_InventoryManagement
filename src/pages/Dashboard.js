@@ -179,7 +179,7 @@ function Dashboard() {
 
         <InfoCard
           title="Total revenue"
-          value={totalBussiness.totalRevenue.toLocaleString()}
+          value={totalBussiness?.totalRevenue?.toLocaleString() || 0}
         >
           <RoundIcon
             icon={MoneyIcon}

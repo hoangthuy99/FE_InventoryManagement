@@ -35,7 +35,9 @@ export const branchAPI = {
   getAllPaginated: (page, limit) =>
     api.get(`/branch?page=${page}&limit=${limit}`),
   getById: (id) => api.get(`/branch/${id}`),
-  create: (data) => api.post("/branch", data),
+  create: (data) => api.post("/branch", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }),
   update: (id, data) => api.put(`/branch/${id}`, data),
   delete: (id) => api.delete(`/branch/${id}`),
   getByActiveFlag: () => api.get("/branch/active"),
