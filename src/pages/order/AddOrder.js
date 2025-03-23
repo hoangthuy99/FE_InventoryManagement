@@ -101,29 +101,9 @@ function AddOrder() {
     setValue("deliveryAddress", address);
     setLocation(coords);
   };
-  const handleChangeProduct = (index, field, value) => {
-    const updatedItems = [...orderDetails];
-    updatedItems[index][field] = value;
-
-    if (field === "productId") {
-      const selectedProduct = products.find((p) => p.id === value);
-      if (selectedProduct) {
-        updatedItems[index].unitPrice = selectedProduct.price;
-      }
-    }
-    // Kiểm tra nếu đã có `total` từ OrderDetail, ưu tiên sử dụng thay vì tính lại
-    if (field === "qty" || field === "productId") {
-      updatedItems[index].totalPrice =
-        updatedItems[index].total ??
-        (updatedItems[index].unitPrice || 0) * (updatedItems[index].qty || 0);
-    }
-
-    setOrderDetails(updatedItems);
-  };
   // Xử lý khi nhập địa chỉ vào input
-  const handleInputChange = async (e, field) => {
+  const handleInputChange = async (e) => {
     const address = e.target.value;
-    field.onChange(address);
     setValue("deliveryAddress", address);
 
     if (address.length > 3) {
@@ -132,114 +112,128 @@ function AddOrder() {
           `https://nominatim.openstreetmap.org/search?format=json&q=${address}`
         );
         const data = await res.json();
-        console.log("Kết quả từ API:", data); // Kiểm tra phản hồi từ API
-
         if (data.length > 0) {
           const { lat, lon } = data[0];
-          const newLocation = [parseFloat(lat), parseFloat(lon)];
-          setLocation(newLocation); // Cập nhật state location
-        } else {
-          console.error("Không tìm thấy địa chỉ!");
+          setLocation([parseFloat(lat), parseFloat(lon)]);
         }
       } catch (error) {
-        console.error("Lỗi khi tìm kiếm địa chỉ:", error);
+        console.error("Lỗi tìm kiếm địa chỉ:", error);
       }
     }
   };
-  const calculateTotalPrice = () => {
-    return orderDetails.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
-  };
 
-  const handleAddItem = (item) => {
-    setOrderDetails([...orderDetails, item]);
-  };
+  const fetchAllData = async () => {
+    try {
+      const [customerRes, branchRes, productRes] = await Promise.all([
+        customerAPI.getAll(),
+        branchAPI.getAll(),
+        productAPI.getAll(),
+      ]);
 
-  const handleRemoveItem = (index) => {
-    setOrderDetails((items) => items.filter((_, i) => i !== index));
+      setCustomers(customerRes.data || []);
+      setBranches(branchRes.data || []);
+      setProducts(productRes.data || []);
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu:", error);
+    }
   };
 
   const fetchOrderById = async () => {
     try {
       const response = await orderAPI.getById(id);
-
-      if (!response || !response.data) {
-        console.error("API không trả về dữ liệu hợp lệ", response);
+      if (!response?.data) {
+        console.error("API không trả về dữ liệu hợp lệ");
         return;
       }
 
       const data = response.data;
 
-      if (!data) {
-        console.error("Dữ liệu đơn hàng không tồn tại", data);
-        return;
+      if (data) {
+        reset({
+          customerId: data.customer?.id || "",
+          branchId: data.branch?.id || "",
+          plannedExportDate: dayjs(data.plannedExportDate) || dayjs(),
+          actualExportDate: dayjs(data.actualExportDate) || dayjs(),
+          deliveryAddress: data.deliveryAddress || "",
+          status: data.status || "",
+          note: data.note || "",
+          totalPrice: data.totalPrice || "",
+        });
+
+        const items = data.orderDetails.map((item) => ({
+          id: item?.id || "",
+          productId: item?.productInfo?.id || "",
+          unitPrice: item?.unitPrice || 0,
+          productUnit: item?.productUnit || "",
+          qty: item?.qty || 0,
+          totalPrice: (item?.unitPrice || 0) * (item?.qty || 0),
+          deleteFg: item?.deleteFg,
+        }));
+
+        setOrderDetails(items);
       }
-
-      const getStatusKey = (status) => {
-        const found = orStatus.find(
-          (item) => item.name === status || item.key === status
-        );
-        return found ? found.key : "";
-      };
-
-      reset({
-        customerId: data.customer?.id || "",
-        branchId: data.branch?.id || "",
-        plannedExportDate: dayjs(data.plannedExportDate) || dayjs(),
-        actualExportDate: dayjs(data.actualExportDate) || dayjs(),
-        status: getStatusKey(data.status),
-        note: data.note || "",
-        orderDetailsRequest:
-          data.orderDetails?.map((item) => ({
-            productId: item.productId,
-            qty: item.qty,
-            unitPrice: item.unitPrice,
-            totalPrice: item.totalPrice,
-          })) || [],
-      });
     } catch (error) {
-      console.error("Lỗi khi gọi API đơn hàng:", error);
+      console.error("Lỗi khi tải đơn hàng:", error);
     }
   };
 
   useEffect(() => {
-    if (typeof setValue === "function") {
-      async function fetchData() {
-        try {
-          const total = orderDetails.reduce((acc, item) => {
-            return acc + (item.unitPrice * item.qty || 0);
-          }, 0);
+    fetchAllData();
+    fetchOrderById();
+  }, []);
 
-          const [customerRes, branchRes, productRes] = await Promise.all([
-            customerAPI.getAll(),
-            branchAPI.getAll(),
-            productAPI.getAll(),
-          ]);
+  const calculateTotalPrice = (items) => {
+    return items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+  };
 
-          setCustomers(customerRes.data || []);
-          setBranches(branchRes.data || []);
-          setProducts(productRes.data || []);
+  const handleChangeProduct = (index, field, value) => {
+    setOrderDetails((prevDetails) => {
+      const updatedItems = [...prevDetails];
+      updatedItems[index] = { ...updatedItems[index], [field]: value };
 
-          setValue("totalPrice", total); // Gán giá trị cho totalPrice
-        } catch (error) {
-          console.error("Lỗi khi gọi API:", error);
-          showErrorToast("Không thể tải dữ liệu!");
+      if (field === "productId") {
+        const selectedProduct = products.find((p) => p.id === value);
+        if (selectedProduct) {
+          updatedItems[index].unitPrice = selectedProduct.price || 0;
         }
       }
-      fetchData();
-    }
-    if (location) {
-      setMarkerPos(location);
-    }
-    if (id) {
-      fetchOrderById();
-    }
-  }, [orderDetails, location, id]);
+
+      if (field === "qty" || field === "productId") {
+        updatedItems[index].totalPrice =
+          (updatedItems[index].unitPrice || 0) * (updatedItems[index].qty || 0);
+      }
+
+      setValue("totalPrice", calculateTotalPrice(updatedItems));
+      return updatedItems;
+    });
+  };
+
+  const handleAddItem = () => {
+    setOrderDetails([
+      ...orderDetails,
+      { productId: "", unitPrice: 0, qty: 1, totalPrice: 0 , deleteFg: false},
+    ]);
+  };
+
+  //remove if don't have id set deleteFg is true if have id
+  const handleRemoveItem = (index) => {
+    setOrderDetails((items) => {
+      const updatedItems = [...items];
+      if (updatedItems[index].id) {
+        updatedItems[index].deleteFg = true;
+      } else {
+        updatedItems.splice(index, 1);
+      }
+      setValue("totalPrice", calculateTotalPrice(updatedItems));
+      return updatedItems;
+    });
+
+    console.log(orderDetails);
+  };
 
   const submitForm = async (data) => {
-    console.log(data);
-
     try {
-      const totalPrice = calculateTotalPrice();
+      const totalPrice = calculateTotalPrice(orderDetails);
       const dataRequest = {
         id: id || "",
         customerId: data.customerId,
@@ -251,25 +245,29 @@ function AddOrder() {
         status: data.status,
         note: data.note,
         orderDetailsRequest: orderDetails.map((item) => ({
+          id: item.id,
           productId: item.productId,
           qty: item.qty,
+          productUnit: item.productUnit,
           unitPrice: item.unitPrice,
           totalPrice: item.totalPrice,
+          deleteFg: item.deleteFg,
         })),
       };
 
-      const res = await orderAPI.saveOrder(dataRequest);
-      console.log(res);
-      console.log("Địa chỉ:", data.deliveryAddress);
-      console.log("Tọa độ:", location);
+      let res = id
+        ? await orderAPI.updateOrder(dataRequest)
+        : await orderAPI.saveOrder(dataRequest);
+
       if (res.data?.code === 200) {
-        history.push("/app/order/all-order");
-        showSuccessToast(`${id ? "Update" : "Create"} order successfully`);
+        history.push("/app/order/all-orders");
+        alert(`${id ? "Cập nhật" : "Tạo"} đơn hàng thành công`);
       } else {
-        showErrorToast("Lỗi khi tạo đơn hàng");
+        alert("Lỗi khi cập nhật đơn hàng");
       }
     } catch (error) {
-      showErrorToast("Lỗi khi tạo đơn hàng");
+      console.error("Lỗi API:", error);
+      alert("Lỗi khi cập nhật đơn hàng");
     }
   };
 
@@ -381,38 +379,35 @@ function AddOrder() {
         </Grid>
 
         {id && (
-          <>
-            <span className="w-1/2">Trạng thái</span>
+          <Grid item xs={6} className="flex items-center gap-10">
             <Controller
               name="status"
               control={control}
-              render={({ field, fieldState }) => (
-                <FormControl fullWidth error={!!fieldState.error}>
+              render={(renderProps) => (
+                <FormControl fullWidth>
                   <InputLabel>Chọn trạng thái</InputLabel>
                   <Select
-                    value={field.value ?? ""}
-                    onChange={(event) =>
-                      field.onChange(Number(event.target.value))
-                    }
+                    error={renderProps.fieldState.error}
+                    value={renderProps.field.value || ""}
+                    onChange={renderProps.field.onChange}
                     label="Chọn trạng thái"
-                    className="text-white border border-gray-600"
+                    className="text-gray-600 border border-gray-600 dark:text-gray-300text-gray-600 dark:text-gray-300"
                   >
-                    {Array.isArray(orStatus) &&
-                      orStatus.map((status) => (
-                        <MenuItem key={status.key} value={status.key}>
-                          {status.name}
-                        </MenuItem>
-                      ))}
+                    {orStatus.map((status) => (
+                      <MenuItem key={status.key} value={status.key}>
+                        {status.name}
+                      </MenuItem>
+                    ))}
                   </Select>
-                  {fieldState.error && (
+                  {renderProps.fieldState.error && (
                     <FormHelperText className="text-red-600">
-                      {fieldState.error.message}
+                      {renderProps.fieldState.error.message}
                     </FormHelperText>
                   )}
                 </FormControl>
               )}
             />
-          </>
+          </Grid>
         )}
 
         <Controller
@@ -460,9 +455,9 @@ function AddOrder() {
           name="totalPrice"
           control={control}
           render={({ field }) => (
-            <FormControl fullWidth margin="normal" error={!!errors.totalPrice}>
+            <FormControl error={!!errors.totalPrice}>
               <TextField
-                value={field.value || ""}
+                value={field.value ? `${field.value.toLocaleString()} VNĐ` : ""}
                 onChange={field.onChange}
                 placeholder="Tổng tiền"
                 disabled
@@ -535,97 +530,101 @@ function AddOrder() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orderDetails.map((item, index) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="border border-gray-600 ">
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        onClick={() => handleRemoveItem(index)}
-                      >
-                        <RemoveCircleOutlineIcon />
-                      </Button>
-                    </TableCell>
-                    <TableCell className="border border-gray-600 ">
-                      <FormControl fullWidth>
-                        <InputLabel>Chọn sản phẩm</InputLabel>
-                        <Select
-                          value={item.productId || ""}
-                          onChange={(e) =>
-                            handleChangeProduct(
-                              index,
-                              "productId",
-                              e.target.value
-                            )
-                          }
-                          label="Chọn sản phẩm"
-                          className="border border-gray-600"
-                        >
-                          {products.map((product) => (
-                            <MenuItem key={product.id} value={product.id}>
-                              {product.name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </TableCell>
-                    <TableCell className="border border-gray-600 ">
-                      <TextField
-                        type="number"
-                        size="small"
-                        value={item.unitPrice || 0}
-                        fullWidth
-                        disabled
-                      />
-                    </TableCell>
+                {orderDetails?.map((item, index) => {
+                  if (item.deleteFg === false || item.deleteFg === null) {
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell className="border border-gray-600 ">
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            onClick={() => handleRemoveItem(index)}
+                          >
+                            <RemoveCircleOutlineIcon />
+                          </Button>
+                        </TableCell>
+                        <TableCell className="border border-gray-600 ">
+                          <FormControl fullWidth>
+                            <InputLabel>Chọn sản phẩm</InputLabel>
+                            <Select
+                              value={item.productId || ""}
+                              onChange={(e) =>
+                                handleChangeProduct(
+                                  index,
+                                  "productId",
+                                  e.target.value
+                                )
+                              }
+                              label="Chọn sản phẩm"
+                              className="border border-gray-600"
+                            >
+                              {products.map((product) => (
+                                <MenuItem key={product.id} value={product.id}>
+                                  {product.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </TableCell>
+                        <TableCell className="border border-gray-600 ">
+                          <TextField
+                            type="number"
+                            size="small"
+                            value={item.unitPrice || 0}
+                            fullWidth
+                            disabled
+                          />
+                        </TableCell>
 
-                    <TableCell className="border border-gray-600 ">
-                      <TextField
-                        type="number"
-                        size="small"
-                        defaultValue={0}
-                        value={item.qty}
-                        onChange={(e) =>
-                          handleChangeProduct(index, "qty", e.target.value)
-                        }
-                        fullWidth
-                        inputProps={{
-                          className: " border border-gray-600",
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell className="border border-gray-600 ">
-                      <FormControl fullWidth>
-                        <InputLabel>Chọn đơn vị</InputLabel>
-                        <Select
-                          value={item.productUnit || ""}
-                          onChange={(e) =>
-                            handleChangeProduct(
-                              index,
-                              "productUnit",
-                              e.target.value
-                            )
-                          }
-                          label="Chọn đơn vị"
-                          className="border border-gray-600"
-                        >
-                          {productUnit.map((unit) => (
-                            <MenuItem key={unit.key} value={unit.key}>
-                              {unit.name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </TableCell>
-                    <TableCell className="border border-gray-600 ">
-                      {item?.totalPrice
-                        ? Number(item.totalPrice).toLocaleString()
-                        : "0"}{" "}
-                      VNĐ
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        <TableCell className="border border-gray-600 ">
+                          <TextField
+                            type="number"
+                            size="small"
+                            defaultValue={0}
+                            value={item.qty}
+                            onChange={(e) =>
+                              handleChangeProduct(index, "qty", e.target.value)
+                            }
+                            fullWidth
+                            inputProps={{
+                              className: " border border-gray-600",
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell className="border border-gray-600 ">
+                          <FormControl fullWidth>
+                            <InputLabel>Chọn đơn vị</InputLabel>
+                            <Select
+                              value={item.productUnit || ""}
+                              onChange={(e) =>
+                                handleChangeProduct(
+                                  index,
+                                  "productUnit",
+                                  e.target.value
+                                )
+                              }
+                              label="Chọn đơn vị"
+                              className="border border-gray-600"
+                            >
+                              {productUnit.map((unit) => (
+                                <MenuItem key={unit.key} value={unit.key}>
+                                  {unit.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </TableCell>
+                        <TableCell className="border border-gray-600 ">
+                          {item?.totalPrice
+                            ? Number(item.totalPrice).toLocaleString()
+                            : "0"}{" "}
+                          VNĐ
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                })}
               </TableBody>
             </Table>
           </TableContainer>

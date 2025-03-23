@@ -97,7 +97,8 @@ export const orderAPI = {
   getAllPaginated: (page, limit) =>
     api.get(`/order/?page=${page}&limit=${limit}`),
   getById: (id) => api.get(`/order/${id}`),
-  saveOrder: (orderData) => api.post("/order/save", orderData),
+  saveOrder: (orderData) => api.post("/order/createOrder", orderData),
+  updateOrder: (orderData) => api.put("/order/updateOrder", orderData),
   searchByOrderCode: (keyword) =>
     api.get("/order/search", { params: { keyword } }),
   getByIdAndStatus: (customerId, orderId, status) =>
@@ -150,7 +151,7 @@ export const supplierAPI = {
   getAll: () => api.get("/supplier/getAllSuppliers"),
   getById: (id) => api.get(`/supplier/getSupplier/${id}`),
   getAllPaginated: (page, limit) =>
-    api.get(`/supplier/getAll?page=${page}&limit=${limit}`),
+    api.get(`/supplier/getAllSuppliers?page=${page}&limit=${limit}`),
   add: (supplierData) => api.post("/supplier/add", supplierData),
   update: (id, supplierData) => api.put(`/supplier/update/${id}`, supplierData),
   delete: (id) => api.delete(`/supplier/delete/${id}`),

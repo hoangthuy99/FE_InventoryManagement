@@ -115,6 +115,7 @@ const AllProduct = () => {
               <TableCell>Hình ảnh</TableCell>
               <TableCell>Tên sản phẩm</TableCell>
               <TableCell>Danh mục</TableCell>
+              <TableCell>Số lượng</TableCell>
               <TableCell>Ngày tạo</TableCell>
               <TableCell>Ngày cập nhật</TableCell>
               <TableCell>Trạng thái</TableCell>
@@ -135,7 +136,7 @@ const AllProduct = () => {
                 </TableCell>
                 <TableCell>{product.name}</TableCell>
                 <TableCell>{product.categories.name}</TableCell>
-
+                <TableCell>{product.qty}</TableCell>
                 <TableCell>
                   {new Date(product.createdDate).toLocaleDateString()}
                 </TableCell>
