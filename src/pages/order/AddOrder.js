@@ -48,6 +48,7 @@ function AddOrder() {
   const [customers, setCustomers] = useState([]);
   const [branches, setBranches] = useState([]);
   const [orderDetails, setOrderDetails] = useState([]);
+  const [updateOrderStatus, setOrders] = useState([]);
   const { orStatus, productUnit } = data;
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -55,10 +56,38 @@ function AddOrder() {
   const history = useHistory();
 
   const { id } = useParams();
+  const getStatusText = (statusKey) => {
+    const status = orStatus.find((s) => s.key === statusKey);
+    return status ? status.name : "Không xác định";
+  };
   const schema = yup.object().shape({
     customerId: yup.number().required("Khách hàng là bắt buộc"),
     branchId: yup.number().required("Chi nhánh là bắt buộc"),
-    status: yup.number().required("Chọn trạng thái"),
+   status: yup
+    .number()
+    .typeError("Trạng thái không hợp lệ")
+    .required("Chọn trạng thái")
+    .test("valid-transition", function (newStatus) {
+      const { status: currentStatus } = this.parent;
+      const validTransitions = {
+        1: [2, 3],   // Chờ duyệt -> Đã duyệt hoặc Từ chối
+        2: [4, 5],   // Đã duyệt -> Đang chọn hàng hoặc Đang đóng gói
+        5: [6],      // Đang đóng gói -> Đang chờ giao
+        6: [7],      // Đang chờ giao -> Đã giao
+        7: [9, 8],   // Đã giao -> Đã hoàn thành hoặc Đã hủy
+      };
+
+      // Nếu trạng thái hiện tại không tồn tại trong danh sách hợp lệ, báo lỗi
+      if (!validTransitions[currentStatus]?.includes(newStatus)) {
+        return this.createError({
+          message: `Không thể chuyển từ ${getStatusText(
+            currentStatus
+          )} sang ${getStatusText(newStatus)}. Vui lòng đi qua từng bước.`,
+        });
+      }
+
+      return true;
+    }),
     product: yup
       .array()
       .of(
@@ -100,6 +129,19 @@ function AddOrder() {
   const handleSelectAddress = (address, coords) => {
     setValue("deliveryAddress", address);
     setLocation(coords);
+  };
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    setLoading(true);
+    try {
+      const updatedOrder = await updateOrderStatus(orderId, newStatus);
+      setOrders((prevOrders) =>
+        prevOrders.map((order) => (order.id === orderId ? updatedOrder : order))
+      );
+      alert("Cập nhật trạng thái thành công!");
+    } catch (error) {
+      alert(error.error || "Có lỗi xảy ra khi cập nhật trạng thái");
+    }
+    setLoading(false);
   };
   // Xử lý khi nhập địa chỉ vào input
   const handleInputChange = async (e) => {
@@ -211,7 +253,7 @@ function AddOrder() {
   const handleAddItem = () => {
     setOrderDetails([
       ...orderDetails,
-      { productId: "", unitPrice: 0, qty: 1, totalPrice: 0 , deleteFg: false},
+      { productId: "", unitPrice: 0, qty: 1, totalPrice: 0, deleteFg: false },
     ]);
   };
 
@@ -383,15 +425,18 @@ function AddOrder() {
             <Controller
               name="status"
               control={control}
-              render={(renderProps) => (
+              render={({ field, fieldState }) => (
                 <FormControl fullWidth>
                   <InputLabel>Chọn trạng thái</InputLabel>
                   <Select
-                    error={renderProps.fieldState.error}
-                    value={renderProps.field.value || ""}
-                    onChange={renderProps.field.onChange}
+                    error={fieldState.error}
+                    value={field.value || ""}
+                    onChange={(event) => {
+                      field.onChange(event.target.value); // Cập nhật giá trị trong react-hook-form
+                      handleUpdateStatus(event.target.value); // Gọi hàm cập nhật trạng thái
+                    }}
                     label="Chọn trạng thái"
-                    className="text-gray-600 border border-gray-600 dark:text-gray-300text-gray-600 dark:text-gray-300"
+                    className="text-gray-600 border border-gray-600 dark:text-gray-300"
                   >
                     {orStatus.map((status) => (
                       <MenuItem key={status.key} value={status.key}>
@@ -399,9 +444,9 @@ function AddOrder() {
                       </MenuItem>
                     ))}
                   </Select>
-                  {renderProps.fieldState.error && (
+                  {fieldState.error && (
                     <FormHelperText className="text-red-600">
-                      {renderProps.fieldState.error.message}
+                      {fieldState.error.message}
                     </FormHelperText>
                   )}
                 </FormControl>

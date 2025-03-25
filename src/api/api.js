@@ -99,6 +99,8 @@ export const orderAPI = {
   getById: (id) => api.get(`/order/${id}`),
   saveOrder: (orderData) => api.post("/order/createOrder", orderData),
   updateOrder: (orderData) => api.put("/order/updateOrder", orderData),
+  updateOrderStatus: (orderId, newStatus) =>
+    api.put(`/order/${orderId}/status`, { newStatus }),
   searchByOrderCode: (keyword) =>
     api.get("/order/search", { params: { keyword } }),
   getByIdAndStatus: (customerId, orderId, status) =>
@@ -134,6 +136,7 @@ export const authAPI = {
         },
       }
     ),
+  register: (data) => api.post("/auth/register", data),
   registerOauth: (token) =>
     api.post(
       "/auth/oauth-register",

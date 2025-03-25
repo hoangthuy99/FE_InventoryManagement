@@ -24,7 +24,6 @@ const EditBranch = lazy(() => import("../pages/branch/EditBranch"));
 const AddSupplier = lazy(() => import("../pages/supplier/AddSupplier"));
 const AllSupplier = lazy(() => import("../pages/supplier/AllSupplier"));
 const EditSupplier = lazy(() => import("../pages/supplier/EditSupplier"));
-const AddUser = lazy(() => import("../pages/user/AddUser"));
 const AllUser = lazy(() => import("../pages/user/AllUser"));
 const EditUser = lazy(() => import("../pages/user/EditUser"));
 const Page404 = lazy(() => import("../pages/404"));
@@ -139,10 +138,7 @@ const routes = [
     component: EditSupplier,
     roles: [roleTags.role_amdin],
   },
-  {
-    path: "/user/add-user",
-    component: AddUser,
-  },
+  
   {
     path: "/user/all-user",
     component: AllUser,
