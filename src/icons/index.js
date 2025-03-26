@@ -35,6 +35,7 @@ import { ReactComponent as IssueIcon } from "./issue.svg";
 import { ReactComponent as MapIcon } from "./map.svg";
 import { ReactComponent as SupplierIcon } from "./supplier.svg";
 import { ReactComponent as NotFoundIcon } from "./notfound.svg";
+import { ReactComponent as EmployeeIcon } from "./employ.svg";
 
 export {
   ButtonsIcon,
@@ -74,4 +75,5 @@ export {
   MapIcon,
   SupplierIcon,
   NotFoundIcon,
+  EmployeeIcon,
 };
