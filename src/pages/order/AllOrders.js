@@ -30,10 +30,10 @@ const AllOrder = () => {
   const { orStatus } = data;
   const [searchModel, setSearchModel] = useState({
     searchKey: "",
-    status: 0,
+    status: -1,
     sortBy: "id",
     sortType: "desc",
-    pageNum: -1,
+    pageNum: 0,
     pageSize: 5,
   });
   const [invoiceData, setInvoiceData] = useState();
@@ -197,7 +197,7 @@ const AllOrder = () => {
                   {order.deliveryAddress || "N/A"}
                 </TableCell>
                 <TableCell>
-                {orStatus?.find((s) => s.key === order?.status)?.name}
+                  {orStatus?.find((s) => s.key === order?.status)?.name}
                 </TableCell>
                 <TableCell>{order.plannedExportDate || "N/A"}</TableCell>
                 <TableCell>{order.actualExportDate || "N/A"}</TableCell>
@@ -232,8 +232,8 @@ const AllOrder = () => {
         </Table>
         <TableFooter>
           <Pagination
-            totalResults={totalOrders}
-            resultsPerPage={limit}
+            totalResults={orders.length}
+            resultsPerPage={searchModel.pageSize}
             onChange={(p) => setPage(p)}
             label="Table navigation"
           />

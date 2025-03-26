@@ -5,8 +5,8 @@ export const doughnutLegends = [
 ]
 
 export const lineLegends = [
-  { title: 'Organic', color: 'bg-teal-600' },
-  { title: 'Paid', color: 'bg-purple-600' },
+  { title: 'Import Cost', color: 'bg-teal-600' },
+  { title: 'Revenue', color: 'bg-purple-600' },
 ]
 
 export const barLegends = [
@@ -43,23 +43,15 @@ export const lineOptions = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
     datasets: [
       {
-        label: 'Organic',
-        /**
-         * These colors come from Tailwind CSS palette
-         * https://tailwindcss.com/docs/customizing-colors/#default-color-palette
-         */
+        label: 'Import Cost',
         backgroundColor: '#0694a2',
         borderColor: '#0694a2',
         data: [43, 48, 40, 54, 67, 73, 70],
         fill: false,
       },
       {
-        label: 'Paid',
+        label: 'Revenue',
         fill: false,
-        /**
-         * These colors come from Tailwind CSS palette
-         * https://tailwindcss.com/docs/customizing-colors/#default-color-palette
-         */
         backgroundColor: '#7e3af2',
         borderColor: '#7e3af2',
         data: [24, 50, 64, 74, 52, 51, 65],

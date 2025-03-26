@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
-const BASE_URL = "http://localhost:8089/app";
+const BASE_URL = process.env.REACT_APP_BASE_URL
 
 //  Cấu hình Axios để dễ dàng tái sử dụng
 const api = axios.create({
@@ -35,9 +35,10 @@ export const branchAPI = {
   getAllPaginated: (page, limit) =>
     api.get(`/branch?page=${page}&limit=${limit}`),
   getById: (id) => api.get(`/branch/${id}`),
-  create: (data) => api.post("/branch", data, {
-    headers: { "Content-Type": "multipart/form-data" },
-  }),
+  create: (data) =>
+    api.post("/branch", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
   update: (id, data) => api.put(`/branch/${id}`, data),
   delete: (id) => api.delete(`/branch/${id}`),
   getByActiveFlag: () => api.get("/branch/active"),
@@ -179,9 +180,10 @@ export const areaAPI = {
 
 // API Dashboard
 export const dashboardAPI = {
-  getTotalBussiness : () => api.get("/statistic/getTotalBussiness"),
-  getTotalOrderStatus : () => api.get("/statistic/getTotalOrderStatus")
-}
-
+  getTotalBussiness: () => api.get("/statistic/getTotalBussiness"),
+  getTotalOrderStatus: () => api.get("/statistic/getTotalOrderStatus"),
+  getTotalRevenue: (filterType) =>
+    api.get(`/statistic/getTotalRevenue/${filterType}`),
+};
 
 export default api;
