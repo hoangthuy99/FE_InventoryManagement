@@ -1,13 +1,15 @@
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
-const BASE_URL = process.env.REACT_APP_BASE_URL
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+const token = JSON.parse(localStorage.getItem("token"))?.accessToken || "";
 
 //  Cấu hình Axios để dễ dàng tái sử dụng
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
+    "Authorization": "Bearer " + token,
   },
 });
 
