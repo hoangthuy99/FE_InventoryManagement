@@ -7,7 +7,6 @@ import Header from "../components/Header";
 import Main from "../containers/Main";
 import ThemedSuspense from "../components/ThemedSuspense";
 import { SidebarContext } from "../context/SidebarContext";
-import { SessionProvider } from "next-auth/react";
 import { useAuth } from "../context/AuthContext";
 
 const Page404 = lazy(() => import("../pages/404"));
