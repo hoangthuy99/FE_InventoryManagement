@@ -1,17 +1,34 @@
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-const token = JSON.parse(localStorage.getItem("token"))?.accessToken || "";
 
 //  Cấu hình Axios để dễ dàng tái sử dụng
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
-    "Authorization": "Bearer " + token,
   },
 });
+
+// Thêm interceptor vào request
+api.interceptors.request.use(
+  (config) => {
+    // Lấy token từ localStorage (hoặc Redux, Context API...)
+    const token = JSON.parse(localStorage.getItem("token"))?.accessToken || "";
+
+    // Nếu có token, thêm vào header Authorization
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+
+  (error) => {
+    // Xử lý lỗi trước khi request được gửi đi
+    return Promise.reject(error);
+  }
+);
 
 //  Function API cho từng module
 //  API Category
@@ -110,6 +127,7 @@ export const orderAPI = {
     api.get("/order/search", { params: { keyword } }),
   getByIdAndStatus: (customerId, orderId, status) =>
     api.get(`/order/${customerId}/${orderId}/${status}`),
+  delete: (id) => api.delete(`/order/${id}`),
 };
 
 // API Invoice

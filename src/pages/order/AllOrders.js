@@ -110,6 +110,8 @@ const AllOrder = () => {
         prevOrders.filter((orders) => orders.id !== id)
       );
     } catch (error) {
+      console.log(error);
+
       showErrorToast("Xóa đơn hàng thất bại!");
     }
   };
