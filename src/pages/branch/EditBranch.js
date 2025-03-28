@@ -21,12 +21,12 @@ function EditBranch() {
     try {
       const response = await fetch(`http://localhost:8089/app/category/${id}`);
       if (!response.ok) {
-        throw new Error(`Lỗi tải danh mục: ${response.statusText}`);
+        throw new Error(`Lỗi tải chi nhánh: ${response.statusText}`);
       }
       const data = await response.json();
       setFormData(data);
     } catch (error) {
-      showErrorToast(error.message || "Lỗi khi tải danh mục!");
+      showErrorToast(error.message || "Lỗi khi tải chi nhánh!");
     }
   };
 
@@ -34,13 +34,13 @@ function EditBranch() {
     try {
       const response = await fetch("http://localhost:8089/app/category");
       if (!response.ok) {
-        throw new Error(`Lỗi tải danh sách danh mục: ${response.statusText}`);
+        throw new Error(`Lỗi tải danh sách chi nhánh: ${response.statusText}`);
       }
       const data = await response.json();
       setExistingCategories(Array.isArray(data) ? data : []);
     } catch (error) {
       setExistingCategories([]);
-      showErrorToast(error.message || "Không thể tải danh sách danh mục!");
+      showErrorToast(error.message || "Không thể tải danh sách chi nhánh!");
     }
   };
 
@@ -54,7 +54,7 @@ function EditBranch() {
       );
       setErrors((prev) => ({
         ...prev,
-        name: isNameDuplicate ? "Tên danh mục đã tồn tại, vui lòng nhập tên khác!" : "",
+        name: isNameDuplicate ? "Tên chi nhánh đã tồn tại, vui lòng nhập tên khác!" : "",
       }));
     }
 
@@ -64,18 +64,18 @@ function EditBranch() {
       );
       setErrors((prev) => ({
         ...prev,
-        code: isCodeDuplicate ? "Mã danh mục đã tồn tại, vui lòng nhập mã khác!" : "",
+        code: isCodeDuplicate ? "Mã chi nhánh đã tồn tại, vui lòng nhập mã khác!" : "",
       }));
     }
   };
 
   const validateForm = () => {
     let newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Tên danh mục không được để trống!";
+    if (!formData.name.trim()) newErrors.name = "Tên chi nhánh không được để trống!";
     if (!formData.code.trim()) {
-      newErrors.code = "Mã danh mục không được để trống!";
+      newErrors.code = "Mã chi nhánh không được để trống!";
     } else if (!/^[A-Za-z]{2}\d{3}$/.test(formData.code)) {
-      newErrors.code = "Mã danh mục phải có 5 ký tự, bắt đầu bằng 2 chữ cái và 3 số!";
+      newErrors.code = "Mã chi nhánh phải có 5 ký tự, bắt đầu bằng 2 chữ cái và 3 số!";
     }
     if (!formData.description.trim()) newErrors.description = "Mô tả không được để trống!";
     setErrors(newErrors);
@@ -104,7 +104,7 @@ function EditBranch() {
       }
 
       if (!response.ok) {
-        let errorMessage = "Cập nhật danh mục thất bại!";
+        let errorMessage = "Cập nhật chi nhánh thất bại!";
         if (typeof result === "string") errorMessage = result;
         else if (result.error) errorMessage = result.error;
         else if (result.message) errorMessage = result.message;
@@ -114,7 +114,7 @@ function EditBranch() {
         return;
       }
 
-      showSuccessToast("Cập nhật danh mục thành công!");
+      showSuccessToast("Cập nhật chi nhánh thành công!");
     } catch (error) {
       showErrorToast("Lỗi hệ thống, vui lòng thử lại sau!");
     } finally {
@@ -124,25 +124,25 @@ function EditBranch() {
 
   return (
     <>
-      <PageTitle>Chỉnh sửa Danh Mục</PageTitle>
-      <SectionTitle>Chỉnh sửa thông tin danh mục</SectionTitle>
+      <PageTitle>Chỉnh sửa chi nhánh</PageTitle>
+      <SectionTitle>Chỉnh sửa thông tin chi nhánh</SectionTitle>
       <div className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
         {errors.general && <HelperText valid={false}>{errors.general}</HelperText>}
         <form onSubmit={handleSubmit}>
           <Label>
-            <span>Tên danh mục</span>
+            <span>Tên chi nhánh</span>
             <Input className="mt-1" type="text" name="name" value={formData.name} onChange={handleChange} />
             {errors.name && <HelperText valid={false}>{errors.name}</HelperText>}
           </Label>
 
           <Label className="mt-4">
-            <span>Mã danh mục</span>
+            <span>Mã chi nhánh</span>
             <Input className="mt-1" type="text" name="code" value={formData.code} onChange={handleChange} />
             {errors.code && <HelperText valid={false}>{errors.code}</HelperText>}
           </Label>
 
           <Label className="mt-4">
-            <span>Mô tả danh mục</span>
+            <span>Mô tả chi nhánh</span>
             <Textarea className="mt-1" name="description" value={formData.description} onChange={handleChange} />
             {errors.description && <HelperText valid={false}>{errors.description}</HelperText>}
           </Label>
@@ -156,7 +156,7 @@ function EditBranch() {
           </Label>
 
           <Button className="p-4 mt-6" type="submit" disabled={loading}>
-            {loading ? "Đang xử lý..." : "Cập nhật danh mục"}
+            {loading ? "Đang xử lý..." : "Cập nhật chi nhánh"}
           </Button>
         </form>
       </div>

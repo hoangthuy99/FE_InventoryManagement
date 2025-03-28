@@ -1,7 +1,6 @@
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
 
-const BASE_URL = "http://localhost:8089/app";
+const BASE_URL = `${process.env.REACT_APP_BASE_URL}/app`;
 
 //  Cấu hình Axios để dễ dàng tái sử dụng
 const api = axios.create({
@@ -10,6 +9,26 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// Thêm interceptor vào request
+api.interceptors.request.use(
+  (config) => {
+    // Lấy token từ localStorage (hoặc Redux, Context API...)
+    const token = JSON.parse(localStorage.getItem("token"))?.accessToken || "";
+
+    // Nếu có token, thêm vào header Authorization
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+
+  (error) => {
+    // Xử lý lỗi trước khi request được gửi đi
+    return Promise.reject(error);
+  }
+);
 
 //  Function API cho từng module
 //  API Category
@@ -35,7 +54,10 @@ export const branchAPI = {
   getAllPaginated: (page, limit) =>
     api.get(`/branch?page=${page}&limit=${limit}`),
   getById: (id) => api.get(`/branch/${id}`),
-  create: (data) => api.post("/branch", data),
+  create: (data) =>
+    api.post("/branch", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
   update: (id, data) => api.put(`/branch/${id}`, data),
   delete: (id) => api.delete(`/branch/${id}`),
   getByActiveFlag: () => api.get("/branch/active"),
@@ -105,6 +127,7 @@ export const orderAPI = {
     api.get("/order/search", { params: { keyword } }),
   getByIdAndStatus: (customerId, orderId, status) =>
     api.get(`/order/${customerId}/${orderId}/${status}`),
+  delete: (id) => api.delete(`/order/${id}`),
 };
 
 // API Invoice
@@ -176,6 +199,14 @@ export const areaAPI = {
   createOrUpdate: (branchId, data) =>
     api.post(`/area/createOrUpdate/${branchId}`, data),
   deleteMulti: (id) => api.delete(`/area/delete?ids=${id}`),
+};
+
+// API Dashboard
+export const dashboardAPI = {
+  getTotalBussiness: () => api.get("/statistic/getTotalBussiness"),
+  getTotalOrderStatus: () => api.get("/statistic/getTotalOrderStatus"),
+  getTotalRevenue: (filterType) =>
+    api.get(`/statistic/getTotalRevenue/${filterType}`),
 };
 
 export default api;

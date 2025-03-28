@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import PageTitle from "../../components/Typography/PageTitle";
 import SectionTitle from "../../components/Typography/SectionTitle";
-import {  Textarea, Button, HelperText } from "@windmill/react-ui";
+import { Textarea, Button, HelperText } from "@windmill/react-ui";
 import {
   productAPI,
   supplierAPI,
@@ -37,7 +37,6 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import data from "../../assets/data.json";
 import { useHistory } from "react-router-dom";
 import { useParams } from "react-router-dom/cjs/react-router-dom";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 
 function AddPurchase() {
   const [products, setProducts] = useState([]);
@@ -115,9 +114,9 @@ function AddPurchase() {
     }
   };
 
-  const fetchAllAreas = async () => {
+  const fetchAreasByBranch = async (branchId) => {
     try {
-      const response = await areaAPI.getAll();
+      const response = await areaAPI.getByBranch(branchId);
       setAreas(Array.isArray(response.data?.data) ? response.data?.data : []);
     } catch (error) {
       console.error("Lỗi khi gọi API danh mục:", error);
@@ -128,8 +127,9 @@ function AddPurchase() {
     fetchAllProducts();
     fetchAllSuppliers();
     fetchAllBranchs();
-    fetchAllAreas();
-    fetchOrderById();
+    if (id) {
+      fetchOrderById();
+    }
   }, []);
 
   const handleChangeProduct = (index, field, value) => {
@@ -259,7 +259,10 @@ function AddPurchase() {
                     <Select
                       error={renderProps.fieldState.error}
                       value={renderProps.field.value || ""}
-                      onChange={renderProps.field.onChange}
+                      onChange={(e) => {
+                        renderProps.field.onChange(e);
+                        fetchAreasByBranch(e.target.value);
+                      }}
                       label="Nhà cung cấp"
                       className="text-gray-600 border border-gray-600 dark:text-gray-300"
                     >
@@ -526,6 +529,7 @@ function AddPurchase() {
                         }
                         fullWidth
                         inputProps={{
+                          min: 0,
                           className:
                             "text-gray-600 dark:text-gray-300 border border-gray-600",
                         }}
@@ -546,6 +550,7 @@ function AddPurchase() {
                         }
                         fullWidth
                         inputProps={{
+                          min: 0,
                           className:
                             "text-gray-600 dark:text-gray-300 border border-gray-600",
                         }}
