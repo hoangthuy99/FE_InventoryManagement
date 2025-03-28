@@ -15,6 +15,10 @@
     {
       "key": 4,
       "name": "Đã hủy"
+    },
+    {
+      "key": 5,
+      "name": "Đã hoàn thành"
     }
   ],
   "orStatus": [
@@ -52,7 +56,7 @@
     },
     {
       "key": 9,
-      "name": "Đã hoà thành"
+      "name": "Đã hoàn thành"
     }
   ],
   "productUnit": [

@@ -41,18 +41,19 @@ function Layout({ Component, pageProps }) {
           <Suspense fallback={<ThemedSuspense />}>
             <Switch>
               {routes.map((route, i) => {
-                return route.component &&
-                  route.roles?.includes(...tokenInfo.roles) ? (
+                return (
                   <Route
                     key={i}
                     exact={true}
                     path={`/app${route.path}`}
-                    render={(props) => (
-                      <route.component {...pageProps} {...props} />
-                    )}
+                    render={(props) =>
+                      route.roles.includes(...tokenInfo?.roles) ? (
+                        <route.component {...pageProps} {...props} />
+                      ) : (
+                        <Page401 />
+                      )
+                    }
                   />
-                ) : (
-                  <Route component={Page401} />
                 );
               })}
               <Redirect exact from="/app" to="/app/dashboard" />

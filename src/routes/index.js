@@ -147,16 +147,17 @@ const routes = [
     path: "/user/edit-user/:id",
     component: EditUser,
   },
-  
+
   {
     path: "/map",
     component: MapLayer,
     roles: [roleTags.role_amdin],
   },
-  
+
   {
     path: "*",
-    component:404,
+    component: Page404,
+    roles: [roleTags.role_amdin, roleTags.role_staff],
   },
 ];
 

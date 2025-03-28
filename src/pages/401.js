@@ -1,25 +1,29 @@
-import { useHistory } from "react-router-dom";
+import React from "react";
 
-export default function Page401() {
-  const history = useHistory();
+import { ForbiddenIcon } from "../icons";
 
+function Page404() {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-100">
-      <div className="text-center bg-white p-10 rounded-2xl shadow-lg">
-        <h1 className="text-6xl font-bold text-red-500">401</h1>
-        <h2 className="text-2xl font-semibold mt-4">
-          Bạn không có quyền truy cập
-        </h2>
-        <p className="text-gray-600 mt-2">
-          Vui lòng liên hệ quản trị viên hoặc thử đăng nhập lại.
-        </p>
-        <button
-          onClick={() => history.push("/")}
-          className="mt-6 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
+    <div className="flex flex-col items-center">
+      <ForbiddenIcon
+        className="w-12 h-12 mt-8 text-purple-200"
+        aria-hidden="true"
+      />
+      <h1 className="text-6xl font-semibold text-red-600 dark:text-gray-200">
+        401
+      </h1>
+      <p className="text-gray-700 dark:text-gray-300">
+        You do not have permission to access this page {" "}
+        <a
+          className="text-purple-600 hover:underline dark:text-purple-300"
+          href="javascript:window.history.back();"
         >
-          Quay lại Trang Chủ
-        </button>
-      </div>
+          go back
+        </a>
+        .
+      </p>
     </div>
   );
 }
+
+export default Page404;

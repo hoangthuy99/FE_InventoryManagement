@@ -44,6 +44,18 @@ import { useParams } from "react-router-dom";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+const filterStatus = {
+  1: [1, 2, 3], // Chờ duyệt -> Đã duyệt hoặc Từ chối
+  2: [2, 4, 5, 6, 7, 8, 9], // Đã duyệt -> Đang chọn hàng hoặc Đang đóng gói
+  3: [3],
+  4: [4, 5, 6, 7, 8, 9], // Đang đóng gói -> Đang chờ giao
+  5: [5, 6, 7, 8, 9], // Đang đóng gói -> Đang chờ giao
+  6: [6, 7, 8, 9], // Đang chờ giao -> Đã giao
+  7: [7, 6, 8, 9], // Đã giao -> Đã hoàn thành hoặc Đã hủy
+  8: [8],
+  9: [9],
+};
+
 function AddOrder() {
   const [customers, setCustomers] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -52,7 +64,7 @@ function AddOrder() {
   const { orStatus, productUnit } = data;
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const userRole = localStorage.getItem("userRole");
+  const [validStatus, setValidStatus] = useState([...filterStatus[1]]);
   const history = useHistory();
 
   const { id } = useParams();
@@ -63,31 +75,24 @@ function AddOrder() {
   const schema = yup.object().shape({
     customerId: yup.number().required("Khách hàng là bắt buộc"),
     branchId: yup.number().required("Chi nhánh là bắt buộc"),
-   status: yup
-    .number()
-    .typeError("Trạng thái không hợp lệ")
-    .required("Chọn trạng thái")
-    .test("valid-transition", function (newStatus) {
-      const { status: currentStatus } = this.parent;
-      const validTransitions = {
-        1: [2, 3],   // Chờ duyệt -> Đã duyệt hoặc Từ chối
-        2: [4, 5],   // Đã duyệt -> Đang chọn hàng hoặc Đang đóng gói
-        5: [6],      // Đang đóng gói -> Đang chờ giao
-        6: [7],      // Đang chờ giao -> Đã giao
-        7: [9, 8],   // Đã giao -> Đã hoàn thành hoặc Đã hủy
-      };
+    status: yup
+      .number()
+      .typeError("Trạng thái không hợp lệ")
+      .required("Chọn trạng thái")
+      .test("valid-transition", function (newStatus) {
+        const { status: currentStatus } = this.parent;
 
-      // Nếu trạng thái hiện tại không tồn tại trong danh sách hợp lệ, báo lỗi
-      if (!validTransitions[currentStatus]?.includes(newStatus)) {
-        return this.createError({
-          message: `Không thể chuyển từ ${getStatusText(
-            currentStatus
-          )} sang ${getStatusText(newStatus)}. Vui lòng đi qua từng bước.`,
-        });
-      }
+        // Nếu trạng thái hiện tại không tồn tại trong danh sách hợp lệ, báo lỗi
+        if (!filterStatus[currentStatus]?.includes(newStatus)) {
+          return this.createError({
+            message: `Không thể chuyển từ ${getStatusText(
+              currentStatus
+            )} sang ${getStatusText(newStatus)}. Vui lòng đi qua từng bước.`,
+          });
+        }
 
-      return true;
-    }),
+        return true;
+      }),
     product: yup
       .array()
       .of(
@@ -213,6 +218,7 @@ function AddOrder() {
         }));
 
         setOrderDetails(items);
+        setValidStatus(filterStatus[data.status]);
       }
     } catch (error) {
       console.error("Lỗi khi tải đơn hàng:", error);
@@ -221,7 +227,10 @@ function AddOrder() {
 
   useEffect(() => {
     fetchAllData();
-    fetchOrderById();
+    setValue("status", 1);
+    if (id) {
+      fetchOrderById();
+    }
   }, []);
 
   const calculateTotalPrice = (items) => {
@@ -274,6 +283,8 @@ function AddOrder() {
   };
 
   const submitForm = async (data) => {
+    if (!window.confirm("Bạn có chắc chắn muốn sửa đơn đặt hàng này?")) return;
+
     try {
       const totalPrice = calculateTotalPrice(orderDetails);
       const dataRequest = {
@@ -300,16 +311,17 @@ function AddOrder() {
       let res = id
         ? await orderAPI.updateOrder(dataRequest)
         : await orderAPI.saveOrder(dataRequest);
-
+      console.log(res);
+      
       if (res.data?.code === 200) {
         history.push("/app/order/all-orders");
-        alert(`${id ? "Cập nhật" : "Tạo"} đơn hàng thành công`);
+        showSuccessToast(`${id ? "Cập nhật" : "Tạo"} đơn hàng thành công`);
       } else {
-        alert("Lỗi khi cập nhật đơn hàng");
+        showErrorToast("Lỗi khi cập nhật đơn hàng");
       }
     } catch (error) {
       console.error("Lỗi API:", error);
-      alert("Lỗi khi cập nhật đơn hàng");
+      showErrorToast("Lỗi khi cập nhật đơn hàng");
     }
   };
 
@@ -433,16 +445,19 @@ function AddOrder() {
                     value={field.value || ""}
                     onChange={(event) => {
                       field.onChange(event.target.value); // Cập nhật giá trị trong react-hook-form
-                      handleUpdateStatus(event.target.value); // Gọi hàm cập nhật trạng thái
+                      // handleUpdateStatus(event.target.value); // Gọi hàm cập nhật trạng thái
                     }}
                     label="Chọn trạng thái"
-                    className="text-gray-600 border border-gray-600 dark:text-gray-300"
+                    className="text-gray-600 dark:text-gray-300"
                   >
-                    {orStatus.map((status) => (
-                      <MenuItem key={status.key} value={status.key}>
-                        {status.name}
-                      </MenuItem>
-                    ))}
+                    {orStatus.map(
+                      (status) =>
+                        validStatus.includes(status.key) && (
+                          <MenuItem key={status.key} value={status.key}>
+                            {status.name}
+                          </MenuItem>
+                        )
+                    )}
                   </Select>
                   {fieldState.error && (
                     <FormHelperText className="text-red-600">
