@@ -92,12 +92,7 @@ function AddSupplier() {
         {errors.general && <HelperText valid={false}>{errors.general}</HelperText>}
 
         <form onSubmit={handleSubmit}>
-          {/* Mã nhà cung cấp */}
-          <Label>
-            <span>Mã nhà cung cấp</span>
-            <Input className="mt-1" type="text" name="supCode" value={formData.supCode} onChange={handleChange} />
-            {errors.supCode && <HelperText valid={false} className="mt-1">{errors.supCode}</HelperText>}
-          </Label>
+         
 
           {/* Tên nhà cung cấp */}
           <Label className="mt-4">
