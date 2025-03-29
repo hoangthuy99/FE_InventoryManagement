@@ -1,4 +1,6 @@
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+import { showErrorToast } from "../components/Toast";
 
 const BASE_URL = `${process.env.REACT_APP_BASE_URL}/app`;
 
@@ -26,6 +28,20 @@ api.interceptors.request.use(
 
   (error) => {
     // Xử lý lỗi trước khi request được gửi đi
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor cho response (Kiểm tra lỗi 401 Unauthorized)
+api.interceptors.response.use(
+  (response) => response, // Trả về response nếu thành công
+
+  (error) => {
+    if (error.response?.status === 401) {
+      showErrorToast("Token hết hạn hoặc không hợp lệ, đăng xuất...");
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
     return Promise.reject(error);
   }
 );

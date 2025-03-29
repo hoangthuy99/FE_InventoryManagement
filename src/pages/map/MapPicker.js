@@ -55,6 +55,7 @@ function MapPicker({ handleStoreDelete }) {
     mapMode,
     branchs,
     branchSelected,
+    deleteAreas,
   } = useMapStore();
 
   useEffect(() => {
@@ -67,14 +68,14 @@ function MapPicker({ handleStoreDelete }) {
           capacity: a?.capacity,
           description: a?.description,
           isModify: a?.isModify || mode === mapMode.modify,
-          isDelete: a?.isDelete,
+          isDelete: deleteAreas.includes(a.id),
           index,
         });
 
         let color;
         if (a?.isModify) {
           color = "#00abed";
-        } else if (a?.isDelete) {
+        } else if (deleteAreas.includes(a.id)) {
           color = "#f50538";
         }
         const iconStyle = new Style({
@@ -102,7 +103,7 @@ function MapPicker({ handleStoreDelete }) {
         source: vectorSource,
       });
 
-      const imageUrl = branchs.find((b) => {              
+      const imageUrl = branchs.find((b) => {
         return b.id === branchSelected;
       })?.mapImage;
       rasterLayer.setSource(
@@ -235,7 +236,7 @@ function MapPicker({ handleStoreDelete }) {
 
       map.addInteraction(modify);
     }
-  }, [areas]);
+  }, [areas, deleteAreas]);
 
   return (
     <div

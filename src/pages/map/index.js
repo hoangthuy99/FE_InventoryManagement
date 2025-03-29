@@ -51,6 +51,8 @@ function MapLayer() {
     mode,
     mapMode,
     setMode,
+    deleteAreas,
+    setDeleteAreas,
   } = useMapStore();
   const [errors, setErrors] = useState({});
 
@@ -97,13 +99,8 @@ function MapLayer() {
 
   // delete area
   const handleDeleteArea = async () => {
-    const payload = areas
-      .filter((a) => a.isDelete)
-      .map((a) => a.id)
-      .join(",");
-
     try {
-      const response = await areaAPI.deleteMulti(payload);
+      const response = await areaAPI.deleteMulti(deleteAreas.join(","));
       const isDeleted = response.data?.data;
 
       if (isDeleted && response.data.code === 200) {
@@ -189,12 +186,7 @@ function MapLayer() {
 
   // Hanlde store delete area
   const handleStoreDelete = (area) => {
-    const updateAreas = areas?.map((a) =>
-      a?.id === area?.id ? { ...a, isDelete: !area.isDelete } : a
-    );
-    console.log(updateAreas);
-
-    setAreas(updateAreas);
+    setDeleteAreas([area.id]);
   };
 
   return (
