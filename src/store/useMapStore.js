@@ -26,12 +26,14 @@ const useMapStore = create((set, get) => ({
   areaSelected: baseData,
   mode: mapMode.readonly,
   mapMode: mapMode,
+  deleteAreas: [],
 
   resetAreaSelected: () => set({ areaSelected: baseData }),
   setAreas: (newAreas) => set({ areas: newAreas || [] }),
   setBranchSelected: (branch) => set({ branchSelected: branch }),
   setAreaSelected: (area) => set({ areaSelected: area }),
   setMode: (mode) => set({ mode }),
+  setDeleteAreas: (areas) => set({deleteAreas: areas || []}),
 
   // Get all branchs
   fetchAllBranch: async () => {
