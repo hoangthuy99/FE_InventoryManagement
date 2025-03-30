@@ -88,6 +88,24 @@ const routes = [
     ],
     roles: [roleTags.role_amdin],
   },
+  {
+    icon: "HeartIcon",
+    name: "Permission",
+    routes: [
+      { path: "/app/user/all-user", name: "All Employee" },
+      { path: "/app/user/edit-user", name: "Add Employee" },
+    ],
+    roles: [roleTags.role_amdin],
+  },
+  {
+    icon: "MenuIcon",
+    name: "Menu",
+    routes: [
+      { path: "/app/user/all-user", name: "All Employee" },
+      { path: "/app/user/edit-user", name: "Add Employee" },
+    ],
+    roles: [roleTags.role_amdin],
+  },
   
   {
     icon: "PagesIcon",
