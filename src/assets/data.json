@@ -97,8 +97,31 @@
       "name": "Ngừng hoạt động"
     }
   ],
-  "roleTags": {
-    "role_amdin": "ROLE_ADMIN",
-    "role_staff": "ROLE_STAFF"
-  }
+  "perTag": [
+    {
+      "key":1,
+      "name": "Tạo"
+    },
+    {
+      "key": 2,
+      "name": "Cập nhập"
+    },
+    {
+      "key": 3,
+      "name": "Xóa"
+    },
+    {
+      "key": 4,
+      "name": "Xem"
+    }],
+  
+    "roleTags": {
+      "role_admin": "ADMIN",
+      "role_staff": "STAFF"
+    },
+    "rolePermissions": {
+      "ADMIN": ["DASHBOARD_VIEW", "CATEGORY_MANAGE", "PRODUCT_MANAGE", "ORDER_MANAGE"],
+      "STAFF": ["DASHBOARD_VIEW", "ORDER_MANAGE"]
+    }
+  
 }

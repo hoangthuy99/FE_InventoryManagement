@@ -7,6 +7,7 @@ import Header from "../components/Header";
 import Main from "../containers/Main";
 import ThemedSuspense from "../components/ThemedSuspense";
 import { SidebarContext } from "../context/SidebarContext";
+import { SessionProvider } from "next-auth/react";
 import { useAuth } from "../context/AuthContext";
 
 const Page404 = lazy(() => import("../pages/404"));
@@ -40,19 +41,18 @@ function Layout({ Component, pageProps }) {
           <Suspense fallback={<ThemedSuspense />}>
             <Switch>
               {routes.map((route, i) => {
-                return (
+                return route.component &&
+                  route.roles?.includes(...tokenInfo.roles) ? (
                   <Route
                     key={i}
                     exact={true}
                     path={`/app${route.path}`}
-                    render={(props) =>
-                      route.roles.includes(...tokenInfo?.roles) ? (
-                        <route.component {...pageProps} {...props} />
-                      ) : (
-                        <Page401 />
-                      )
-                    }
+                    render={(props) => (
+                      <route.component {...pageProps} {...props} />
+                    )}
                   />
+                ) : (
+                  <Route component={Page401} />
                 );
               })}
               <Redirect exact from="/app" to="/app/dashboard" />

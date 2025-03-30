@@ -335,7 +335,7 @@ function Dashboard() {
                 <TableCell>
                   <p
                     onClick={() => history.push(`/app/order/add-order/${o.id}`)}
-                    className="font-semibold  hover:underline cursor-pointer"
+                    className="font-semibold cursor-pointer hover:underline"
                   >
                     {o.orderCode}
                   </p>
@@ -368,13 +368,13 @@ function Dashboard() {
         <TableFooter>
           <div
             onClick={() => history.push("/app/order/all-orders")}
-            className="text-right text-blue-500 hover:text-blue-600 cursor-pointer"
+            className="text-right text-blue-500 cursor-pointer hover:text-blue-600"
           >
             View more --&gt;
           </div>
         </TableFooter>
       </TableContainer>
-      <PageTitle>Charts</PageTitle>``
+      <PageTitle>Charts</PageTitle>
       <div className="grid gap-6 mb-8 md:grid-cols-2">
         <ChartCard title="Order status">
           <Doughnut {...orderStatusChart} />
