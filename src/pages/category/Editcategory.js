@@ -2,15 +2,30 @@ import { useState, useEffect } from "react";
 import { showSuccessToast, showErrorToast } from "../../components/Toast";
 import PageTitle from "../../components/Typography/PageTitle";
 import SectionTitle from "../../components/Typography/SectionTitle";
-import { Input, HelperText, Label, Select, Textarea, Button } from "@windmill/react-ui";
+import {
+  Input,
+  HelperText,
+  Label,
+  Select,
+  Textarea,
+  Button,
+} from "@windmill/react-ui";
 import { useParams } from "react-router-dom";
+import { categoryAPI } from "../../api/api";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 function EditCategory() {
   const { id } = useParams();
-  const [formData, setFormData] = useState({ name: "", code: "", description: "", activeFlag: 1 });
+  const [formData, setFormData] = useState({
+    name: "",
+    code: "",
+    description: "",
+    activeFlag: 1,
+  });
   const [existingCategories, setExistingCategories] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const history = useHistory()
 
   useEffect(() => {
     fetchCategory();
@@ -19,12 +34,12 @@ function EditCategory() {
 
   const fetchCategory = async () => {
     try {
-      const response = await fetch(`http://localhost:8089/app/category/${id}`);
-      if (!response.ok) {
-        throw new Error(`Lỗi tải danh mục: ${response.statusText}`);
+      const response = await categoryAPI.getById(id);
+      const data = response.data;
+
+      if (data) {
+        setFormData(data);
       }
-      const data = await response.json();
-      setFormData(data);
     } catch (error) {
       showErrorToast(error.message || "Lỗi khi tải danh mục!");
     }
@@ -32,12 +47,12 @@ function EditCategory() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://localhost:8089/app/category");
-      if (!response.ok) {
-        throw new Error(`Lỗi tải danh sách danh mục: ${response.statusText}`);
+      const response = await categoryAPI.getAll();
+      const data = response.data;
+
+      if (data) {
+        setExistingCategories(Array.isArray(data) ? data : []);
       }
-      const data = await response.json();
-      setExistingCategories(Array.isArray(data) ? data : []);
     } catch (error) {
       setExistingCategories([]);
       showErrorToast(error.message || "Không thể tải danh sách danh mục!");
@@ -46,7 +61,10 @@ function EditCategory() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: name === "activeFlag" ? Number(value) : value });
+    setFormData({
+      ...formData,
+      [name]: name === "activeFlag" ? Number(value) : value,
+    });
 
     if (name === "name") {
       const isNameDuplicate = existingCategories.some(
@@ -54,7 +72,9 @@ function EditCategory() {
       );
       setErrors((prev) => ({
         ...prev,
-        name: isNameDuplicate ? "Tên danh mục đã tồn tại, vui lòng nhập tên khác!" : "",
+        name: isNameDuplicate
+          ? "Tên danh mục đã tồn tại, vui lòng nhập tên khác!"
+          : "",
       }));
     }
 
@@ -64,20 +84,25 @@ function EditCategory() {
       );
       setErrors((prev) => ({
         ...prev,
-        code: isCodeDuplicate ? "Mã danh mục đã tồn tại, vui lòng nhập mã khác!" : "",
+        code: isCodeDuplicate
+          ? "Mã danh mục đã tồn tại, vui lòng nhập mã khác!"
+          : "",
       }));
     }
   };
 
   const validateForm = () => {
     let newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Tên danh mục không được để trống!";
+    if (!formData.name.trim())
+      newErrors.name = "Tên danh mục không được để trống!";
     if (!formData.code.trim()) {
       newErrors.code = "Mã danh mục không được để trống!";
     } else if (!/^[A-Za-z]{2}\d{3}$/.test(formData.code)) {
-      newErrors.code = "Mã danh mục phải có 5 ký tự, bắt đầu bằng 2 chữ cái và 3 số!";
+      newErrors.code =
+        "Mã danh mục phải có 5 ký tự, bắt đầu bằng 2 chữ cái và 3 số!";
     }
-    if (!formData.description.trim()) newErrors.description = "Mô tả không được để trống!";
+    if (!formData.description.trim())
+      newErrors.description = "Mô tả không được để trống!";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -89,32 +114,12 @@ function EditCategory() {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8089/app/category/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await categoryAPI.update(id, formData);
 
-      let result;
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        result = await response.json();
-      } else {
-        result = await response.text();
+      if (response.status === 200) {
+        showSuccessToast("Cập nhật danh mục thành công!");
+        history.push("/app/category/all-category")
       }
-
-      if (!response.ok) {
-        let errorMessage = "Cập nhật danh mục thất bại!";
-        if (typeof result === "string") errorMessage = result;
-        else if (result.error) errorMessage = result.error;
-        else if (result.message) errorMessage = result.message;
-
-        setErrors({ general: errorMessage });
-        showErrorToast(errorMessage);
-        return;
-      }
-
-      showSuccessToast("Cập nhật danh mục thành công!");
     } catch (error) {
       showErrorToast("Lỗi hệ thống, vui lòng thử lại sau!");
     } finally {
@@ -127,29 +132,59 @@ function EditCategory() {
       <PageTitle>Chỉnh sửa Danh Mục</PageTitle>
       <SectionTitle>Chỉnh sửa thông tin danh mục</SectionTitle>
       <div className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
-        {errors.general && <HelperText valid={false}>{errors.general}</HelperText>}
+        {errors.general && (
+          <HelperText valid={false}>{errors.general}</HelperText>
+        )}
         <form onSubmit={handleSubmit}>
           <Label>
             <span>Tên danh mục</span>
-            <Input className="mt-1" type="text" name="name" value={formData.name} onChange={handleChange} />
-            {errors.name && <HelperText valid={false}>{errors.name}</HelperText>}
+            <Input
+              className="mt-1"
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+            />
+            {errors.name && (
+              <HelperText valid={false}>{errors.name}</HelperText>
+            )}
           </Label>
 
           <Label className="mt-4">
             <span>Mã danh mục</span>
-            <Input className="mt-1" type="text" name="code" value={formData.code} onChange={handleChange} />
-            {errors.code && <HelperText valid={false}>{errors.code}</HelperText>}
+            <Input
+              className="mt-1"
+              type="text"
+              name="code"
+              value={formData.code}
+              onChange={handleChange}
+            />
+            {errors.code && (
+              <HelperText valid={false}>{errors.code}</HelperText>
+            )}
           </Label>
 
           <Label className="mt-4">
             <span>Mô tả danh mục</span>
-            <Textarea className="mt-1" name="description" value={formData.description} onChange={handleChange} />
-            {errors.description && <HelperText valid={false}>{errors.description}</HelperText>}
+            <Textarea
+              className="mt-1"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+            />
+            {errors.description && (
+              <HelperText valid={false}>{errors.description}</HelperText>
+            )}
           </Label>
 
           <Label className="mt-4">
             <span>Trạng thái</span>
-            <Select className="mt-1" name="activeFlag" value={formData.activeFlag} onChange={handleChange}>
+            <Select
+              className="mt-1"
+              name="activeFlag"
+              value={formData.activeFlag}
+              onChange={handleChange}
+            >
               <option value={1}>Hoạt động</option>
               <option value={0}>Không hoạt động</option>
             </Select>

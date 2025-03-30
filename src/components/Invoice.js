@@ -7,6 +7,7 @@ import {
   StyleSheet,
   pdf,
   Font,
+  Image,
 } from "@react-pdf/renderer";
 import { Button } from "@mui/material";
 
@@ -136,6 +137,8 @@ const InvoiceGDR = ({ invoiceData }) => (
       <Text style={styles.signature}>
         Nhà cung cấp: ............................
       </Text>
+
+      <Image src="/images/qrcode.png" />
     </Page>
   </Document>
 );
@@ -188,20 +191,33 @@ const InvoiceGDI = ({ invoiceData }) => (
       </View>
 
       {/* Tổng tiền */}
-      <Text style={styles.totalSection}>
-        Tổng tiền thanh toán: {invoiceData?.total.toLocaleString()} VND
-      </Text>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
+        {/* Bên trái: Chữ ký */}
+        <View>
+          <Text style={styles.totalSection}>
+            Tổng tiền thanh toán: {invoiceData?.total.toLocaleString()} VND
+          </Text>
 
-      {/* Chữ ký */}
-      <Text style={styles.signature}>
-        Người lập phiếu: ............................
-      </Text>
-      <Text style={styles.signature}>
-        Thủ kho: ............................
-      </Text>
-      <Text style={styles.signature}>
-        Khách hàng: ............................
-      </Text>
+          <Text style={styles.signature}>
+            Người lập phiếu: ............................
+          </Text>
+          <Text style={styles.signature}>
+            Thủ kho: ............................
+          </Text>
+          <Text style={styles.signature}>
+            Khách hàng: ............................
+          </Text>
+        </View>
+
+        {/* Bên phải: QR Code */}
+        <Image style={{ width: 200 }} src="/images/qrcode.png" />
+      </View>
     </Page>
   </Document>
 );
