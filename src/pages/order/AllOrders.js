@@ -137,7 +137,7 @@ const AllOrder = () => {
           return {
             name: o.productInfo.name,
             unit: productUnit.find((u) => u.key === o.productUnit)?.name,
-            quantity: o.productInfo.qty,
+            quantity: o.qty,
             price: o.productInfo.price,
           };
         }),

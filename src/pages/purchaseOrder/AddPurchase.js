@@ -108,11 +108,14 @@ function AddPurchase() {
         });
 
         setOrderItems(items);
+        fetchAreasByBranch(data?.branch.id);
       }
     } catch (error) {
       console.error("Lỗi khi gọi API danh mục:", error);
     }
   };
+
+  console.log(orderItems);
 
   const fetchAreasByBranch = async (branchId) => {
     try {

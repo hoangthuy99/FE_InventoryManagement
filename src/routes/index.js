@@ -138,14 +138,16 @@ const routes = [
     component: EditSupplier,
     roles: [roleTags.role_amdin],
   },
-  
+
   {
     path: "/user/all-user",
     component: AllUser,
+    roles: [roleTags.role_amdin],
   },
   {
-    path: "/user/edit-user/:id",
+    path: "/user/edit-user/:id?",
     component: EditUser,
+    roles: [roleTags.role_amdin],
   },
 
   {

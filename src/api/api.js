@@ -74,7 +74,10 @@ export const branchAPI = {
     api.post("/branch", data, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
-  update: (id, data) => api.put(`/branch/${id}`, data),
+  update: (id, data) =>
+    api.put(`/branch/${id}`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
   delete: (id) => api.delete(`/branch/${id}`),
   getByActiveFlag: () => api.get("/branch/active"),
   searchByName: (keyword) => api.get(`/branch/search?keyword=${keyword}`),
@@ -155,15 +158,15 @@ export const invoiceAPI = {
 
 //  API User
 export const userAPI = {
-  getAll: () => api.get("/user"),
+  search: (data) => api.post("/user/search", data),
   getById: (id) => api.get(`/user/${id}`),
-  create: (data) => api.post("/user", data),
   update: (id, data) => api.put(`/user/${id}`, data),
   delete: (id) => api.delete(`/user/${id}`),
 };
 
 // API Auth
 export const authAPI = {
+  getAllRoles: () => api.get("/auth/roles"),
   login: (data, token) => api.post("/auth/login", data),
   loginOauth: (token) =>
     api.post(
@@ -191,12 +194,12 @@ export const authAPI = {
 // API Supplier
 export const supplierAPI = {
   getAll: () => api.get("/supplier/getAllSuppliers"),
-  getById: (id) => api.get(`/supplier/getSupplier/${id}`),
+  getById: (id) => api.get(`/supplier/${id}`),
   getAllPaginated: (page, limit) =>
     api.get(`/supplier/getAllSuppliers?page=${page}&limit=${limit}`),
-  add: (supplierData) => api.post("/supplier/add", supplierData),
-  update: (id, supplierData) => api.put(`/supplier/update/${id}`, supplierData),
-  delete: (id) => api.delete(`/supplier/delete/${id}`),
+  add: (supplierData) => api.post("/supplier/add-supplier", supplierData),
+  update: (id, supplierData) => api.put(`/supplier/${id}`, supplierData),
+  delete: (id) => api.delete(`/supplier/${id}`),
 };
 
 // API Purchase Order

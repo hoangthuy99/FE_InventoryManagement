@@ -2,82 +2,114 @@ import { useState, useEffect } from "react";
 import { showSuccessToast, showErrorToast } from "../../components/Toast";
 import PageTitle from "../../components/Typography/PageTitle";
 import SectionTitle from "../../components/Typography/SectionTitle";
-import { Input, HelperText, Label, Select, Textarea, Button } from "@windmill/react-ui";
+import {
+  Input,
+  HelperText,
+  Label,
+  Select,
+  Textarea,
+  Button,
+} from "@windmill/react-ui";
 import { useParams } from "react-router-dom";
+import { categoryAPI, customerAPI } from "../../api/api";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
-function EditCategory() {
+function EditCustomer() {
   const { id } = useParams();
-  const [formData, setFormData] = useState({ name: "", code: "", description: "", activeFlag: 1 });
+  const [formData, setFormData] = useState({
+    cusCode: "",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    activeFlag: 1,
+    createdDate: new Date().toISOString(),
+    updateDate: new Date().toISOString(),
+  });
   const [existingCategories, setExistingCategories] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const history = useHistory();
 
   useEffect(() => {
-    fetchCategory();
+    fetchCustomer();
     fetchCategories();
   }, []);
 
-  const fetchCategory = async () => {
+  const fetchCustomer = async () => {
     try {
-      const response = await fetch(`http://localhost:8089/app/category/${id}`);
-      if (!response.ok) {
-        throw new Error(`Lỗi tải danh mục: ${response.statusText}`);
+      const response = await customerAPI.getById(id);
+      const data = response.data;
+
+      if (data) {
+        setFormData(data);
       }
-      const data = await response.json();
-      setFormData(data);
     } catch (error) {
-      showErrorToast(error.message || "Lỗi khi tải danh mục!");
+      showErrorToast(error.message || "Lỗi khi tải thông tin khách hàng!");
     }
   };
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://localhost:8089/app/category");
-      if (!response.ok) {
-        throw new Error(`Lỗi tải danh sách danh mục: ${response.statusText}`);
+      const response = await categoryAPI.getAll();
+      const data = response.data;
+
+      if (data) {
+        setExistingCategories(Array.isArray(data) ? data : []);
       }
-      const data = await response.json();
-      setExistingCategories(Array.isArray(data) ? data : []);
     } catch (error) {
       setExistingCategories([]);
-      showErrorToast(error.message || "Không thể tải danh sách danh mục!");
+      showErrorToast(error.message || "Không thể tải danh sách khách hàng!");
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: name === "activeFlag" ? Number(value) : value });
+    setFormData({
+      ...formData,
+      [name]: name === "activeFlag" ? Number(value) : value,
+    });
 
     if (name === "name") {
       const isNameDuplicate = existingCategories.some(
-        (category) => category.name === value && category.id !== Number(id)
+        (customer) => customer.name === value && customer.id !== Number(id)
       );
       setErrors((prev) => ({
         ...prev,
-        name: isNameDuplicate ? "Tên danh mục đã tồn tại, vui lòng nhập tên khác!" : "",
+        name: isNameDuplicate
+          ? "Tên khách hàng đã tồn tại, vui lòng nhập tên khác!"
+          : "",
       }));
     }
 
     if (name === "code") {
       const isCodeDuplicate = existingCategories.some(
-        (category) => category.code === value && category.id !== Number(id)
+        (customer) => customer.cusCode === value && customer.id !== Number(id)
       );
       setErrors((prev) => ({
         ...prev,
-        code: isCodeDuplicate ? "Mã danh mục đã tồn tại, vui lòng nhập mã khác!" : "",
+        code: isCodeDuplicate
+          ? "Mã khách hàng đã tồn tại, vui lòng nhập mã khác!"
+          : "",
       }));
     }
   };
 
   const validateForm = () => {
     let newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Tên danh mục không được để trống!";
-    if (!formData.code.trim()) {
-      newErrors.code = "Mã danh mục không được để trống!";
-    } else if (!/^[A-Za-z]{2}\d{3}$/.test(formData.code)) {
-      newErrors.code = "Mã danh mục phải có 5 ký tự, bắt đầu bằng 2 chữ cái và 3 số!";
+
+    if (!formData.name) newErrors.name = "Tên khách hàng không được để trống!";
+    if (!formData.email) {
+      newErrors.email = "Email không được để trống!";
+    } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) {
+      newErrors.email = "Email không hợp lệ!";
     }
-    if (!formData.description.trim()) newErrors.description = "Mô tả không được để trống!";
+    if (!formData.phone) {
+      newErrors.phone = "Số điện thoại không được để trống!";
+    } else if (!/^\d{10,15}$/.test(formData.phone)) {
+      newErrors.phone = "Số điện thoại phải có từ 10 đến 15 số!";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -89,33 +121,14 @@ function EditCategory() {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8089/app/category/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await customerAPI.update(id, formData);
 
-      let result;
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        result = await response.json();
-      } else {
-        result = await response.text();
+      if (response.status === 200) {
+        showSuccessToast("Cập nhật khách hàng thành công!");
+        history.push("/app/customer/all-customer");
       }
-
-      if (!response.ok) {
-        let errorMessage = "Cập nhật danh mục thất bại!";
-        if (typeof result === "string") errorMessage = result;
-        else if (result.error) errorMessage = result.error;
-        else if (result.message) errorMessage = result.message;
-
-        setErrors({ general: errorMessage });
-        showErrorToast(errorMessage);
-        return;
-      }
-
-      showSuccessToast("Cập nhật danh mục thành công!");
     } catch (error) {
+      showErrorToast("Đã xảy ra lỗi: " + error.message);
       showErrorToast("Lỗi hệ thống, vui lòng thử lại sau!");
     } finally {
       setLoading(false);
@@ -124,39 +137,109 @@ function EditCategory() {
 
   return (
     <>
-      <PageTitle>Chỉnh sửa Danh Mục</PageTitle>
-      <SectionTitle>Chỉnh sửa thông tin danh mục</SectionTitle>
+      <PageTitle>Chỉnh sửa khách hàng</PageTitle>
+      <SectionTitle>Chỉnh sửa thông tin khách hàng</SectionTitle>
       <div className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
-        {errors.general && <HelperText valid={false}>{errors.general}</HelperText>}
+        {errors.general && (
+          <HelperText valid={false}>{errors.general}</HelperText>
+        )}
         <form onSubmit={handleSubmit}>
+          {/* Mã khách hàng */}
           <Label>
-            <span>Tên danh mục</span>
-            <Input className="mt-1" type="text" name="name" value={formData.name} onChange={handleChange} />
-            {errors.name && <HelperText valid={false}>{errors.name}</HelperText>}
+            <span>Mã khách hàng</span>
+            <Input
+              className="mt-1"
+              type="text"
+              name="cusCode"
+              value={formData.cusCode}
+              onChange={handleChange}
+            />
+            {errors.cusCode && (
+              <HelperText valid={false} className="mt-1">
+                {errors.cusCode}
+              </HelperText>
+            )}
           </Label>
 
+          {/* Tên khách hàng */}
           <Label className="mt-4">
-            <span>Mã danh mục</span>
-            <Input className="mt-1" type="text" name="code" value={formData.code} onChange={handleChange} />
-            {errors.code && <HelperText valid={false}>{errors.code}</HelperText>}
+            <span>Tên khách hàng</span>
+            <Input
+              className="mt-1"
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+            />
+            {errors.name && (
+              <HelperText valid={false} className="mt-1">
+                {errors.name}
+              </HelperText>
+            )}
           </Label>
 
+          {/* Email khách hàng */}
           <Label className="mt-4">
-            <span>Mô tả danh mục</span>
-            <Textarea className="mt-1" name="description" value={formData.description} onChange={handleChange} />
-            {errors.description && <HelperText valid={false}>{errors.description}</HelperText>}
+            <span>Email</span>
+            <Input
+              className="mt-1"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+            />
+            {errors.email && (
+              <HelperText valid={false} className="mt-1">
+                {errors.email}
+              </HelperText>
+            )}
           </Label>
 
+          {/* Số điện thoại */}
+          <Label className="mt-4">
+            <span>Số điện thoại</span>
+            <Input
+              className="mt-1"
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+            />
+            {errors.phone && (
+              <HelperText valid={false} className="mt-1">
+                {errors.phone}
+              </HelperText>
+            )}
+          </Label>
+
+          {/* Địa chỉ */}
+          <Label className="mt-4">
+            <span>Địa chỉ</span>
+            <Textarea
+              className="mt-1"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+            />
+          </Label>
+
+          {/* Trạng thái */}
           <Label className="mt-4">
             <span>Trạng thái</span>
-            <Select className="mt-1" name="activeFlag" value={formData.activeFlag} onChange={handleChange}>
+            <Select
+              className="mt-1"
+              name="activeFlag"
+              value={formData.activeFlag}
+              onChange={handleChange}
+            >
               <option value={1}>Hoạt động</option>
               <option value={0}>Không hoạt động</option>
             </Select>
           </Label>
 
+          {/* Nút submit */}
           <Button className="p-4 mt-6" type="submit" disabled={loading}>
-            {loading ? "Đang xử lý..." : "Cập nhật danh mục"}
+            {loading ? "Đang xử lý..." : "Lưu khách hàng"}
           </Button>
         </form>
       </div>
@@ -164,4 +247,4 @@ function EditCategory() {
   );
 }
 
-export default EditCategory;
+export default EditCustomer;
