@@ -7,7 +7,7 @@ const routes = [
     path: "/app/dashboard", // the url
     icon: "HomeIcon",
     name: "Dashboard", // name that appear in Sidebar
-    roles: [roleTags.role_amdin, roleTags.role_staff],
+    roles: [roleTags.role_admin, roleTags.role_staff],
   },
   {
     icon: "ModalsIcon",
@@ -16,7 +16,7 @@ const routes = [
       { path: "/app/category/all-category", name: "All Category" },
       { path: "/app/category/add-category", name: "Add Category" },
     ],
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_admin],
   },
   {
     icon: "ProductIcon",
@@ -25,7 +25,7 @@ const routes = [
       { path: "/app/product/all-product", name: "All Product" },
       { path: "/app/product/add-product", name: "Add Product" },
     ],
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_admin],
   },
   {
     icon: "ReceiptIcon",
@@ -34,7 +34,7 @@ const routes = [
       { path: "/app/purchase/all-purchase", name: "All Purchase" },
       { path: "/app/purchase/add-purchase", name: "Add Purchase" },
     ],
-    roles: [roleTags.role_amdin, roleTags.role_staff],
+    roles: [roleTags.role_admin, roleTags.role_staff],
   },
   {
     icon: "IssueIcon",
@@ -43,7 +43,7 @@ const routes = [
       { path: "/app/order/all-orders", name: "All Orders" },
       { path: "/app/order/add-order", name: "Add Order" },
     ],
-    roles: [roleTags.role_amdin, roleTags.role_staff],
+    roles: [roleTags.role_admin, roleTags.role_staff],
   },
   {
     icon: "CustomerIcon",
@@ -52,7 +52,7 @@ const routes = [
       { path: "/app/customer/all-customer", name: "All Customer" },
       { path: "/app/customer/add-customer", name: "Add Customer" },
     ],
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_admin],
   },
   {
     icon: "BranchIcon",
@@ -61,13 +61,13 @@ const routes = [
       { path: "/app/branch/all-branch", name: "All Branch" },
       { path: "/app/branch/add-branch", name: "Add Branch" },
     ],
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_admin],
   },
   {
     icon: "MapIcon",
     name: "Map",
     routes: [{ path: "/app/map", name: "Area-Map" }],
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_admin],
   },
   {
     icon: "SupplierIcon",
@@ -76,7 +76,7 @@ const routes = [
       { path: "/app/supplier/all-supplier", name: "All Supplier" },
       { path: "/app/supplier/add-supplier", name: "Add Supplier" },
     ],
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_admin],
   },
   
   {
@@ -86,7 +86,7 @@ const routes = [
       { path: "/app/user/all-user", name: "All Employee" },
       { path: "/app/user/edit-user", name: "Add Employee" },
     ],
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_admin],
   },
   {
     icon: "HeartIcon",
@@ -95,7 +95,7 @@ const routes = [
       { path: "/app/user/all-user", name: "All Employee" },
       { path: "/app/user/edit-user", name: "Add Employee" },
     ],
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_admin],
   },
   {
     icon: "MenuIcon",
@@ -104,7 +104,7 @@ const routes = [
       { path: "/app/user/all-user", name: "All Employee" },
       { path: "/app/user/edit-user", name: "Add Employee" },
     ],
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_admin],
   },
   
   {

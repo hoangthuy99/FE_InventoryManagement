@@ -116,8 +116,8 @@
     }],
   
     "roleTags": {
-      "role_admin": "ADMIN",
-      "role_staff": "STAFF"
+      "role_admin": "ROLE_ADMIN",
+      "role_staff": "ROLE_STAFF"
     },
     "rolePermissions": {
       "ADMIN": ["DASHBOARD_VIEW", "CATEGORY_MANAGE", "PRODUCT_MANAGE", "ORDER_MANAGE"],

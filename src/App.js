@@ -14,6 +14,7 @@ import {
   LoginSuccessRoute,
   ProtectedRoute,
 } from "./context/AuthContext";
+import Tracking from "./pages/shipping/Tracking";
 
 const Layout = lazy(() => import("./containers/Layout"));
 const Login = lazy(() => import("./pages/Login"));
@@ -54,7 +55,6 @@ function App() {
               </LoginSuccessRoute>
             )}
           />
-
           {/* Place new routes over this */}
           <Route
             path="/app"
@@ -64,7 +64,6 @@ function App() {
               </ProtectedRoute>
             )}
           />
-
           {/* Chuyển hướng mặc định */}
           <Route
             exact
@@ -75,6 +74,9 @@ function App() {
               </LoginSuccessRoute>
             )}
           />
+
+          {/* Place new routes over this */}
+          <Route path="/shipping" render={(props) => <Tracking {...props} />} />
         </Switch>
       </Router>
     </AuthProvider>
