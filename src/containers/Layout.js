@@ -41,6 +41,8 @@ function Layout({ Component, pageProps }) {
           <Suspense fallback={<ThemedSuspense />}>
             <Switch>
               {routes.map((route, i) => {
+                console.log(route.roles);
+                
                 return route.component &&
                   route.roles?.includes(...tokenInfo.roles) ? (
                   <Route
