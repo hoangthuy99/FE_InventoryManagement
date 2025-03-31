@@ -173,9 +173,11 @@ const AllOrder = () => {
               <TableCell>Trạng thái</TableCell>
               <TableCell>Ngày xuất hàng kế hoạch</TableCell>
               <TableCell>Ngày xuất hàng thực tế</TableCell>
+              <TableCell>Số lượng</TableCell> {/* Thêm cột mới */}
               <TableCell>Hành động</TableCell>
             </tr>
           </TableHeader>
+
           <TableBody>
             {orders.map((order) => (
               <TableRow key={order.id}>
@@ -203,6 +205,12 @@ const AllOrder = () => {
                 </TableCell>
                 <TableCell>{order.plannedExportDate || "N/A"}</TableCell>
                 <TableCell>{order.actualExportDate || "N/A"}</TableCell>
+                <TableCell className="text-center">
+                  {order.orderDetails?.reduce(
+                    (sum, item) => sum + item.qty,
+                    0
+                  ) || 0}
+                </TableCell>
                 <TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-4">

@@ -39,11 +39,6 @@ export const ProtectedRoute = ({ children }) => {
     exp = expiration;
   }
 
-  console.log(exp);
-
-  console.log(Date.now())
-  
-
   return token && exp > Date.now() ? (
     children
   ) : (
