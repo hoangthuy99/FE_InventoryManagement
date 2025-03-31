@@ -88,6 +88,23 @@ const routes = [
     ],
     roles: [roleTags.role_amdin],
   },
+  {
+    icon: "HeartIcon",
+    name: "Permission",
+    routes: [
+      { path: "/app/permission/add-permission/:id", name: "Add Permission" },
+      { path: "/app/permission/all-permission", name: "All permission" },
+    ],
+    roles: [roleTags.role_amdin],
+  },
+  {
+    icon: "MenuIcon",
+    name: "Menu",
+    routes: [
+      { path: "/app/menus/all-menu", name: "All menu" },
+    ],
+    roles: [roleTags.role_amdin],
+  },
   
   {
     icon: "PagesIcon",

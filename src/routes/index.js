@@ -26,6 +26,11 @@ const AllSupplier = lazy(() => import("../pages/supplier/AllSupplier"));
 const EditSupplier = lazy(() => import("../pages/supplier/EditSupplier"));
 const AllUser = lazy(() => import("../pages/user/AllUser"));
 const EditUser = lazy(() => import("../pages/user/EditUser"));
+const AllPermission = lazy(() => import("../pages/permission/AllPermission"));
+const AddPermission = lazy(() => import("../pages/permission/AddPermission"));
+const AllMenu = lazy(() => import("../pages/menus/AllMenu"));
+
+
 const Page404 = lazy(() => import("../pages/404"));
 const { roleTags } = data;
 
@@ -149,7 +154,27 @@ const routes = [
     component: EditUser,
     roles: [roleTags.role_amdin],
   },
-
+  {
+    path: "/permission/all-permission",
+    component: AllPermission,
+    roles: [roleTags.role_amdin],
+  },
+  {
+    path: "/permission/edit-permission/:id?",
+    component: AddPermission,
+    roles: [roleTags.role_amdin],
+  },
+  {
+    path: "/permission/add-permission/:id?",
+    component: AddPermission,
+    roles: [roleTags.role_amdin],
+  },
+  {
+    path: "/menus/all-menu/",
+    component: AllMenu,
+    roles: [roleTags.role_amdin],
+  },
+ 
   {
     path: "/map",
     component: MapLayer,
