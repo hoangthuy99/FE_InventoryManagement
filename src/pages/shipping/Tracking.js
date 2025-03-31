@@ -1,4 +1,42 @@
+import { useEffect, useState } from "react";
+import database from "../../config/FirebaseConfig";
+import { getFirestore, getDocs, addDoc, collection } from "firebase/firestore";
+
 function Tracking() {
+  const [data, setData] = useState([]);
+
+  const writeData = async () => {
+    try {
+      await addDoc(collection(database, "notification"), {
+        createdAt: new Date().toISOString(),
+        createdBy: "12345",
+        isRead: false,
+        orderId: 67890,
+        sendTo: 54321,
+        title: "Thông báo đơn hàng mới",
+      });
+      console.log("Dữ liệu đã được ghi!");
+    } catch (error) {
+      console.error("Lỗi khi ghi dữ liệu:", error);
+    }
+  };
+
+  const getAllNotification = async () => {
+    const querySnapshot = await getDocs(collection(database, "notification"));
+    const notifications = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setData(notifications);
+  };
+
+  useEffect(() => {
+    getAllNotification();
+  }, []);
+
+  console.log(database);
+  console.log(data);
+
   return (
     <div class="bg-gray-100">
       <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-5">
@@ -143,7 +181,10 @@ function Tracking() {
               <i class="fas fa-comment-dots mr-2"></i>
               Nhắn tin
             </button>
-            <button class="bg-yellow-500 text-white py-2 px-4 rounded-lg flex items-center">
+            <button
+              onClick={writeData}
+              class="bg-yellow-500 text-white py-2 px-4 rounded-lg flex items-center"
+            >
               <i class="fas fa-sync-alt mr-2"></i>
               Cập nhật
             </button>
