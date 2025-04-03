@@ -1,6 +1,8 @@
+
 import data from "../assets/data.json";
 
 const { roleTags } = data;
+
 
 const routes = [
   {
@@ -88,20 +90,13 @@ const routes = [
     ],
     roles: [roleTags.role_amdin],
   },
-  {
-    icon: "HeartIcon",
-    name: "Permission",
-    routes: [
-      { path: "/app/permission/add-permission/:id", name: "Add Permission" },
-      { path: "/app/permission/all-permission", name: "All permission" },
-    ],
-    roles: [roleTags.role_amdin],
-  },
+  
   {
     icon: "MenuIcon",
     name: "Menu",
     routes: [
       { path: "/app/menus/all-menu", name: "All menu" },
+      { path: "/app/menus/edit-menu", name: "Add menu" },
     ],
     roles: [roleTags.role_amdin],
   },

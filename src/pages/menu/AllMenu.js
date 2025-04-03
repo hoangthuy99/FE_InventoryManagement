@@ -36,12 +36,11 @@ function AllMenu() {
 
   const fetchMenus = async () => {
     try {
-      const response = await menuAPI.search(searchModel);
-      const data = response.data;
+      const response = await menuAPI.getAll();
 
-      if (Array.isArray(data.content)) {
-        setMenus(data.content);
-        setTotalElements(data.totalElements);
+      if (response.data && Array.isArray(response.data)) {
+        setMenus(response.data);
+        setTotalElements(response.data.totalElements || 0);
       } else {
         showErrorToast("Lỗi dữ liệu API! Dữ liệu không hợp lệ.");
       }
@@ -62,38 +61,7 @@ function AllMenu() {
     }
   };
 
-  // const handleImportExcel = async (e) => {
-  //   e.preventDefault();
-  //   const formData = new FormData(e.target);
-  //   try {
-  //     const res = await menuAPI.importExcel(formData);
-  //     if (res.data?.code === 200) {
-  //       showSuccessToast("Thêm mới menu thành công!");
-  //       fetchMenus();
-  //     } else {
-  //       showErrorToast(res.data?.message);
-  //     }
-  //   } catch (error) {
-  //     showErrorToast(error);
-  //   }
-  // };
 
-  const fetchSampleFile = async () => {
-    try {
-      const res = await menuAPI.getSampleFile();
-      if (res.data?.code === 200) {
-        setSampleFile(res.data.data);
-      } else {
-        showErrorToast(res.data?.message);
-      }
-    } catch (error) {
-      showErrorToast(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchSampleFile();
-  }, []);
 
   useEffect(() => {
     fetchMenus();
@@ -114,7 +82,6 @@ function AllMenu() {
         }
       />
       <Box className="mb-4" display="flex" justifyContent="end">
-        {/* <ImportExcel action={handleImportExcel} sampleFile={sampleFile} /> */}
       </Box>
       <TableContainer className="mb-8 overflow-hidden rounded-lg shadow-lg">
         <Table>
@@ -127,6 +94,7 @@ function AllMenu() {
               <TableCell>Icon</TableCell>
               <TableCell>Menu Cha</TableCell>
               <TableCell>Trạng thái</TableCell>
+              <TableCell>Quyền hạn</TableCell>
               <TableCell>Ngày tạo</TableCell>
               <TableCell>Hành động</TableCell>
             </tr>
@@ -134,18 +102,24 @@ function AllMenu() {
           <TableBody>
             {menus.length > 0 ? (
               menus.map((menu, index) => (
-                <TableRow key={menu.id} className="transition hover:bg-gray-100">
+                <TableRow
+                  key={menu.id}
+                  className="transition hover:bg-gray-100"
+                >
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{menu.code}</TableCell>
                   <TableCell>{menu.name}</TableCell>
                   <TableCell>{menu.path || "Không có đường dẫn"}</TableCell>
                   <TableCell>{menu.icon || "Không có icon"}</TableCell>
-                  <TableCell>{menu.parentId ? menu.parentId : "Không có"}</TableCell>
+                  <TableCell>
+                    {menu.parentId ? menu.parentId : "Không có"}
+                  </TableCell>
                   <TableCell>
                     <Badge type={menu.activeFlag ? "success" : "danger"}>
                       {menu.activeFlag ? "Hoạt động" : "Ngừng hoạt động"}
                     </Badge>
                   </TableCell>
+                  <TableCell>{menu.roles?.map(role => role.roleName).join(", ") || "Chưa có quyền"}</TableCell>
                   <TableCell>
                     {new Date(menu.createdDate).toLocaleDateString("vi-VN")}
                   </TableCell>
@@ -155,7 +129,7 @@ function AllMenu() {
                         layout="link"
                         size="icon"
                         onClick={() =>
-                          (window.location.href = `/app/menu/edit-menu/${menu.id}`)
+                          (window.location.href = `/app/menus/edit-menu/${menu.id}`)
                         }
                       >
                         <EditIcon className="w-5 h-5 text-blue-500" />
@@ -173,7 +147,10 @@ function AllMenu() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan="9" className="py-4 text-center text-gray-500">
+                <TableCell
+                  colSpan="9"
+                  className="py-4 text-center text-gray-500"
+                >
                   Không có menu nào
                 </TableCell>
               </TableRow>

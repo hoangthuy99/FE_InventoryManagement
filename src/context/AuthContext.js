@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import { Redirect } from "react-router-dom";
 
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -38,11 +39,6 @@ export const ProtectedRoute = ({ children }) => {
     const { expiration } = JSON.parse(token);
     exp = expiration;
   }
-
-  console.log(exp);
-
-  console.log(Date.now())
-  
 
   return token && exp > Date.now() ? (
     children

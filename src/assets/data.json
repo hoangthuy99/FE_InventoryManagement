@@ -97,6 +97,24 @@
       "name": "Ngừng hoạt động"
     }
   ],
+  "actionPer": [
+    {
+      "key": 1,
+      "name": "CREATE"
+    },
+    {
+      "key": 2,
+      "name": "UPDATE"
+    },
+    {
+      "key": 3,
+      "name": "DELETE"
+    },
+    {
+      "key": 4,
+      "name": "READ"
+    }
+  ],
   "roleTags": {
     "role_amdin": "ROLE_ADMIN",
     "role_staff": "ROLE_STAFF"
