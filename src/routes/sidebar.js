@@ -88,7 +88,8 @@ const routes = [
       { path: "/app/user/all-user", name: "All Employee" },
       { path: "/app/user/edit-user", name: "Add Employee" },
     ],
-    roles: [roleTags.role_amdin],
+
+
   },
   
   {
@@ -96,7 +97,9 @@ const routes = [
     name: "Menu",
     routes: [
       { path: "/app/menus/all-menu", name: "All menu" },
+
       { path: "/app/menus/edit-menu", name: "Add menu" },
+
     ],
     roles: [roleTags.role_amdin],
   },

@@ -12,7 +12,9 @@ import {
   Textarea,
   Button,
 } from "@windmill/react-ui";
+
 import { authAPI, userAPI , roleAPI} from "../../api/api";
+
 import { useParams } from "react-router-dom/cjs/react-router-dom";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
@@ -23,7 +25,9 @@ function EditUser() {
 
   const fetchRoles = async () => {
     try {
+
       const response = await roleAPI.getAllRoles();
+
       const data = response.data?.data;
       console.log(data);
 

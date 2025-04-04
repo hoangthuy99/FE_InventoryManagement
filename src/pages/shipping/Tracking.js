@@ -1,4 +1,112 @@
+import { useEffect, useRef, useState } from "react";
+import database from "../../config/FirebaseConfig";
+import {
+  getFirestore,
+  getDocs,
+  addDoc,
+  collection,
+  onSnapshot,
+  query,
+  where,
+  doc,
+} from "firebase/firestore";
+import { orderAPI } from "../../api/api";
+import { showErrorToast, showSuccessToast } from "../../components/Toast";
+import data from "../../assets/data.json";
+
 function Tracking() {
+  const [orders, setOrders] = useState([]);
+  const notiRef = collection(database, "notification");
+  const q = query(notiRef, where("sendTo", "==", 2));
+  const { orStatus } = data;
+  const status = orStatus.reduce((acc, o) => {
+    acc[o.key] = o.name;
+    return acc;
+  }, {});
+  const firstRender = useRef(true);
+
+  const getOrdersByIdList = async (ids) => {
+    try {
+      const response = await orderAPI.getByIdList(ids);
+      const data = response.data;
+
+      if (data.code === 200) {
+        setOrders(data?.data);
+      }
+    } catch (error) {
+      showErrorToast(
+        "Đã xảy ra lỗi trong khi lấy dữ liệu đơn hàng: ",
+        error.message
+      );
+    }
+  };
+
+  const writeData = async () => {
+    try {
+      await addDoc(collection(database, "notification"), {
+        createdAt: new Date().toISOString(),
+        createdBy: "12345",
+        isRead: false,
+        orderId: 67890,
+        sendTo: 54321,
+        title: "Thông báo đơn hàng mới",
+      });
+      console.log("Dữ liệu đã được ghi!");
+    } catch (error) {
+      console.error("Lỗi khi ghi dữ liệu:", error);
+    }
+  };
+
+  // Get notification by self
+  const getSelfNotification = async () => {
+    try {
+      const querySnapshot = await getDocs(q);
+      const notifications = querySnapshot.docs.map((doc) => {
+        return {
+          id: doc.id,
+          ...doc.data(),
+        };
+      });
+
+      console.log("Notifications:", notifications);
+      getOrdersByIdList(notifications.map((n) => n.orderId).join(","));
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    getSelfNotification();
+  }, []);
+
+  // Handle realtime when db changed
+  useEffect(() => {
+    // if (firstRender.current) {
+    //   firstRender.current = false;
+    //   return;
+    // }
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const docData = change.doc.data();
+          console.log(docData);
+
+          const response = orderAPI.getById(docData.orderId);
+          setOrders([...orders, response.data]);
+
+          showSuccessToast(docData.title);
+        }
+        if (change.type === "removed") {
+          console.log(change.doc);
+        }
+      });
+    });
+
+    return () => unsubscribe();
+  }, [database]);
+
   return (
     <div class="bg-gray-100">
       <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-5">
@@ -20,51 +128,26 @@ function Tracking() {
         </div>
         <div class="p-4">
           <h2 class="text-lg font-semibold mb-4">Danh sách đơn hàng</h2>
-          <div class="bg-white p-3 rounded-lg shadow mb-4">
-            <div class="flex items-center">
-              <img
-                alt="Package image"
-                class="rounded-full mr-3"
-                height="50"
-                src="https://storage.googleapis.com/a1aa/image/wWi72MTrPMLbTia7CaK6gcCGtQJ5VImrebHBbs-LKGE.jpg"
-                width="50"
-              />
-              <div>
-                <h3 class="text-md font-semibold">Đơn hàng #12345</h3>
-                <p class="text-gray-600">Trạng thái: Đang giao</p>
+          {orders &&
+            orders.map((o) => (
+              <div class="bg-white p-3 rounded-lg shadow mb-4">
+                <div class="flex items-center">
+                  <img
+                    alt="Package image"
+                    class="rounded-full mr-3"
+                    height="50"
+                    src="https://tse3.mm.bing.net/th?id=OIP.9YGf5zV6GpSu1_Fsjs8mUQHaHa&pid=Api&P=0&h=220"
+                    width="50"
+                  />
+                  <div>
+                    <h3 class="text-md font-semibold">
+                      Đơn hàng {o.orderCode}
+                    </h3>
+                    <p class="text-gray-600">Trạng thái: {status[o.status]}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div class="bg-white p-3 rounded-lg shadow mb-4">
-            <div class="flex items-center">
-              <img
-                alt="Package image"
-                class="rounded-full mr-3"
-                height="50"
-                src="https://storage.googleapis.com/a1aa/image/wWi72MTrPMLbTia7CaK6gcCGtQJ5VImrebHBbs-LKGE.jpg"
-                width="50"
-              />
-              <div>
-                <h3 class="text-md font-semibold">Đơn hàng #12346</h3>
-                <p class="text-gray-600">Trạng thái: Đang giao</p>
-              </div>
-            </div>
-          </div>
-          <div class="bg-white p-3 rounded-lg shadow mb-4">
-            <div class="flex items-center">
-              <img
-                alt="Package image"
-                class="rounded-full mr-3"
-                height="50"
-                src="https://storage.googleapis.com/a1aa/image/wWi72MTrPMLbTia7CaK6gcCGtQJ5VImrebHBbs-LKGE.jpg"
-                width="50"
-              />
-              <div>
-                <h3 class="text-md font-semibold">Đơn hàng #12347</h3>
-                <p class="text-gray-600">Trạng thái: Đang giao</p>
-              </div>
-            </div>
-          </div>
+            ))}
         </div>
         <div class="bg-gray-200 p-4 flex justify-around">
           <div class="text-center">
@@ -143,7 +226,10 @@ function Tracking() {
               <i class="fas fa-comment-dots mr-2"></i>
               Nhắn tin
             </button>
-            <button class="bg-yellow-500 text-white py-2 px-4 rounded-lg flex items-center">
+            <button
+              onClick={writeData}
+              class="bg-yellow-500 text-white py-2 px-4 rounded-lg flex items-center"
+            >
               <i class="fas fa-sync-alt mr-2"></i>
               Cập nhật
             </button>
