@@ -1,3 +1,4 @@
+
 import data from "../assets/data.json";
 
 const { roleTags } = data;
@@ -92,8 +93,8 @@ const routes = [
     icon: "HeartIcon",
     name: "Permission",
     routes: [
-      { path: "/app/user/all-user", name: "All Employee" },
-      { path: "/app/user/edit-user", name: "Add Employee" },
+      { path: "/app/permission/add-permission/:id", name: "Add Permission" },
+      { path: "/app/permission/all-permission", name: "All permission" },
     ],
     roles: [roleTags.role_admin],
   },
@@ -101,8 +102,7 @@ const routes = [
     icon: "MenuIcon",
     name: "Menu",
     routes: [
-      { path: "/app/user/all-user", name: "All Employee" },
-      { path: "/app/user/edit-user", name: "Add Employee" },
+      { path: "/app/menus/all-menu", name: "All menu" },
     ],
     roles: [roleTags.role_admin],
   },

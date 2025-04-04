@@ -147,6 +147,7 @@ export const orderAPI = {
   getByIdAndStatus: (customerId, orderId, status) =>
     api.get(`/order/${customerId}/${orderId}/${status}`),
   delete: (id) => api.delete(`/order/${id}`),
+  getByIdList: (ids) => api.get(`/order/getByIdList?ids=${ids}`),
 };
 
 // API Invoice
@@ -162,7 +163,37 @@ export const userAPI = {
   getById: (id) => api.get(`/user/${id}`),
   update: (id, data) => api.put(`/user/${id}`, data),
   delete: (id) => api.delete(`/user/${id}`),
+  getAllUserGoogle: () => api.get(`/user/getAllUsersGG`),
 };
+
+// API menu 
+export const menuAPI = {
+  search: (data) => api.post("/menu/search", data),
+  getAll: () => api.get("/menu"), 
+  getById: (id) => api.get(`/menu/${id}`), 
+  create: (data) => api.post("/menu", data), 
+  update: (id, data) => api.put(`/menu/${id}`, data), 
+  delete: (id) => api.delete(`/menu/${id}`), 
+  importExcel: (data) =>
+    api.post("/menu/importExcel", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
+  getSampleFile: () => api.get("/menu/sampleExcel"),
+};
+
+//API permissions
+export const permissionAPI = {
+  search: (data) => api.post("/permission/search", data),
+  getAll: () => api.get("/permission"), // Lấy danh sách quyền
+  getById: (id) => api.get(`/permission/${id}`), // Lấy quyền theo ID
+  getByName: (name) => api.get(`/permission/name/${name}`), // Tìm quyền theo tên
+  create: (data) => api.post("/permission", data), // Tạo mới quyền
+  update: (id, data) => api.put(`/permission/${id}`, data), // Cập nhật quyền
+  delete: (id) => api.delete(`/permission/${id}`), // Xóa quyền
+};
+
 
 // API Auth
 export const authAPI = {

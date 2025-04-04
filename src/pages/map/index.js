@@ -68,6 +68,7 @@ function MapLayer() {
     );
     setMode(mode);
     setErrors({});
+    setDeleteAreas([])
   };
 
   // create new area on map
@@ -99,6 +100,13 @@ function MapLayer() {
 
   // delete area
   const handleDeleteArea = async () => {
+    if (
+      !window.confirm(
+        `Bạn có chắc chắn muốn xóa khu vực này?`
+      )
+    )
+      return;
+
     try {
       const response = await areaAPI.deleteMulti(deleteAreas.join(","));
       const isDeleted = response.data?.data;
@@ -114,6 +122,15 @@ function MapLayer() {
 
   // Submit areas with 2 cases are create and update
   const handleSubmit = async () => {
+    if (
+      !window.confirm(
+        `Bạn có chắc chắn muốn ${
+          mode === mapMode.create ? "thêm" : "sửa"
+        } khu vực này?`
+      )
+    )
+      return;
+
     let data = areas?.map((a) => {
       return {
         id: a?.id,
