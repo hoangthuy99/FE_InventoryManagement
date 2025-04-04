@@ -119,7 +119,7 @@ function AllMenu() {
                       {menu.activeFlag ? "Hoạt động" : "Ngừng hoạt động"}
                     </Badge>
                   </TableCell>
-                  <TableCell>{menu.roles?.map(role => role.roleName).join(", ") || "Chưa có quyền"}</TableCell>
+                  <TableCell className="text-center break-words whitespace-normal">{menu.roles?.map(role => role.roleName).join(", ") || "Chưa có quyền"}</TableCell>
                   <TableCell>
                     {new Date(menu.createdDate).toLocaleDateString("vi-VN")}
                   </TableCell>

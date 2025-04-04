@@ -4,62 +4,20 @@ import * as yup from "yup";
 import { showSuccessToast, showErrorToast } from "../../components/Toast";
 import PageTitle from "../../components/Typography/PageTitle";
 import SectionTitle from "../../components/Typography/SectionTitle";
-import { Input, HelperText, Label, Select, Button } from "@windmill/react-ui";
-import { menuAPI, roleAPI } from "../../api/api"; // Import API
+import { Input, HelperText, Label, Button } from "@windmill/react-ui";
+import { menuAPI, roleAPI } from "../../api/api";
 import { useParams, useHistory } from "react-router-dom";
 
 function EditMenu() {
-  const { id } = useParams(); // Lấy ID từ URL
+  const { id } = useParams();
   const history = useHistory();
   const [menus, setMenus] = useState([]);
-  const [roles, setRoles] = useState([]); 
-
-  useEffect(() => {
-    const fetchMenus = async () => {
-      try {
-        const response = await menuAPI.getAll();
-        setMenus(response.data || []);
-      } catch (error) {
-        showErrorToast("Lỗi khi tải danh sách menu!");
-      }
-    };
-
-   const fetchRoles = async () => {
-      try {
-        const response = await roleAPI.getAllRoles();
-        const data = response.data?.data;
-  
-        if (data) {
-          setRoles(data);
-        }
-      } catch (error) {
-        showErrorToast(error.message || "Lỗi khi tải nhà cung cấp!");
-      }
-    };
-    fetchMenus();
-    fetchRoles();
-
-    if (id) {
-      const fetchMenu = async () => {
-        try {
-          const response = await menuAPI.getById(id);
-          if (response.data) {
-            formik.setValues(response.data);
-          }
-        } catch (error) {
-          showErrorToast("Lỗi khi tải thông tin menu!");
-        }
-      };
-      fetchMenu();
-    }
-  }, [id]);
+  const [roles, setRoles] = useState([]);
 
   const validationSchema = yup.object({
     code: yup.string().required("Mã menu không được để trống!"),
     name: yup.string().required("Tên menu không được để trống!"),
-    icon: yup.string().required("Icon không được để trống!"),
     activeFlag: yup.number().oneOf([0, 1], "Trạng thái không hợp lệ"),
-    roleId: yup.string().required("Vui lòng chọn quyền!"),
   });
 
   const formik = useFormik({
@@ -70,28 +28,69 @@ function EditMenu() {
       icon: "",
       parentId: "",
       activeFlag: 1,
-      roleId: "",
+      roleIds: [],
     },
     validationSchema,
     onSubmit: async (values) => {
-        try {
-          console.log("Submitting values:", values); // Log giá trị trước khi gửi API
-          const response = id ? await menuAPI.update(id, values) : await menuAPI.create(values);
-          console.log("API response:", response); // Kiểm tra dữ liệu trả về từ API
-      
-          if (response.data?.data) {
-            showSuccessToast(id ? "Cập nhật menu thành công!" : "Thêm menu thành công!");
-            history.push("/app/menu");
-          } else {
-            showErrorToast("API không trả về dữ liệu hợp lệ!");
-          }
-        } catch (error) {
-          console.error("API Error:", error);
-          showErrorToast(error.message || "Thao tác thất bại!");
+      try {
+        const response = id
+          ? await menuAPI.update(id, values)
+          : await menuAPI.create(values);
+
+        if (response.data) {
+          showSuccessToast(id ? "Cập nhật menu thành công!" : "Thêm menu thành công!");
+          history.push("/app/menus/all-menu");
+        } else {
+          showErrorToast("API không trả về dữ liệu hợp lệ!");
         }
+      } catch (error) {
+        showErrorToast(error.message || "Thao tác thất bại!");
       }
-      
+    },
   });
+
+  const handleRoleChange = (roleId) => {
+    const updatedRoleIds = formik.values.roleIds.includes(roleId)
+      ? formik.values.roleIds.filter((id) => id !== roleId)
+      : [...formik.values.roleIds, roleId];
+
+    formik.setFieldValue("roleIds", updatedRoleIds);
+  };
+
+  useEffect(() => {
+    const initData = async () => {
+      try {
+        const [menuListRes, roleListRes] = await Promise.all([
+          menuAPI.getAll(),
+          roleAPI.getAllRoles(),
+        ]);
+
+        setMenus(menuListRes.data || []);
+        setRoles(roleListRes.data?.data || []);
+
+        if (id) {
+          const menuRes = await menuAPI.getById(id);
+          const data = menuRes.data;
+
+          const extractedRoleIds = data.roles?.map((r) => r.id) || data.roleIds || [];
+
+          formik.setValues({
+            code: data.code || "",
+            name: data.name || "",
+            path: data.path || "",
+            icon: data.icon || "",
+            parentId: data.parentId || "",
+            activeFlag: data.activeFlag ?? 1,
+            roleIds: extractedRoleIds,
+          });
+        }
+      } catch (error) {
+        showErrorToast("Lỗi khi tải dữ liệu!");
+      }
+    };
+
+    initData();
+  }, [id]);
 
   return (
     <>
@@ -102,10 +101,7 @@ function EditMenu() {
           {/* Mã menu */}
           <Label>
             <span>Mã Menu</span>
-            <Input 
-              className="mt-1"
-              {...formik.getFieldProps("code")}
-            />
+            <Input className="mt-1" {...formik.getFieldProps("code")} />
             {formik.touched.code && formik.errors.code && (
               <HelperText valid={false}>{formik.errors.code}</HelperText>
             )}
@@ -114,10 +110,7 @@ function EditMenu() {
           {/* Tên menu */}
           <Label className="mt-4">
             <span>Tên Menu</span>
-            <Input 
-              className="mt-1"
-              {...formik.getFieldProps("name")}
-            />
+            <Input className="mt-1" {...formik.getFieldProps("name")} />
             {formik.touched.name && formik.errors.name && (
               <HelperText valid={false}>{formik.errors.name}</HelperText>
             )}
@@ -126,56 +119,61 @@ function EditMenu() {
           {/* Đường dẫn */}
           <Label className="mt-4">
             <span>Đường Dẫn</span>
-            <Input 
-              className="mt-1"
-              {...formik.getFieldProps("path")}
-            />
+            <Input className="mt-1" {...formik.getFieldProps("path")} />
             {formik.touched.path && formik.errors.path && (
               <HelperText valid={false}>{formik.errors.path}</HelperText>
             )}
           </Label>
 
-          {/* Icon */}
-          <Label className="mt-4">
-            <span>Icon</span>
-            <Input 
-              className="mt-1"
-              {...formik.getFieldProps("icon")}
-            />
-            {formik.touched.icon && formik.errors.icon && (
-              <HelperText valid={false}>{formik.errors.icon}</HelperText>
-            )}
-          </Label>
+          {/* Icon & Trạng thái */}
+          <div className="flex flex-col gap-4 mt-4 md:flex-row">
+            <Label className="w-full md:w-1/2">
+              <span>Icon</span>
+              <Input className="mt-1" {...formik.getFieldProps("icon")} />
+              {formik.touched.icon && formik.errors.icon && (
+                <HelperText valid={false}>{formik.errors.icon}</HelperText>
+              )}
+            </Label>
 
-          {/* Trạng thái */}
-          <Label className="mt-4">
-            <span>Trạng thái</span>
-            <Select 
-              className="mt-1"
-              {...formik.getFieldProps("activeFlag")}
-            >
-              <option value={1}>Hoạt động</option>
-              <option value={0}>Không hoạt động</option>
-            </Select>
-            {formik.touched.activeFlag && formik.errors.activeFlag && (
-              <HelperText valid={false}>{formik.errors.activeFlag}</HelperText>
-            )}
-          </Label>
+            <Label className="w-full md:w-1/2">
+              <span>Trạng thái</span>
+              <select
+                className="w-full p-2 mt-1 border rounded"
+                {...formik.getFieldProps("activeFlag")}
+              >
+                <option value={1}>Hoạt động</option>
+                <option value={0}>Không hoạt động</option>
+              </select>
+              {formik.touched.activeFlag && formik.errors.activeFlag && (
+                <HelperText valid={false}>{formik.errors.activeFlag}</HelperText>
+              )}
+            </Label>
+          </div>
 
-          <Label className="mt-4">
-            <span>Vai trò</span>
-            <Select
-              className="mt-1"
-              name="roleId"
-              {...formik.getFieldProps("roleId")}
-              onChange={(e) =>
-                formik.setFieldValue("roleId", Number(e.target.value))
-              }
-            >
-              {roles.map((r) => {
-                return <option value={r.id}>{r.roleName}</option>;
-              })}
-            </Select>
+          {/* Vai trò */}
+          <Label className="mt-6">
+            <span className="block mb-2 font-medium text-gray-700 dark:text-gray-300">
+              Vai trò
+            </span>
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-3 gap-y-3">
+              {roles.map((role) => (
+                <Label key={role.id} className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    className="w-5 h-5 text-purple-600 border-gray-300 form-checkbox focus:ring focus:ring-purple-300"
+                    value={role.id}
+                    checked={formik.values.roleIds.includes(role.id)}
+                    onChange={() => handleRoleChange(role.id)}
+                  />
+                  <span className="ml-2 text-sm text-gray-800 dark:text-gray-100">
+                    {role.roleName}
+                  </span>
+                </Label>
+              ))}
+            </div>
+            {formik.touched.roleIds && formik.errors.roleIds && (
+              <HelperText valid={false}>{formik.errors.roleIds}</HelperText>
+            )}
           </Label>
 
           <Button className="p-4 mt-6" type="submit" disabled={formik.isSubmitting}>
