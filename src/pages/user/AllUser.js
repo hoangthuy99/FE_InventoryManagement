@@ -18,7 +18,7 @@ import { supplierAPI, userAPI } from "../../api/api";
 import FilterBox from "../../components/FilterBox";
 import data from "../../assets/data.json";
 
-function AllSupplier() {
+function AllUser() {
   const [users, setUsers] = useState([]); // Luôn là mảng
   const [searchModel, setSearchModel] = useState({
     searchKey: "",
@@ -101,6 +101,7 @@ function AllSupplier() {
               <TableCell>Email</TableCell>
               <TableCell>Địa chỉ</TableCell>
               <TableCell>Số điện thoại</TableCell>
+              <TableCell>Quyền hạn</TableCell>
               <TableCell>Trạng thái</TableCell>
               <TableCell>Hành động</TableCell>
             </tr>
@@ -111,10 +112,12 @@ function AllSupplier() {
                 <TableRow key={user.id}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{user.userCode}</TableCell>
-                  <TableCell>{user.fullName}</TableCell>
+                  <TableCell>{user.fullname}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.address}</TableCell>
                   <TableCell>{user.phone}</TableCell>
+                  <TableCell>{user.roles?.map(role => role.roleName).join(", ") || "Chưa có quyền"}</TableCell>
+
                   <TableCell>
                     <Badge type={user.activeFlag === 1 ? "success" : "danger"}>
                       {user.activeFlag === 1 ? "Hoạt động" : "Ngừng hoạt động"}
@@ -167,4 +170,4 @@ function AllSupplier() {
   );
 }
 
-export default AllSupplier;
+export default AllUser;
