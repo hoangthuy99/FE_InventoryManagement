@@ -147,6 +147,7 @@ export const orderAPI = {
   getByIdAndStatus: (customerId, orderId, status) =>
     api.get(`/order/${customerId}/${orderId}/${status}`),
   delete: (id) => api.delete(`/order/${id}`),
+  getByIdList: (ids) => api.get(`/order/getByIdList?ids=${ids}`),
 };
 
 // API Invoice
@@ -162,6 +163,7 @@ export const userAPI = {
   getById: (id) => api.get(`/user/${id}`),
   update: (id, data) => api.put(`/user/${id}`, data),
   delete: (id) => api.delete(`/user/${id}`),
+  getAllUserGoogle: () => api.get(`/user/getAllUsersGG`),
 };
 
 // API Auth

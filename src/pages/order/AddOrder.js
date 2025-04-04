@@ -3,6 +3,8 @@ import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import LocationPicker from "../../components/LocationPicker/LocationPicker";
 import SectionTitle from "../../components/Typography/SectionTitle";
 import { Button } from "@windmill/react-ui";
+import database from "../../config/FirebaseConfig";
+import { getFirestore, getDocs, addDoc, collection } from "firebase/firestore";
 
 import {
   FormControl,
@@ -33,6 +35,7 @@ import {
   branchAPI,
   orderDetailAPI,
   productAPI,
+  userAPI,
 } from "../../api/api";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import data from "../../assets/data.json";
@@ -40,6 +43,7 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -59,6 +63,7 @@ const filterStatus = {
 function AddOrder() {
   const [customers, setCustomers] = useState([]);
   const [branches, setBranches] = useState([]);
+  const [users, setUsers] = useState([]);
   const [orderDetails, setOrderDetails] = useState([]);
   const [updateOrderStatus, setOrders] = useState([]);
   const { orStatus, productUnit } = data;
@@ -66,6 +71,8 @@ function AddOrder() {
   const [loading, setLoading] = useState(false);
   const [validStatus, setValidStatus] = useState([...filterStatus[1]]);
   const history = useHistory();
+  const { getTokenInfo } = useAuth();
+  const { fullName } = getTokenInfo();
 
   const { id } = useParams();
   const getStatusText = (statusKey) => {
@@ -75,6 +82,7 @@ function AddOrder() {
   const schema = yup.object().shape({
     customerId: yup.number().required("Khách hàng là bắt buộc"),
     branchId: yup.number().required("Chi nhánh là bắt buộc"),
+    shipperId: yup.number().required("Người giao hàng là bắt buộc"),
     status: yup
       .number()
       .typeError("Trạng thái không hợp lệ")
@@ -122,7 +130,8 @@ function AddOrder() {
     handleSubmit,
     formState: { errors },
     setValue,
-    getValue,
+    getValues,
+    watch,
     reset,
   } = useForm({
     resolver: yupResolver(schema),
@@ -171,15 +180,17 @@ function AddOrder() {
 
   const fetchAllData = async () => {
     try {
-      const [customerRes, branchRes, productRes] = await Promise.all([
+      const [customerRes, branchRes, productRes, userRes] = await Promise.all([
         customerAPI.getAll(),
         branchAPI.getAll(),
         productAPI.getAll(),
+        userAPI.getAllUserGoogle(),
       ]);
 
       setCustomers(customerRes.data || []);
       setBranches(branchRes.data || []);
       setProducts(productRes.data || []);
+      setUsers(userRes.data?.data || []);
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu:", error);
     }
@@ -199,6 +210,7 @@ function AddOrder() {
         reset({
           customerId: data.customer?.id || "",
           branchId: data.branch?.id || "",
+          shipperId: data.shipper?.id || 1,
           plannedExportDate: dayjs(data.plannedExportDate) || dayjs(),
           actualExportDate: dayjs(data.actualExportDate) || dayjs(),
           deliveryAddress: data.deliveryAddress || "",
@@ -228,6 +240,7 @@ function AddOrder() {
   useEffect(() => {
     fetchAllData();
     setValue("status", 1);
+    setValue("shipperId", 1);
     if (id) {
       fetchOrderById();
     }
@@ -291,6 +304,7 @@ function AddOrder() {
         id: id || "",
         customerId: data.customerId,
         branchId: data.branchId,
+        shipperId: data.shipperId,
         plannedExportDate: data.plannedExportDate,
         actualExportDate: data.actualExportDate,
         deliveryAddress: data.deliveryAddress,
@@ -311,9 +325,11 @@ function AddOrder() {
       let res = id
         ? await orderAPI.updateOrder(dataRequest)
         : await orderAPI.saveOrder(dataRequest);
-      console.log(res);
-      
+
       if (res.data?.code === 200) {
+        if (id != null && dataRequest.status === 6) {
+          sendNoti();
+        }
         history.push("/app/order/all-orders");
         showSuccessToast(`${id ? "Cập nhật" : "Tạo"} đơn hàng thành công`);
       } else {
@@ -322,6 +338,23 @@ function AddOrder() {
     } catch (error) {
       console.error("Lỗi API:", error);
       showErrorToast("Lỗi khi cập nhật đơn hàng");
+    }
+  };
+
+  // Send notification when choose shipper
+  const sendNoti = async () => {
+    try {
+      await addDoc(collection(database, "notification"), {
+        createdAt: new Date().toISOString(),
+        createdBy: fullName,
+        isRead: false,
+        orderId: id,
+        sendTo: getValues("shipperId"),
+        title: "Bạn có thêm đơn hàng mới",
+      });
+      console.log("Dữ liệu đã được ghi!");
+    } catch (error) {
+      console.error("Lỗi khi ghi dữ liệu:", error);
     }
   };
 
@@ -430,64 +463,107 @@ function AddOrder() {
               )}
             />
           </Grid>
-        </Grid>
 
-        {id && (
-          <Grid item xs={6} className="flex items-center gap-10">
-            <Controller
-              name="status"
-              control={control}
-              render={({ field, fieldState }) => (
-                <FormControl fullWidth>
-                  <InputLabel>Chọn trạng thái</InputLabel>
-                  <Select
-                    error={fieldState.error}
-                    value={field.value || ""}
-                    onChange={(event) => {
-                      field.onChange(event.target.value); // Cập nhật giá trị trong react-hook-form
-                      // handleUpdateStatus(event.target.value); // Gọi hàm cập nhật trạng thái
-                    }}
-                    label="Chọn trạng thái"
-                    className="text-gray-600 dark:text-gray-300"
-                  >
-                    {orStatus.map(
-                      (status) =>
-                        validStatus.includes(status.key) && (
-                          <MenuItem key={status.key} value={status.key}>
-                            {status.name}
-                          </MenuItem>
-                        )
-                    )}
-                  </Select>
-                  {fieldState.error && (
-                    <FormHelperText className="text-red-600">
-                      {fieldState.error.message}
-                    </FormHelperText>
+          {id && (
+            <>
+              <Grid item xs={6} className="flex items-center gap-10">
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <FormControl fullWidth>
+                      <InputLabel>Chọn trạng thái</InputLabel>
+                      <Select
+                        error={fieldState.error}
+                        value={field.value || ""}
+                        onChange={(event) => {
+                          if (event.target.value === 6) {
+                            setValue("shipperId", users[0]?.id);
+                          } else {
+                            setValue("shipperId", 1);
+                          }
+                          field.onChange(event.target.value); // Cập nhật giá trị trong react-hook-form
+                          // handleUpdateStatus(event.target.value); // Gọi hàm cập nhật trạng thái
+                        }}
+                        label="Chọn trạng thái"
+                        className="text-gray-600 dark:text-gray-300"
+                      >
+                        {orStatus.map(
+                          (status) =>
+                            validStatus.includes(status.key) && (
+                              <MenuItem key={status.key} value={status.key}>
+                                {status.name}
+                              </MenuItem>
+                            )
+                        )}
+                      </Select>
+                      {fieldState.error && (
+                        <FormHelperText className="text-red-600">
+                          {fieldState.error.message}
+                        </FormHelperText>
+                      )}
+                    </FormControl>
                   )}
+                />
+              </Grid>
+              {watch("status") === 6 && (
+                <Grid item xs={6} className="flex items-center gap-10">
+                  <Controller
+                    name="shipperId"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <FormControl fullWidth>
+                        <InputLabel>Chọn người giao hàng</InputLabel>
+                        <Select
+                          error={fieldState.error}
+                          value={field.value || ""}
+                          onChange={(event) => {
+                            field.onChange(event.target.value); // Cập nhật giá trị trong react-hook-form
+                            // handleUpdateStatus(event.target.value); // Gọi hàm cập nhật trạng thái
+                          }}
+                          label="Chọn người giao hàng"
+                          className="text-gray-600 dark:text-gray-300"
+                        >
+                          {users.map((user) => (
+                            <MenuItem key={user.id} value={user.id}>
+                              {user.code + " - " + user.username}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {fieldState.error && (
+                          <FormHelperText className="text-red-600">
+                            {fieldState.error.message}
+                          </FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+                  />
+                </Grid>
+              )}
+            </>
+          )}
+
+          <Grid item xs={12} className="flex items-center gap-10">
+            <Controller
+              name="deliveryAddress"
+              control={control}
+              render={({ field }) => (
+                <FormControl fullWidth margin="normal">
+                  <TextField
+                    {...field}
+                    placeholder="Nhập địa chỉ"
+                    onChange={(e) => handleInputChange(e, field)}
+                    error={!!errors.deliveryAddress}
+                    helperText={errors.deliveryAddress?.message}
+                  />
+                  <FormHelperText>
+                    Bạn có thể nhập địa chỉ hoặc chọn trên bản đồ
+                  </FormHelperText>
                 </FormControl>
               )}
             />
           </Grid>
-        )}
-
-        <Controller
-          name="deliveryAddress"
-          control={control}
-          render={({ field }) => (
-            <FormControl fullWidth margin="normal">
-              <TextField
-                {...field}
-                placeholder="Nhập địa chỉ"
-                onChange={(e) => handleInputChange(e, field)}
-                error={!!errors.deliveryAddress}
-                helperText={errors.deliveryAddress?.message}
-              />
-              <FormHelperText>
-                Bạn có thể nhập địa chỉ hoặc chọn trên bản đồ
-              </FormHelperText>
-            </FormControl>
-          )}
-        />
+        </Grid>
 
         <LocationPicker
           location={location}
