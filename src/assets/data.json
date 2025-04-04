@@ -98,31 +98,26 @@
       "name": "Ngừng hoạt động"
     }
   ],
-  "perTag": [
+  "actionPer": [
     {
-      "key":1,
-      "name": "Tạo"
+      "key": 1,
+      "name": "CREATE"
     },
     {
       "key": 2,
-      "name": "Cập nhập"
+      "name": "UPDATE"
     },
     {
       "key": 3,
-      "name": "Xóa"
+      "name": "DELETE"
     },
     {
       "key": 4,
-      "name": "Xem"
-    }],
-  
-    "roleTags": {
-      "role_admin": "ROLE_ADMIN",
-      "role_staff": "ROLE_STAFF"
-    },
-    "rolePermissions": {
-      "ADMIN": ["DASHBOARD_VIEW", "CATEGORY_MANAGE", "PRODUCT_MANAGE", "ORDER_MANAGE"],
-      "STAFF": ["DASHBOARD_VIEW", "ORDER_MANAGE"]
+      "name": "READ"
     }
-  
+  ],
+  "roleTags": {
+    "role_amdin": "ROLE_ADMIN",
+    "role_staff": "ROLE_STAFF"
+  }
 }
