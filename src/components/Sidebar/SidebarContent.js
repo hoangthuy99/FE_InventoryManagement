@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import routes from "../../routes/sidebar";
 import { NavLink, Route } from "react-router-dom";
 import * as Icons from "../../icons";
 import SidebarSubmenu from "./SidebarSubmenu";
 import { Button } from "@windmill/react-ui";
 import { useAuth } from "../../context/AuthContext";
+import { menuAPI } from "../../api/api";
+import { showErrorToast } from "../Toast";
 
 function Icon({ icon, ...props }) {
   const Icon = Icons[icon];
@@ -12,7 +14,7 @@ function Icon({ icon, ...props }) {
 }
 
 function SidebarContent() {
-  const { getTokenInfo } = useAuth();
+  const { getTokenInfo, filteredMenu } = useAuth();
   const tokenInfo = getTokenInfo();
 
   return (
@@ -24,13 +26,9 @@ function SidebarContent() {
         Inventory Management
       </button>
       <ul className="mt-6">
-        {routes.map((route) =>
-          route.routes ? (
-            route.roles?.includes(...tokenInfo?.roles) ? (
-              <SidebarSubmenu route={route} key={route.name} />
-            ) : (
-              ""
-            )
+        {filteredMenu.map((route) =>
+          route.routes.length > 0 ? (
+            <SidebarSubmenu route={route} key={route.name} />
           ) : (
             <li className="relative px-6 py-3" key={route.name}>
               <NavLink

@@ -36,15 +36,6 @@ api.interceptors.request.use(
 // Interceptor cho response (Kiểm tra lỗi 401 Unauthorized)
 api.interceptors.response.use(
   (response) => response, // Trả về response nếu thành công
-
-  (error) => {
-    if (error.response?.status === 401) {
-      showErrorToast("Token hết hạn hoặc không hợp lệ, đăng xuất...");
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
 );
 
 //  Function API cho từng module
@@ -148,6 +139,7 @@ export const orderAPI = {
   getByIdAndStatus: (customerId, orderId, status) =>
     api.get(`/order/${customerId}/${orderId}/${status}`),
   delete: (id) => api.delete(`/order/${id}`),
+  getByIdList: (ids) => api.get(`order/getByIdList?ids=${ids}`)
 };
 
 
@@ -159,6 +151,7 @@ export const userAPI = {
   getById: (id) => api.get(`/user/${id}`),
   update: (id, data) => api.put(`/user/${id}`, data),
   delete: (id) => api.delete(`/user/${id}`),
+  getAllUserGoogle: () => api.get("/user/getAllUsersGG")
 };
 
 // API menu 
@@ -176,6 +169,7 @@ export const menuAPI = {
       },
     }),
   getSampleFile: () => api.get("/menu/sampleExcel"),
+  getMenuByUser: () => api.get("/menu/getMenuByUser")
 };
 
 

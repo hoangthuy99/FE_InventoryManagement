@@ -1,11 +1,44 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Redirect } from "react-router-dom";
-
+import { showErrorToast } from "../components/Toast";
+import { menuAPI } from "../api/api";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
+
+  const [filteredMenu, setFilteredMenu] = useState([]);
+  const [menu, setMenu] = useState([]);
+
+  useEffect(() => {
+    fetchMenu();
+  }, []);
+
+  const fetchMenu = async () => {
+    try {
+      const res = await menuAPI.getMenuByUser();
+      const data = res.data;
+
+      const result = await buildMenuTree(data);
+      setFilteredMenu(result);
+      setMenu(data);
+    } catch (error) {
+      showErrorToast(error.message);
+    }
+  };
+
+  const buildMenuTree = (menuList, parentId = null) => {
+    return menuList
+      .filter((menu) => menu.parentId === parentId)
+      .map((menu) => ({
+        path: menu.path,
+        icon: menu.icon,
+        name: menu.name,
+        code: menu.code,
+        routes: buildMenuTree(menuList, menu.id), // gọi đệ quy
+      }));
+  };
 
   const login = (token) => {
     localStorage.setItem("token", token);
@@ -22,7 +55,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ token, login, logout, getTokenInfo }}>
+    <AuthContext.Provider
+      value={{ token, login, logout, getTokenInfo, menu, filteredMenu, fetchMenu }}
+    >
       {children}
     </AuthContext.Provider>
   );

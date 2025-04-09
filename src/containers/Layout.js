@@ -1,4 +1,4 @@
-import React, { useContext, Suspense, useEffect, lazy } from "react";
+import React, { useContext, Suspense, useEffect, lazy, useState } from "react";
 import { Switch, Route, Redirect, useLocation } from "react-router-dom";
 import routes from "../routes";
 
@@ -15,8 +15,10 @@ const Page401 = lazy(() => import("../pages/401"));
 function Layout({ Component, pageProps }) {
   const { isSidebarOpen, closeSidebar } = useContext(SidebarContext);
   let location = useLocation();
-  const { getTokenInfo } = useAuth();
+  const { getTokenInfo, menu } = useAuth();
   const tokenInfo = getTokenInfo();
+  const [menuCode, setMenuCode] = useState([]);
+  console.log(menu);
 
   useEffect(
     () => {
@@ -40,22 +42,19 @@ function Layout({ Component, pageProps }) {
           <Suspense fallback={<ThemedSuspense />}>
             <Switch>
               {routes.map((route, i) => {
-                
-                return route.component &&
-                  route.roles?.includes(...tokenInfo.roles) ? (
-                  <Route
-                    key={i}
-                    exact={true}
-                    path={`/app${route.path}`}
-                    render={(props) => (
-                      <route.component {...pageProps} {...props} />
-                    )}
-                  />
-                ) : (
-                  <Route component={Page401} />
+                return (
+                  menu.some((m) => m.code === route.code) && (
+                    <Route
+                      key={i}
+                      exact={true}
+                      path={`/app${route.path}`}
+                      render={(props) => (
+                        <route.component {...pageProps} {...props} />
+                      )}
+                    />
+                  )
                 );
               })}
-              <Redirect exact from="/app" to="/app/dashboard" />
               <Route component={Page404} />
             </Switch>
           </Suspense>

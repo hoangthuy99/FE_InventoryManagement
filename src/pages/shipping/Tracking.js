@@ -16,6 +16,7 @@ import data from "../../assets/data.json";
 
 function Tracking() {
   const [orders, setOrders] = useState([]);
+  const [orderSelected, setOrderSelected] = useState({});
   const notiRef = collection(database, "notification");
   const q = query(notiRef, where("sendTo", "==", 2));
   const { orStatus } = data;
@@ -32,6 +33,7 @@ function Tracking() {
 
       if (data.code === 200) {
         setOrders(data?.data);
+        setOrderSelected(data?.data[0]);
       }
     } catch (error) {
       showErrorToast(
@@ -82,16 +84,15 @@ function Tracking() {
 
   // Handle realtime when db changed
   useEffect(() => {
-    // if (firstRender.current) {
-    //   firstRender.current = false;
-    //   return;
-    // }
-
     const unsubscribe = onSnapshot(q, async (snapshot) => {
+      if (firstRender.current) {
+        firstRender.current = false;
+        return;
+      }
+
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
           const docData = change.doc.data();
-          console.log(docData);
 
           const response = orderAPI.getById(docData.orderId);
           setOrders([...orders, response.data]);
@@ -130,7 +131,13 @@ function Tracking() {
           <h2 class="text-lg font-semibold mb-4">Danh sách đơn hàng</h2>
           {orders &&
             orders.map((o) => (
-              <div class="bg-white p-3 rounded-lg shadow mb-4">
+              <div
+                onClick={() => setOrderSelected(o)}
+                class={
+                  "p-3 rounded-lg shadow cursor-pointer mb-4 " +
+                  (orderSelected?.id === o?.id ? " bg-gray-300" : " bg-white")
+                }
+              >
                 <div class="flex items-center">
                   <img
                     alt="Package image"
@@ -141,9 +148,9 @@ function Tracking() {
                   />
                   <div>
                     <h3 class="text-md font-semibold">
-                      Đơn hàng {o.orderCode}
+                      Đơn hàng {o?.orderCode}
                     </h3>
-                    <p class="text-gray-600">Trạng thái: {status[o.status]}</p>
+                    <p class="text-gray-600">Trạng thái: {status[o?.status]}</p>
                   </div>
                 </div>
               </div>
@@ -182,8 +189,12 @@ function Tracking() {
           <div class="flex items-center mb-4">
             <i class="fas fa-box text-blue-500 text-2xl mr-3"></i>
             <div>
-              <h2 class="text-lg font-semibold">Đơn hàng #12345</h2>
-              <p class="text-gray-600">Trạng thái: Đang giao</p>
+              <h2 class="text-lg font-semibold">
+                Đơn hàng {orderSelected?.orderCode}
+              </h2>
+              <p class="text-gray-600">
+                Trạng thái: {status[orderSelected?.status]}
+              </p>
             </div>
           </div>
           <div class="flex items-center mb-4">
@@ -203,34 +214,31 @@ function Tracking() {
           <h2 class="text-lg font-semibold mb-4">Thông tin đơn hàng</h2>
           <div class="mb-4">
             <h3 class="text-md font-semibold">Mã đơn hàng</h3>
-            <p class="text-gray-600">#12345</p>
+            <p class="text-gray-600">{orderSelected?.orderCode}</p>
           </div>
           <div class="mb-4">
             <h3 class="text-md font-semibold">Trạng thái</h3>
-            <p class="text-gray-600">Đang giao</p>
+            <p class="text-gray-600">{status[orderSelected?.status]}</p>
           </div>
           <div class="mb-4">
             <h3 class="text-md font-semibold">Địa chỉ giao hàng</h3>
-            <p class="text-gray-600">456 Elm St, Springfield</p>
+            <p class="text-gray-600">{orderSelected?.deliveryAddress}</p>
           </div>
           <div class="mb-4">
             <h3 class="text-md font-semibold">Thời gian dự kiến</h3>
             <p class="text-gray-600">15 mins</p>
           </div>
           <div class="flex justify-around mt-4">
-            <button class="bg-blue-500 text-white py-2 px-4 rounded-lg flex items-center">
-              <i class="fas fa-phone-alt mr-2"></i>
+            <button class="bg-blue-500 text-white py-2 px-4 rounded-lg  text-center">
               Gọi
             </button>
-            <button class="bg-green-500 text-white py-2 px-4 rounded-lg flex items-center">
-              <i class="fas fa-comment-dots mr-2"></i>
+            <button class="bg-green-500 text-white py-2 px-4 rounded-lg  text-center">
               Nhắn tin
             </button>
             <button
               onClick={writeData}
-              class="bg-yellow-500 text-white py-2 px-4 rounded-lg flex items-center"
+              class="bg-yellow-500 text-white py-2 px-4 rounded-lg  text-center"
             >
-              <i class="fas fa-sync-alt mr-2"></i>
               Cập nhật
             </button>
           </div>
