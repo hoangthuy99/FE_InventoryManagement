@@ -229,7 +229,7 @@ function AddPurchase() {
                       value={renderProps.field.value || ""}
                       onChange={renderProps.field.onChange}
                       label="Chọn nhà cung cấp"
-                      className="text-gray-600 border border-gray-600 dark:text-gray-300text-gray-600 dark:text-gray-300"
+                      className="text-gray-600 dark:text-gray-300"
                     >
                       <MenuItem selected value="">
                         -- Chọn nhà cung cấp --
@@ -267,7 +267,7 @@ function AddPurchase() {
                         fetchAreasByBranch(e.target.value);
                       }}
                       label="Nhà cung cấp"
-                      className="text-gray-600 border border-gray-600 dark:text-gray-300"
+                      className="text-gray-600   dark:text-gray-300"
                     >
                       {branchs.map((branch) => (
                         <MenuItem key={branch.id} value={branch.id}>
@@ -296,13 +296,13 @@ function AddPurchase() {
                     })
                   }
                   sx={{ width: "100% " }}
-                  className="border border-gray-600"
+                  className=" "
                   renderInput={(params) => (
                     <TextField
                       error={errors.orderDatePlan}
                       {...register("orderDatePlan")}
                       {...params}
-                      className="border border-gray-600"
+                      className=" "
                       fullWidth
                     />
                   )}
@@ -346,7 +346,7 @@ function AddPurchase() {
                         value={renderProps.field.value || ""}
                         onChange={renderProps.field.onChange}
                         label="Chọn trạng thái"
-                        className=" border border-gray-600 text-gray-600 dark:text-gray-300text-gray-600 dark:text-gray-300"
+                        className="   text-gray-600 dark:text-gray-300text-gray-600 dark:text-gray-300"
                       >
                         {gdrStatus.map((status) => (
                           <MenuItem key={status.key} value={status.key}>
@@ -366,11 +366,7 @@ function AddPurchase() {
             )}
             <Grid item xs={6} className="flex items-center gap-10 ">
               <span className="w-1/2">Ghi chú </span>
-              <Textarea
-                className="border border-gray-600"
-                {...register("note")}
-                minRows={1}
-              />
+              <Textarea className="bg-transparent" {...register("note")} minRows={1} />
             </Grid>
           </Grid>
         </div>
@@ -380,7 +376,7 @@ function AddPurchase() {
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell>
+                  <TableCell className="border">
                     <Button
                       size="small"
                       variant="contained"
@@ -396,31 +392,31 @@ function AddPurchase() {
                     </Button>
                   </TableCell>
                   <TableCell
-                    className="text-gray-600 dark:text-gray-300"
+                    className="text-gray-600 border dark:text-gray-300"
                     width="15%"
                   >
                     Sản phẩm
                   </TableCell>
                   <TableCell
-                    className="text-gray-600 dark:text-gray-300"
+                    className="text-gray-600 border dark:text-gray-300"
                     width="15%"
                   >
                     Đơn vị
                   </TableCell>
                   <TableCell
-                    className="text-gray-600 dark:text-gray-300"
+                    className="text-gray-600 border dark:text-gray-300"
                     width="15%"
                   >
                     Loại tồn kho
                   </TableCell>
-                  <TableCell className="text-gray-600 dark:text-gray-300">
+                  <TableCell className="text-gray-600 border dark:text-gray-300">
                     Số lượng kế hoạch
                   </TableCell>
-                  <TableCell className="text-gray-600 dark:text-gray-300">
+                  <TableCell className="text-gray-600 border dark:text-gray-300">
                     Số lượng
                   </TableCell>
                   <TableCell
-                    className="text-gray-600 dark:text-gray-300"
+                    className="text-gray-600 border dark:text-gray-300"
                     width="15%"
                   >
                     Khu vực kế hoạch
@@ -430,7 +426,7 @@ function AddPurchase() {
               <TableBody>
                 {orderItems.map((item, index) => (
                   <TableRow key={item.id}>
-                    <TableCell>
+                    <TableCell className="border">
                       <Button
                         variant="contained"
                         color="primary"
@@ -440,7 +436,7 @@ function AddPurchase() {
                         <RemoveCircleOutlineIcon />
                       </Button>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="border">
                       <FormControl fullWidth>
                         <InputLabel className="text-gray-600 dark:text-gray-300">
                           Chọn product
@@ -455,7 +451,7 @@ function AddPurchase() {
                             )
                           }
                           label="Chọn product"
-                          className="text-gray-600 border border-gray-600 dark:text-gray-300"
+                          className="text-gray-600   dark:text-gray-300"
                         >
                           {products.map((product) => (
                             <MenuItem key={product.id} value={product.id}>
@@ -465,7 +461,7 @@ function AddPurchase() {
                         </Select>
                       </FormControl>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="border">
                       <FormControl fullWidth>
                         <InputLabel className="text-gray-600 dark:text-gray-300">
                           Chọn đơn vị
@@ -480,7 +476,7 @@ function AddPurchase() {
                             )
                           }
                           label="Chọn đơn vị"
-                          className="text-gray-600 border border-gray-600 dark:text-gray-300"
+                          className="text-gray-600   dark:text-gray-300"
                         >
                           {productUnit.map((unit) => (
                             <MenuItem key={unit.key} value={unit.key}>
@@ -490,7 +486,7 @@ function AddPurchase() {
                         </Select>
                       </FormControl>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="border">
                       <FormControl fullWidth>
                         <InputLabel className="text-gray-600 dark:text-gray-300">
                           Chọn loại tồn kho
@@ -505,7 +501,7 @@ function AddPurchase() {
                             )
                           }
                           label="Chọn loại tồn kho"
-                          className="text-gray-600 border border-gray-600 dark:text-gray-300"
+                          className="text-gray-600   dark:text-gray-300"
                         >
                           {stockStatus.map((status) => (
                             <MenuItem key={status.key} value={status.key}>
@@ -516,12 +512,11 @@ function AddPurchase() {
                       </FormControl>
                     </TableCell>
 
-                    <TableCell>
+                    <TableCell className="border">
                       <TextField
                         type="number"
-                        size="small"
                         defaultValue={0}
-                        className="text-gray-600 border border-gray-600 dark:text-gray-300"
+                        className="text-gray-600   dark:text-gray-300"
                         value={item.quantityPlan}
                         onChange={(e) =>
                           handleChangeProduct(
@@ -533,15 +528,13 @@ function AddPurchase() {
                         fullWidth
                         inputProps={{
                           min: 0,
-                          className:
-                            "text-gray-600 dark:text-gray-300 border border-gray-600",
+                          className: "text-gray-600 dark:text-gray-300  ",
                         }}
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="border">
                       <TextField
                         type="number"
-                        size="small"
                         defaultValue={0}
                         value={item.quantityActual}
                         onChange={(e) =>
@@ -554,12 +547,11 @@ function AddPurchase() {
                         fullWidth
                         inputProps={{
                           min: 0,
-                          className:
-                            "text-gray-600 dark:text-gray-300 border border-gray-600",
+                          className: "text-gray-600 dark:text-gray-300  ",
                         }}
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="border">
                       <FormControl fullWidth>
                         <InputLabel className="text-gray-600 dark:text-gray-300">
                           Chọn khu vực
@@ -570,7 +562,7 @@ function AddPurchase() {
                             handleChangeProduct(index, "areaId", e.target.value)
                           }
                           label="Chọn khu vực"
-                          className="text-gray-600 border border-gray-600 dark:text-gray-300"
+                          className="text-gray-600   dark:text-gray-300"
                         >
                           {areas?.map((area) => (
                             <MenuItem key={area.id} value={area.id}>

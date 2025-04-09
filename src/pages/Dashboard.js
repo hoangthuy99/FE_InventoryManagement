@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import CTA from "../components/CTA";
 import InfoCard from "../components/Cards/InfoCard";
@@ -23,6 +23,7 @@ import { dashboardAPI, orderAPI } from "../api/api";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { lineLegends } from "../utils/demo/chartsData";
 import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { useAuth } from "../context/AuthContext";
 
 const revenueFilters = [
   {
@@ -40,6 +41,8 @@ const revenueFilters = [
 ];
 
 function Dashboard() {
+  const { fetchMenu } = useAuth();
+  const firstLoading = useRef(true);
   const [data, setData] = useState([]);
   const [filterType, setFilterType] = useState(1);
   const [lineChartData, setLineChartData] = useState({
@@ -251,6 +254,13 @@ function Dashboard() {
   useEffect(() => {
     fetchTotalRevenue();
   }, [filterType]);
+
+  useEffect(() => {
+    if (firstLoading.current) {
+      fetchMenu();
+      firstLoading.current = false;
+    }
+  }, []);
 
   // on page change, load new sliced data
   // here you would make another server request for new data

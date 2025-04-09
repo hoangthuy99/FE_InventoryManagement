@@ -73,9 +73,10 @@ function AllUser() {
 };
 
   useEffect(() => {
-    // searchUsers();
-    fetchUsers();
-=======
+    searchUsers();
+    // fetchUsers();
+},[])
+
   const searchUsers = async () => {
     try {
       const response = await userAPI.search(searchModel);
