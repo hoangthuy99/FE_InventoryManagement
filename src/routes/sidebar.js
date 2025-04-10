@@ -1,8 +1,6 @@
-
 import data from "../assets/data.json";
 
 const { roleTags } = data;
-
 
 const routes = [
   {
@@ -80,7 +78,7 @@ const routes = [
     ],
     roles: [roleTags.role_amdin],
   },
-  
+
   {
     icon: "EmployeeIcon",
     name: "Employee",
@@ -89,9 +87,9 @@ const routes = [
       { path: "/app/user/edit-user", name: "Add Employee" },
     ],
 
-
+    roles: [roleTags.role_amdin],
   },
-  
+
   {
     icon: "MenuIcon",
     name: "Menu",
@@ -99,11 +97,10 @@ const routes = [
       { path: "/app/menus/all-menu", name: "All menu" },
 
       { path: "/app/menus/edit-menu", name: "Add menu" },
-
     ],
     roles: [roleTags.role_amdin],
   },
-  
+
   {
     icon: "PagesIcon",
     name: "Account",

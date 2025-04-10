@@ -30,6 +30,55 @@ function AllUser() {
   });
   const { activeStatus } = data;
 
+
+
+  // const searchUsers = async () => {
+  //   try {
+  //     const response = await userAPI.search(searchModel);
+  //     console.log("API Response:", response.data); // Xem API trả về gì
+  //     const data = response.data?.data;
+
+  //     if (data.content && Array.isArray(data.content)) {
+  //       setUsers(data.content);
+  //     } else {
+  //       console.error("Dữ liệu API không đúng định dạng:", response.data);
+  //       showErrorToast("Lỗi dữ liệu API!");
+  //     }
+  //   } catch (error) {
+  //     console.error("Lỗi khi gọi API:", error);
+  //   }
+  // };
+  // try {
+  //       const response = await menuAPI.getAll();
+  
+  //       if (response.data && Array.isArray(response.data)) {
+  //         setMenus(response.data);
+  //         setTotalElements(response.data.totalElements || 0);
+  //       } else {
+  //         showErrorToast("Lỗi dữ liệu API! Dữ liệu không hợp lệ.");
+  //       }
+  //     } catch (error) {
+  //       console.error(" Lỗi khi gọi API:", error);
+  //       showErrorToast("Không thể tải danh sách menu.");
+  //     }
+  
+  const fetchUsers = async () => {
+    try {
+      const response = await userAPI.getAll(); // Sử dụng API đã có Token
+      console.log("Response:", response.data);
+      setUsers(response.data); // Cập nhật state users
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+      showErrorToast("Không thể tải danh sách nhân viên");
+    }
+};
+
+  useEffect(() => {
+    searchUsers();
+    // fetchUsers();
+},[])
+
+
   const searchUsers = async () => {
     try {
       const response = await userAPI.search(searchModel);

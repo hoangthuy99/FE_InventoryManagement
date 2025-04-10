@@ -13,7 +13,7 @@ import {
   Button,
 } from "@windmill/react-ui";
 
-import { authAPI, userAPI , roleAPI} from "../../api/api";
+import { authAPI, userAPI, roleAPI } from "../../api/api";
 
 import { useParams } from "react-router-dom/cjs/react-router-dom";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
@@ -25,7 +25,6 @@ function EditUser() {
 
   const fetchRoles = async () => {
     try {
-
       const response = await roleAPI.getAllRoles();
 
       const data = response.data?.data;
@@ -126,15 +125,15 @@ function EditUser() {
         let reponse;
 
         if (id) {
-          reponse = userAPI.update(id, values);
-          const data = (await reponse).data?.data;
+          reponse = await userAPI.update(id, values);
+          const data = reponse.data?.data;
           if (data) {
             showSuccessToast("Lưu người dùng thành công!");
             history.push("/app/user/all-user");
           }
         } else {
-          reponse = authAPI.register(requestData);
-          const data = (await reponse).data?.data;
+          reponse = await authAPI.register(requestData);
+          const data = reponse.data?.data;
           if (data) {
             showSuccessToast("Thêm người dùng thành công!");
             resetForm();

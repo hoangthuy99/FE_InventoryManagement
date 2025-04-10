@@ -137,26 +137,13 @@ function AddOrder() {
     resolver: yupResolver(schema),
   });
   const [location, setLocation] = useState([10.7769, 106.7009]);
-  const [markerPos, setMarkerPos] = useState([10.7769, 106.7009]);
 
   // Cập nhật địa chỉ khi chọn trên bản đồ
   const handleSelectAddress = (address, coords) => {
     setValue("deliveryAddress", address);
     setLocation(coords);
   };
-  const handleUpdateStatus = async (orderId, newStatus) => {
-    setLoading(true);
-    try {
-      const updatedOrder = await updateOrderStatus(orderId, newStatus);
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => (order.id === orderId ? updatedOrder : order))
-      );
-      alert("Cập nhật trạng thái thành công!");
-    } catch (error) {
-      alert(error.error || "Có lỗi xảy ra khi cập nhật trạng thái");
-    }
-    setLoading(false);
-  };
+
   // Xử lý khi nhập địa chỉ vào input
   const handleInputChange = async (e) => {
     const address = e.target.value;
@@ -225,7 +212,7 @@ function AddOrder() {
           unitPrice: item?.unitPrice || 0,
           productUnit: item?.productUnit || "",
           qty: item?.qty || 0,
-          totalPrice: (item?.unitPrice || 0) * (item?.qty || 0),
+          totalPrice: item?.totalPrice || 0,
           deleteFg: item?.deleteFg,
         }));
 
@@ -247,7 +234,7 @@ function AddOrder() {
   }, []);
 
   const calculateTotalPrice = (items) => {
-    return items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+    return items.reduce((sum, item) => sum += (item.totalPrice || 0), 0);
   };
 
   const handleChangeProduct = (index, field, value) => {
