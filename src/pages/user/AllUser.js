@@ -14,12 +14,12 @@ import {
   Pagination,
 } from "@windmill/react-ui";
 import { EditIcon, TrashIcon } from "../../icons";
-import { supplierAPI, userAPI } from "../../api/api";
+import { userAPI } from "../../api/api";
 import FilterBox from "../../components/FilterBox";
 import data from "../../assets/data.json";
 
 function AllUser() {
-  const [users, setUsers] = useState([]); // Luôn là mảng
+  const [users, setUsers] = useState([]);
   const [searchModel, setSearchModel] = useState({
     searchKey: "",
     status: -1,
@@ -30,59 +30,12 @@ function AllUser() {
   });
   const { activeStatus } = data;
 
-
-  // const searchUsers = async () => {
-  //   try {
-  //     const response = await userAPI.search(searchModel);
-  //     console.log("API Response:", response.data); // Xem API trả về gì
-  //     const data = response.data?.data;
-
-  //     if (data.content && Array.isArray(data.content)) {
-  //       setUsers(data.content);
-  //     } else {
-  //       console.error("Dữ liệu API không đúng định dạng:", response.data);
-  //       showErrorToast("Lỗi dữ liệu API!");
-  //     }
-  //   } catch (error) {
-  //     console.error("Lỗi khi gọi API:", error);
-  //   }
-  // };
-  // try {
-  //       const response = await menuAPI.getAll();
-  
-  //       if (response.data && Array.isArray(response.data)) {
-  //         setMenus(response.data);
-  //         setTotalElements(response.data.totalElements || 0);
-  //       } else {
-  //         showErrorToast("Lỗi dữ liệu API! Dữ liệu không hợp lệ.");
-  //       }
-  //     } catch (error) {
-  //       console.error(" Lỗi khi gọi API:", error);
-  //       showErrorToast("Không thể tải danh sách menu.");
-  //     }
-  
-  const fetchUsers = async () => {
-    try {
-      const response = await userAPI.getAll(); // Sử dụng API đã có Token
-      console.log("Response:", response.data);
-      setUsers(response.data); // Cập nhật state users
-    } catch (error) {
-      console.error("Lỗi khi gọi API:", error);
-      showErrorToast("Không thể tải danh sách nhân viên");
-    }
-};
-
-  useEffect(() => {
-    // searchUsers();
-    fetchUsers();
-=======
   const searchUsers = async () => {
     try {
       const response = await userAPI.search(searchModel);
-      console.log("API Response:", response.data); // Xem API trả về gì
-      const data = response.data?.data;
+      const data = response?.data?.data;
 
-      if (data.content && Array.isArray(data.content)) {
+      if (data?.content && Array.isArray(data.content)) {
         setUsers(data.content);
       } else {
         console.error("Dữ liệu API không đúng định dạng:", response.data);
@@ -90,12 +43,12 @@ function AllUser() {
       }
     } catch (error) {
       console.error("Lỗi khi gọi API:", error);
+      showErrorToast("Không thể tìm kiếm nhân viên.");
     }
   };
 
   useEffect(() => {
     searchUsers();
-
   }, [searchModel.status, searchModel.pageNum]);
 
   const handleDelete = async (id) => {
@@ -104,22 +57,14 @@ function AllUser() {
     try {
       await userAPI.delete(id);
       showSuccessToast("Nhân viên đã được xóa thành công!");
-
-      // Cập nhật danh sách nhân viên sau khi xóa
-
-      // searchUsers()
-      fetchUsers();
-
-      searchUsers()
-
+      searchUsers();
     } catch (error) {
+      console.error("Lỗi xóa nhân viên:", error);
       showErrorToast("Xóa nhân viên thất bại!");
     }
   };
 
   const handleChangeStatus = (status) => {
-    console.log(status);
-
     setSearchModel({ ...searchModel, status });
   };
 
@@ -135,16 +80,13 @@ function AllUser() {
     <>
       <PageTitle>Danh sách nhân viên</PageTitle>
       <FilterBox
-        options={activeStatus.map((s) => {
-          return { id: s.key, title: s.name };
-        })}
+        options={activeStatus.map((s) => ({ id: s.key, title: s.name }))}
         optionSelected={searchModel.status}
         handleChangeOption={handleChangeStatus}
-
         handleSearch={searchUsers}
-
         handleChangeSearchKey={handleChangeSearchKey}
       />
+
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>
@@ -170,8 +112,9 @@ function AllUser() {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.address}</TableCell>
                   <TableCell>{user.phone}</TableCell>
-                  <TableCell>{user.roles?.map(role => role.roleName).join(", ") || "Chưa có quyền"}</TableCell>
-
+                  <TableCell>
+                    {user.roles?.map((role) => role.roleName).join(", ") || "Chưa có quyền"}
+                  </TableCell>
                   <TableCell>
                     <Badge type={user.activeFlag === 1 ? "success" : "danger"}>
                       {user.activeFlag === 1 ? "Hoạt động" : "Ngừng hoạt động"}
@@ -189,7 +132,6 @@ function AllUser() {
                       >
                         <EditIcon className="w-5 h-5" aria-hidden="true" />
                       </Button>
-
                       <Button
                         layout="link"
                         size="icon"
@@ -204,7 +146,7 @@ function AllUser() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan="8" className="text-center">
+                <TableCell colSpan="9" className="text-center">
                   Không có nhân viên nào
                 </TableCell>
               </TableRow>

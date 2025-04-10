@@ -138,10 +138,10 @@ function Category() {
         handleSearch={fetchCategories}
         handleChangeSearchKey={handleChangeSearchKey}
       />
-      <Box className="mb-4" display={"flex"} justifyContent={"end"}>
+      <Box className="flex flex-col justify-start mb-4 space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0 sm:justify-end">
         <ImportExcel action={handleImportExcel} sampleFile={sampleFile} />
       </Box>
-      <TableContainer className="mb-8">
+      <TableContainer className="mb-4 text-sm sm:mb-8 sm:text-base">
         <Table>
           <TableHeader>
             <tr>
