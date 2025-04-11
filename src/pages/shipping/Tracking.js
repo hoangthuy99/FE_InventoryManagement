@@ -13,10 +13,19 @@ import {
 import { orderAPI } from "../../api/api";
 import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import data from "../../assets/data.json";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+
+const filterStatus = {
+  6: [6, 7, 8, 9], // Đang chờ giao -> Đã giao
+  7: [7, 8, 9], // Đã giao -> Đã hoàn thành hoặc Đã hủy
+  8: [8],
+  9: [9],
+};
 
 function Tracking() {
   const [orders, setOrders] = useState([]);
   const [orderSelected, setOrderSelected] = useState({});
+  const [validStatus, setValidStatus] = useState([...filterStatus[6]]);
   const notiRef = collection(database, "notification");
   const q = query(notiRef, where("sendTo", "==", 2));
   const { orStatus } = data;
@@ -25,6 +34,8 @@ function Tracking() {
     return acc;
   }, {});
   const firstRender = useRef(true);
+  const [updateMode, setUpdateMode] = useState(false);
+  const [statusChange, setStatusChange] = useState();
 
   const getOrdersByIdList = async (ids) => {
     try {
@@ -108,9 +119,65 @@ function Tracking() {
     return () => unsubscribe();
   }, [database]);
 
+  useEffect(() => {
+    if (orderSelected) {
+      setValidStatus(filterStatus[orderSelected?.status]);
+      setStatusChange(orderSelected?.status);
+    }
+  }, [orderSelected]);
+
+  const handleChangeStatus = (status) => {
+    setStatusChange(status);
+  };
+
+  const calculateTotalPrice = (items) => {
+    return items.reduce((sum, item) => (sum += item.totalPrice || 0), 0);
+  };
+
+  const handleUpdateOrder = async () => {
+    if (!window.confirm("Bạn có chắc chắn muốn sửa đơn đặt hàng này?")) return;
+
+    try {
+      const totalPrice = calculateTotalPrice(orderSelected.orderDetails);
+
+      const dataRequest = {
+        id: orderSelected.id,
+        customerId: orderSelected.customer.id,
+        branchId: orderSelected.branch.id,
+        shipperId: orderSelected.shipper.id,
+        plannedExportDate: orderSelected.plannedExportDate,
+        actualExportDate: orderSelected.actualExportDate,
+        deliveryAddress: orderSelected.deliveryAddress,
+        totalPrice,
+        status: statusChange,
+        note: orderSelected.note,
+        orderDetailsRequest: orderSelected.orderDetails.map((item) => ({
+          id: item.id,
+          productId: item.productInfo.id,
+          qty: item.qty,
+          productUnit: item.productUnit,
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice,
+          deleteFg: item.deleteFg,
+        })),
+      };
+
+      const res = await orderAPI.updateOrder(dataRequest);
+      const data = res.data
+
+      if (data.code === 200) {
+        showSuccessToast(`Cập nhật đơn hàng thành công`);
+        setUpdateMode(false)
+      }
+    } catch (error) {
+      console.error("Lỗi API:", error);
+      showErrorToast("Lỗi khi cập nhật đơn hàng");
+    }
+  };
+
   return (
     <div class="bg-gray-100">
-      <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-5">
+      <div class="max-w-md mx-auto bg-white shadow-lg overflow-hidden">
         <div class="bg-blue-500 p-4 flex items-center justify-between">
           <div class="flex items-center">
             <img
@@ -204,9 +271,24 @@ function Tracking() {
               <p class="text-gray-600">15 mins</p>
             </div>
           </div>
-          <button class="w-full bg-blue-500 text-white py-2 rounded-lg">
-            Cập nhật trạng thái
-          </button>
+          {updateMode ? (
+            <button
+              onClick={() => {
+                setStatusChange(orderSelected?.status);
+                setUpdateMode(false);
+              }}
+              class="w-full bg-gray-400 text-white py-2 rounded-lg"
+            >
+              Hủy cập nhật trạng thái
+            </button>
+          ) : (
+            <button
+              onClick={() => setUpdateMode(true)}
+              class="w-full bg-blue-500 text-white py-2 rounded-lg"
+            >
+              Cập nhật trạng thái
+            </button>
+          )}
         </div>
       </div>
       <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-5">
@@ -218,7 +300,26 @@ function Tracking() {
           </div>
           <div class="mb-4">
             <h3 class="text-md font-semibold">Trạng thái</h3>
-            <p class="text-gray-600">{status[orderSelected?.status]}</p>
+            {updateMode ? (
+              <FormControl fullWidth>
+                <Select
+                  value={statusChange}
+                  className="text-gray-600 dark:text-gray-300"
+                  onChange={(e) => handleChangeStatus(e.target.value)}
+                >
+                  {orStatus.map(
+                    (status) =>
+                      validStatus?.includes(status.key) && (
+                        <MenuItem key={status.key} value={status.key}>
+                          {status.name}
+                        </MenuItem>
+                      )
+                  )}
+                </Select>
+              </FormControl>
+            ) : (
+              <p class="text-gray-600">{status[orderSelected?.status]}</p>
+            )}
           </div>
           <div class="mb-4">
             <h3 class="text-md font-semibold">Địa chỉ giao hàng</h3>
@@ -230,13 +331,13 @@ function Tracking() {
           </div>
           <div class="flex justify-around mt-4">
             <button class="bg-blue-500 text-white py-2 px-4 rounded-lg  text-center">
-              Gọi
+              <a href={`tel:${orderSelected?.customer?.phone}`}>Gọi</a>
             </button>
             <button class="bg-green-500 text-white py-2 px-4 rounded-lg  text-center">
               Nhắn tin
             </button>
             <button
-              onClick={writeData}
+              onClick={handleUpdateOrder}
               class="bg-yellow-500 text-white py-2 px-4 rounded-lg  text-center"
             >
               Cập nhật

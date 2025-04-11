@@ -19,7 +19,7 @@ const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
 
 function Login() {
   const history = useHistory();
-  const { login } = useAuth();
+  const { login, fetchMenu } = useAuth();
 
   const handleLoginGoogle = async (response) => {
     console.log("Google Token:", response.credential);
@@ -75,6 +75,7 @@ function Login() {
         login(tokenStorage);
         history.push("/app/dashboard");
         showSuccessToast("Login successfully");
+        fetchMenu();
       }
 
       if (res.data.code !== 200) {

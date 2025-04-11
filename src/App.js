@@ -75,6 +75,7 @@ function App() {
           />
 
           {/* Place new routes over this */}
+          <Route path="/shipping/tracking" render={() => <Tracking />} />
         </Switch>
       </Router>
     </AuthProvider>

@@ -255,13 +255,6 @@ function Dashboard() {
     fetchTotalRevenue();
   }, [filterType]);
 
-  useEffect(() => {
-    if (firstLoading.current) {
-      fetchMenu();
-      firstLoading.current = false;
-    }
-  }, []);
-
   // on page change, load new sliced data
   // here you would make another server request for new data
   useEffect(() => {
