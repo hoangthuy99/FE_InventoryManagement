@@ -12,7 +12,9 @@ export const AuthProvider = ({ children }) => {
   const [menu, setMenu] = useState([]);
 
   useEffect(() => {
-    fetchMenu();
+    if(token){
+      fetchMenu();
+    }
   }, []);
 
   const fetchMenu = async () => {
