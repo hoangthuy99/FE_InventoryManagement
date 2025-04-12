@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { showErrorToast } from "../components/Toast";
@@ -20,7 +19,9 @@ api.interceptors.request.use(
     const token = JSON.parse(localStorage.getItem("token"))?.accessToken || "";
 
     // Nếu có token, thêm vào header Authorization
-    if (token) {
+    console.log(config.url);
+    
+    if (token && !config.url.includes("/auth/oauth-login")) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
@@ -35,7 +36,7 @@ api.interceptors.request.use(
 
 // Interceptor cho response (Kiểm tra lỗi 401 Unauthorized)
 api.interceptors.response.use(
-  (response) => response, // Trả về response nếu thành công
+  (response) => response // Trả về response nếu thành công
 );
 
 //  Function API cho từng module
@@ -139,10 +140,8 @@ export const orderAPI = {
   getByIdAndStatus: (customerId, orderId, status) =>
     api.get(`/order/${customerId}/${orderId}/${status}`),
   delete: (id) => api.delete(`/order/${id}`),
-  getByIdList: (ids) => api.get(`order/getByIdList?ids=${ids}`)
+  getByIdList: (ids) => api.get(`order/getByIdList?ids=${ids}`),
 };
-
-
 
 //  API User
 export const userAPI = {
@@ -151,17 +150,17 @@ export const userAPI = {
   getById: (id) => api.get(`/user/${id}`),
   update: (id, data) => api.put(`/user/${id}`, data),
   delete: (id) => api.delete(`/user/${id}`),
-  getAllUserGoogle: () => api.get("/user/getAllUsersGG")
+  getAllUserGoogle: () => api.get("/user/getAllUsersGG"),
 };
 
-// API menu 
+// API menu
 export const menuAPI = {
   search: (data) => api.post("/menu/search", data),
-  getAll: () => api.get("/menu"), 
-  getById: (id) => api.get(`/menu/${id}`), 
-  create: (data) => api.post("/menu", data), 
-  update: (id, data) => api.put(`/menu/${id}`, data), 
-  delete: (id) => api.delete(`/menu/${id}`), 
+  getAll: () => api.get("/menu"),
+  getById: (id) => api.get(`/menu/${id}`),
+  create: (data) => api.post("/menu", data),
+  update: (id, data) => api.put(`/menu/${id}`, data),
+  delete: (id) => api.delete(`/menu/${id}`),
   importExcel: (data) =>
     api.post("/menu/importExcel", data, {
       headers: {
@@ -169,25 +168,22 @@ export const menuAPI = {
       },
     }),
   getSampleFile: () => api.get("/menu/sampleExcel"),
-  getMenuByUser: () => api.get("/menu/getMenuByUser")
+  getMenuByUser: () => api.get("/menu/getMenuByUser"),
 };
-
 
 //API permissions
 export const roleAPI = {
   search: (data) => api.post("/role/search", data),
   getAllRoles: () => api.get("/role/"),
-  getById: (id) => api.get(`/role/${id}`), 
-  getByName: (name) => api.get(`/role/name/${name}`), 
-  create: (data) => api.post("/role/create", data), 
+  getById: (id) => api.get(`/role/${id}`),
+  getByName: (name) => api.get(`/role/name/${name}`),
+  create: (data) => api.post("/role/create", data),
   update: (id, data) => api.put(`/role/${id}`, data),
   delete: (id) => api.delete(`/role/${id}`),
 };
 
-
 // API Auth
 export const authAPI = {
- 
   login: (data, token) => api.post("/auth/login", data),
   loginOauth: (token) =>
     api.post(

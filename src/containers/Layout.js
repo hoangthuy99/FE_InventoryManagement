@@ -15,10 +15,7 @@ const Page401 = lazy(() => import("../pages/401"));
 function Layout({ Component, pageProps }) {
   const { isSidebarOpen, closeSidebar } = useContext(SidebarContext);
   let location = useLocation();
-  const { getTokenInfo, menu } = useAuth();
-  const tokenInfo = getTokenInfo();
-  const [menuCode, setMenuCode] = useState([]);
-  console.log(menu);
+  const { menu } = useAuth();
 
   useEffect(
     () => {

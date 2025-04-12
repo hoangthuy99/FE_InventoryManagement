@@ -14,34 +14,9 @@ import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
-
 function Login() {
   const history = useHistory();
   const { login, fetchMenu } = useAuth();
-
-  const handleLoginGoogle = async (response) => {
-    console.log("Google Token:", response.credential);
-
-    try {
-      const res = await authAPI.loginOauth(response.credential);
-
-      if (res.status === 200) {
-        const { exp } = jwtDecode(res.data?.data.accessToken); // Kiểm tra lỗi
-        const token = JSON.stringify({
-          accessToken: response.credential,
-          expiration: Date.now() + exp,
-          ...res.data?.data,
-        });
-        login(token);
-        history.push("/app/dashboard");
-        showSuccessToast("Login successfully");
-      }
-    } catch (error) {
-      showErrorToast(error);
-    }
-  };
 
   // Validate form
   const schema = yup.object().shape({
@@ -146,12 +121,6 @@ function Login() {
               </form>
 
               <hr className="my-8" />
-
-              <GoogleLogin
-                clientId={CLIENT_ID}
-                redirectUri={REDIRECT_URI}
-                onSuccess={handleLoginGoogle}
-              />
 
               <p className="mt-4">
                 <Link

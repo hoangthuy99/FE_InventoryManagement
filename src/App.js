@@ -12,8 +12,11 @@ import {
   AuthProvider,
   LoginSuccessRoute,
   ProtectedRoute,
+  ProtectedRouteShipping,
+  ShippingLoginSuccessRoute,
 } from "./context/AuthContext";
 import Tracking from "./pages/shipping/Tracking";
+import ShipperLogin from "./pages/shipping/ShipperLogin";
 
 const Layout = lazy(() => import("./containers/Layout"));
 const Login = lazy(() => import("./pages/Login"));
@@ -75,7 +78,24 @@ function App() {
           />
 
           {/* Place new routes over this */}
-          <Route path="/shipping/tracking" render={() => <Tracking />} />
+          <Route
+            exact
+            path="/shipping/login"
+            render={(props) => (
+              <ShippingLoginSuccessRoute>
+                <ShipperLogin {...props} />
+              </ShippingLoginSuccessRoute>
+            )}
+          />
+
+          <Route
+            path="/shipping/tracking"
+            render={() => (
+              <ProtectedRouteShipping>
+                <Tracking />
+              </ProtectedRouteShipping>
+            )}
+          />
         </Switch>
       </Router>
     </AuthProvider>

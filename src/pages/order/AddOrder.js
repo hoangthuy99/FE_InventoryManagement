@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import LocationPicker from "../../components/LocationPicker/LocationPicker";
 import SectionTitle from "../../components/Typography/SectionTitle";
@@ -65,14 +65,15 @@ function AddOrder() {
   const [branches, setBranches] = useState([]);
   const [users, setUsers] = useState([]);
   const [orderDetails, setOrderDetails] = useState([]);
-  const [updateOrderStatus, setOrders] = useState([]);
+  const [order, setOrder] = useState({});
   const { orStatus, productUnit } = data;
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [validStatus, setValidStatus] = useState([...filterStatus[1]]);
   const history = useHistory();
   const { getTokenInfo } = useAuth();
-  const { fullName } = getTokenInfo();
+  const { fullName, username } = getTokenInfo();
+  const readonly = useRef(false);
 
   const { id } = useParams();
   const getStatusText = (statusKey) => {
@@ -194,6 +195,11 @@ function AddOrder() {
       const data = response.data;
 
       if (data) {
+        setOrder(data);
+        if (data.shipper) {
+          readonly.current = true;
+        }
+
         reset({
           customerId: data.customer?.id || "",
           branchId: data.branch?.id || "",
@@ -231,10 +237,10 @@ function AddOrder() {
     if (id) {
       fetchOrderById();
     }
-  }, []);
+  }, [id]);
 
   const calculateTotalPrice = (items) => {
-    return items.reduce((sum, item) => sum += (item.totalPrice || 0), 0);
+    return items.reduce((sum, item) => (sum += item.totalPrice || 0), 0);
   };
 
   const handleChangeProduct = (index, field, value) => {
@@ -328,15 +334,16 @@ function AddOrder() {
     }
   };
 
-  // Send notification when choose shipper
+  // Send notification to shipper
   const sendNoti = async () => {
     try {
       await addDoc(collection(database, "notification"), {
         createdAt: new Date().toISOString(),
-        createdBy: fullName,
+        createdBy: username,
         isRead: false,
         orderId: id,
-        sendTo: getValues("shipperId"),
+        orderCode: order.orderCode,
+        sendTo: users.find((u) => u.id === getValues("shipperId")).code,
         title: "Bạn có thêm đơn hàng mới",
       });
       console.log("Dữ liệu đã được ghi!");
@@ -362,6 +369,7 @@ function AddOrder() {
                 >
                   <InputLabel>Khách hàng</InputLabel>
                   <Select
+                    disabled={readonly.current}
                     value={field.value || ""}
                     onChange={field.onChange}
                     label="Khách hàng"
@@ -390,6 +398,7 @@ function AddOrder() {
                 >
                   <InputLabel>Chi nhánh</InputLabel>
                   <Select
+                    disabled={readonly.current}
                     value={field.value || ""}
                     onChange={field.onChange}
                     label="Chi nhánh"
@@ -420,6 +429,7 @@ function AddOrder() {
                 >
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DateTimePicker
+                      disabled={readonly.current}
                       label="Ngày xuất kho kế hoạch"
                       value={field.value ? dayjs(field.value) : null}
                       onChange={field.onChange}
@@ -441,6 +451,7 @@ function AddOrder() {
                 <FormControl fullWidth margin="normal">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DateTimePicker
+                      disabled={readonly.current}
                       label="Ngày xuất kho thực tế"
                       value={field.value ? dayjs(field.value) : null}
                       onChange={field.onChange}
@@ -461,6 +472,7 @@ function AddOrder() {
                     <FormControl fullWidth>
                       <InputLabel>Chọn trạng thái</InputLabel>
                       <Select
+                        disabled={readonly.current}
                         error={fieldState.error}
                         value={field.value || ""}
                         onChange={(event) => {
@@ -493,7 +505,7 @@ function AddOrder() {
                   )}
                 />
               </Grid>
-              {watch("status") === 6 && (
+              {[6, 7, 8, 9].includes(watch("status")) && (
                 <Grid item xs={6} className="flex items-center gap-10">
                   <Controller
                     name="shipperId"
@@ -502,6 +514,7 @@ function AddOrder() {
                       <FormControl fullWidth>
                         <InputLabel>Chọn người giao hàng</InputLabel>
                         <Select
+                          disabled={readonly.current}
                           error={fieldState.error}
                           value={field.value || ""}
                           onChange={(event) => {
@@ -537,6 +550,7 @@ function AddOrder() {
               render={({ field }) => (
                 <FormControl fullWidth margin="normal">
                   <TextField
+                    disabled={readonly.current}
                     {...field}
                     placeholder="Nhập địa chỉ"
                     onChange={(e) => handleInputChange(e, field)}
@@ -552,10 +566,12 @@ function AddOrder() {
           </Grid>
         </Grid>
 
-        <LocationPicker
-          location={location}
-          onSelectAddress={handleSelectAddress}
-        />
+        {readonly.current || (
+          <LocationPicker
+            location={location}
+            onSelectAddress={handleSelectAddress}
+          />
+        )}
 
         <Controller
           name="note"
@@ -563,6 +579,7 @@ function AddOrder() {
           render={({ field }) => (
             <FormControl fullWidth margin="normal" error={!!errors.note}>
               <TextField
+                disabled={readonly.current}
                 value={field.value || ""}
                 onChange={field.onChange}
                 placeholder="Ghi chú giành cho đơn hàng"
@@ -622,6 +639,7 @@ function AddOrder() {
                 <TableRow>
                   <TableCell className="border border-gray-600 ">
                     <Button
+                      disabled={readonly.current}
                       size="small"
                       variant="contained"
                       color=""
@@ -659,6 +677,7 @@ function AddOrder() {
                       <TableRow key={item.id}>
                         <TableCell className="border border-gray-600 ">
                           <Button
+                            disabled={readonly.current}
                             variant="contained"
                             color="primary"
                             size="small"
@@ -671,6 +690,7 @@ function AddOrder() {
                           <FormControl fullWidth>
                             <InputLabel>Chọn sản phẩm</InputLabel>
                             <Select
+                              disabled={readonly.current}
                               value={item.productId || ""}
                               onChange={(e) =>
                                 handleChangeProduct(
@@ -702,6 +722,7 @@ function AddOrder() {
 
                         <TableCell className="border border-gray-600 ">
                           <TextField
+                            disabled={readonly.current}
                             type="number"
                             size="small"
                             defaultValue={0}
@@ -719,6 +740,7 @@ function AddOrder() {
                           <FormControl fullWidth>
                             <InputLabel>Chọn đơn vị</InputLabel>
                             <Select
+                              disabled={readonly.current}
                               value={item.productUnit || ""}
                               onChange={(e) =>
                                 handleChangeProduct(
@@ -752,7 +774,11 @@ function AddOrder() {
             </Table>
           </TableContainer>
         </div>
-        <Button type="submit" disabled={loading} className="w-1/6 mt-4">
+        <Button
+          type="submit"
+          disabled={loading || order.shipper}
+          className="w-1/6 mt-4"
+        >
           {loading ? "Đang xử lý..." : id ? "Lưu thay đổi" : "Thêm mới"}
         </Button>
       </form>

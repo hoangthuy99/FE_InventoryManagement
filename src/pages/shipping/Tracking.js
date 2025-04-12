@@ -14,6 +14,8 @@ import { orderAPI } from "../../api/api";
 import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import data from "../../assets/data.json";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { useAuth } from "../../context/AuthContext";
+import { OutlineLogoutIcon } from "../../icons";
 
 const filterStatus = {
   6: [6, 7, 8, 9], // Đang chờ giao -> Đã giao
@@ -23,11 +25,13 @@ const filterStatus = {
 };
 
 function Tracking() {
+  const { getShipperToken, shipperLogout } = useAuth();
+  const { code } = getShipperToken();
   const [orders, setOrders] = useState([]);
   const [orderSelected, setOrderSelected] = useState({});
   const [validStatus, setValidStatus] = useState([...filterStatus[6]]);
   const notiRef = collection(database, "notification");
-  const q = query(notiRef, where("sendTo", "==", 2));
+  const q = query(notiRef, where("sendTo", "==", code));
   const { orStatus } = data;
   const status = orStatus.reduce((acc, o) => {
     acc[o.key] = o.name;
@@ -51,22 +55,6 @@ function Tracking() {
         "Đã xảy ra lỗi trong khi lấy dữ liệu đơn hàng: ",
         error.message
       );
-    }
-  };
-
-  const writeData = async () => {
-    try {
-      await addDoc(collection(database, "notification"), {
-        createdAt: new Date().toISOString(),
-        createdBy: "12345",
-        isRead: false,
-        orderId: 67890,
-        sendTo: 54321,
-        title: "Thông báo đơn hàng mới",
-      });
-      console.log("Dữ liệu đã được ghi!");
-    } catch (error) {
-      console.error("Lỗi khi ghi dữ liệu:", error);
     }
   };
 
@@ -101,12 +89,12 @@ function Tracking() {
         return;
       }
 
-      snapshot.docChanges().forEach((change) => {
+      snapshot.docChanges().forEach(async (change) => {
         if (change.type === "added") {
           const docData = change.doc.data();
 
-          const response = orderAPI.getById(docData.orderId);
-          setOrders([...orders, response.data]);
+          const response = await orderAPI.getById(docData.orderId);
+          setOrders((prev) => [...prev, response.data]);
 
           showSuccessToast(docData.title);
         }
@@ -163,15 +151,35 @@ function Tracking() {
       };
 
       const res = await orderAPI.updateOrder(dataRequest);
-      const data = res.data
+      const data = res.data;
 
       if (data.code === 200) {
         showSuccessToast(`Cập nhật đơn hàng thành công`);
-        setUpdateMode(false)
+        setUpdateMode(false);
+        sendNoti();
+        getOrdersByIdList(orders.map((o) => o.id).join(","));
       }
     } catch (error) {
       console.error("Lỗi API:", error);
       showErrorToast("Lỗi khi cập nhật đơn hàng");
+    }
+  };
+
+  // Send notification to owner of order
+  const sendNoti = async () => {
+    try {
+      await addDoc(collection(database, "notification"), {
+        createdAt: new Date().toISOString(),
+        createdBy: orderSelected.shipper.code,
+        isRead: false,
+        orderId: orderSelected.id,
+        orderCode: orderSelected.orderCode,
+        sendTo: orderSelected.createdBy.username,
+        title: "Đã cập nhật trạng thái sang " + status[orderSelected?.status],
+      });
+      console.log("Dữ liệu đã được ghi!");
+    } catch (error) {
+      console.error("Lỗi khi ghi dữ liệu:", error);
     }
   };
 
@@ -189,39 +197,46 @@ function Tracking() {
             />
             <h1 class="text-white text-xl font-bold ml-3">Shipper App</h1>
           </div>
-          <div class="flex items-center">
-            <i class="fas fa-bell text-white text-2xl mr-4"></i>
-            <i class="fas fa-user-circle text-white text-2xl"></i>
+          <div
+            onClick={() => shipperLogout()}
+            class="flex items-center text-white cursor-pointer hover:text-red-500"
+          >
+            <OutlineLogoutIcon className="w-4 h-4" aria-hidden="true" />
+            <span>Log out</span>
           </div>
         </div>
         <div class="p-4">
           <h2 class="text-lg font-semibold mb-4">Danh sách đơn hàng</h2>
-          {orders &&
-            orders.map((o) => (
-              <div
-                onClick={() => setOrderSelected(o)}
-                class={
-                  "p-3 rounded-lg shadow cursor-pointer mb-4 " +
-                  (orderSelected?.id === o?.id ? " bg-gray-300" : " bg-white")
-                }
-              >
-                <div class="flex items-center">
-                  <img
-                    alt="Package image"
-                    class="rounded-full mr-3"
-                    height="50"
-                    src="https://tse3.mm.bing.net/th?id=OIP.9YGf5zV6GpSu1_Fsjs8mUQHaHa&pid=Api&P=0&h=220"
-                    width="50"
-                  />
-                  <div>
-                    <h3 class="text-md font-semibold">
-                      Đơn hàng {o?.orderCode}
-                    </h3>
-                    <p class="text-gray-600">Trạng thái: {status[o?.status]}</p>
+          <div className="max-h-64 overflow-y-scroll overflow-hidden">
+            {orders &&
+              orders.map((o) => (
+                <div
+                  onClick={() => setOrderSelected(o)}
+                  class={
+                    "p-3 rounded-lg shadow cursor-pointer mb-4 " +
+                    (orderSelected?.id === o?.id ? " bg-gray-300" : " bg-white")
+                  }
+                >
+                  <div class="flex items-center">
+                    <img
+                      alt="Package image"
+                      class="rounded-full mr-3"
+                      height="50"
+                      src="https://tse3.mm.bing.net/th?id=OIP.9YGf5zV6GpSu1_Fsjs8mUQHaHa&pid=Api&P=0&h=220"
+                      width="50"
+                    />
+                    <div>
+                      <h3 class="text-md font-semibold">
+                        Đơn hàng {o?.orderCode}
+                      </h3>
+                      <p class="text-gray-600">
+                        Trạng thái: {status[o?.status]}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+          </div>
         </div>
         <div class="bg-gray-200 p-4 flex justify-around">
           <div class="text-center">
@@ -277,14 +292,20 @@ function Tracking() {
                 setStatusChange(orderSelected?.status);
                 setUpdateMode(false);
               }}
-              class="w-full bg-gray-400 text-white py-2 rounded-lg"
+              class={
+                "w-full bg-gray-400 text-white py-2 rounded-lg " +
+                ([8, 9].includes(orderSelected?.status) ? " hidden" : "")
+              }
             >
               Hủy cập nhật trạng thái
             </button>
           ) : (
             <button
               onClick={() => setUpdateMode(true)}
-              class="w-full bg-blue-500 text-white py-2 rounded-lg"
+              class={
+                "w-full bg-blue-500 text-white py-2 rounded-lg " +
+                ([8, 9].includes(orderSelected?.status) ? " hidden" : "")
+              }
             >
               Cập nhật trạng thái
             </button>
