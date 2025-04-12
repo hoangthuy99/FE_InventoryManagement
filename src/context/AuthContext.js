@@ -7,12 +7,15 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [shippeprToken, setShipperToken] = useState(
+    localStorage.getItem("shipperToken")
+  );
 
   const [filteredMenu, setFilteredMenu] = useState([]);
   const [menu, setMenu] = useState([]);
 
   useEffect(() => {
-    if(token){
+    if (token) {
       fetchMenu();
     }
   }, []);
@@ -42,6 +45,20 @@ export const AuthProvider = ({ children }) => {
       }));
   };
 
+  const shipperLogin = (token) => {
+    localStorage.setItem("shipperToken", token);
+    setShipperToken(token);
+  };
+
+  const shipperLogout = () => {
+    localStorage.removeItem("shipperToken");
+    setShipperToken(null);
+  };
+
+  const getShipperToken = () => {
+    return JSON.parse(shippeprToken);
+  };
+
   const login = (token) => {
     localStorage.setItem("token", token);
     setToken(token);
@@ -58,7 +75,19 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, login, logout, getTokenInfo, menu, filteredMenu, fetchMenu }}
+      value={{
+        token,
+        login,
+        logout,
+        getTokenInfo,
+        menu,
+        filteredMenu,
+        fetchMenu,
+        shippeprToken,
+        shipperLogin,
+        shipperLogout,
+        getShipperToken,
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -95,6 +124,38 @@ export const LoginSuccessRoute = ({ children }) => {
 
   return token && exp > Date.now() ? (
     <Redirect from="/" to="/app/dashboard" />
+  ) : (
+    children
+  );
+};
+
+export const ProtectedRouteShipping = ({ children }) => {
+  const { shippeprToken } = useAuth();
+  let exp = 0;
+
+  if (shippeprToken) {
+    const { expiration } = JSON.parse(shippeprToken);
+    exp = expiration;
+  }
+
+  return shippeprToken && exp > Date.now() ? (
+    children
+  ) : (
+    <Redirect to="/shipping/login" />
+  );
+};
+
+export const ShippingLoginSuccessRoute = ({ children }) => {
+  const { shippeprToken } = useAuth();
+  let exp = 0;
+
+  if (shippeprToken) {
+    const { expiration } = JSON.parse(shippeprToken);
+    exp = expiration;
+  }
+
+  return shippeprToken && exp > Date.now() ? (
+    <Redirect from="/" to="/shipping/tracking" />
   ) : (
     children
   );
