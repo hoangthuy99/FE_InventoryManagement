@@ -12,6 +12,7 @@ import {
 } from "@windmill/react-ui";
 import { useParams } from "react-router-dom";
 import { branchAPI, categoryAPI } from "../../api/api";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 function EditBranch() {
   const { id } = useParams();
@@ -26,6 +27,7 @@ function EditBranch() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(null);
+  const history = useHistory()
 
   useEffect(() => {
     fetchBranch();
@@ -135,6 +137,7 @@ function EditBranch() {
 
       if (response.status === 200) {
         showSuccessToast("Cập nhật chi nhánh thành công!");
+        history.push("/app/branch/all-branch")
       }
     } catch (error) {
       showErrorToast("Lỗi hệ thống, vui lòng thử lại sau!");

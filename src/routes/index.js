@@ -55,7 +55,7 @@ const routes = [
   },
 
   {
-    path: "/category/edit-category/:id",
+    path: "/category/edit-category/:id?",
     component: EditCategory,
     code: "EDIT_CATEGORY",
     roles: [roleTags.role_amdin],
@@ -74,7 +74,7 @@ const routes = [
     roles: [roleTags.role_amdin],
   },
   {
-    path: "/product/edit-product/:id",
+    path: "/product/edit-product/:id?",
     component: EditProduct,
     code: "EDIT_PRODUCT",
     roles: [roleTags.role_amdin],
@@ -93,7 +93,7 @@ const routes = [
     roles: [roleTags.role_amdin, roleTags.role_staff],
   },
   {
-    path: "/order/edit-order/:id",
+    path: "/order/edit-order/:id?",
     component: EditOrder,
     code: "EDIT_ORDER",
     roles: [roleTags.role_amdin, roleTags.role_staff],
@@ -111,7 +111,7 @@ const routes = [
     roles: [roleTags.role_amdin],
   },
   {
-    path: "/customer/edit-customer/:id",
+    path: "/customer/edit-customer/:id?",
     component: EditCustomer,
     code: "EDIT_CUSTOMER",
     roles: [roleTags.role_amdin],
@@ -129,7 +129,7 @@ const routes = [
     roles: [roleTags.role_amdin],
   },
   {
-    path: "/branch/edit-branch/:id",
+    path: "/branch/edit-branch/:id?",
     component: EditBranch,
     code: "EDIT_BRANCH",
     roles: [roleTags.role_amdin],
@@ -159,7 +159,7 @@ const routes = [
     roles: [roleTags.role_amdin],
   },
   {
-    path: "/supplier/edit-supplier/:id",
+    path: "/supplier/edit-supplier/:id?",
     component: EditSupplier,
     code: "EDIT_SUPPLIER",
     roles: [roleTags.role_amdin],

@@ -26,7 +26,7 @@ const filterStatus = {
 
 function Tracking() {
   const { getShipperToken, shipperLogout } = useAuth();
-  const { code } = getShipperToken();
+  const { code, accessToken } = getShipperToken();
   const [orders, setOrders] = useState([]);
   const [orderSelected, setOrderSelected] = useState({});
   const [validStatus, setValidStatus] = useState([...filterStatus[6]]);
@@ -43,7 +43,7 @@ function Tracking() {
 
   const getOrdersByIdList = async (ids) => {
     try {
-      const response = await orderAPI.getByIdList(ids);
+      const response = await orderAPI.getByIdList(ids, accessToken);
       const data = response.data;
 
       if (data.code === 200) {
@@ -70,7 +70,7 @@ function Tracking() {
       });
 
       console.log("Notifications:", notifications);
-      getOrdersByIdList(notifications.map((n) => n.orderId).join(","));
+      getOrdersByIdList(notifications.map((n) => n.orderId).join(","), accessToken);
     } catch (error) {
       console.error("Error fetching notifications:", error);
       return [];
@@ -94,7 +94,7 @@ function Tracking() {
           const docData = change.doc.data();
 
           const response = await orderAPI.getById(docData.orderId);
-          setOrders((prev) => [...prev, response.data]);
+          setOrders((prev) => [response.data,...prev]);
 
           showSuccessToast(docData.title);
         }
