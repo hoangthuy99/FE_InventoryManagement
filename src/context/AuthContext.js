@@ -14,12 +14,6 @@ export const AuthProvider = ({ children }) => {
   const [filteredMenu, setFilteredMenu] = useState([]);
   const [menu, setMenu] = useState([]);
 
-  useEffect(() => {
-    if (token) {
-      fetchMenu();
-    }
-  }, []);
-
   const fetchMenu = async () => {
     try {
       const res = await menuAPI.getMenuByUser();
@@ -98,8 +92,15 @@ export const useAuth = () => useContext(AuthContext);
 
 // Middleware
 export const ProtectedRoute = ({ children }) => {
-  const { token } = useAuth();
+  const { token, fetchMenu } = useAuth();
   let exp = 0;
+
+  useEffect(() => {
+    if (token) {
+      fetchMenu();
+    }
+  }, []);
+
 
   if (token) {
     const { expiration } = JSON.parse(token);

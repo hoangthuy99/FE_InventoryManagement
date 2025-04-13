@@ -41,15 +41,6 @@ function App() {
           />
           <Route
             exact
-            path="/create-account"
-            render={(props) => (
-              <LoginSuccessRoute>
-                <CreateAccount {...props} />
-              </LoginSuccessRoute>
-            )}
-          />
-          <Route
-            exact
             path="/forgot-password"
             render={(props) => (
               <LoginSuccessRoute>

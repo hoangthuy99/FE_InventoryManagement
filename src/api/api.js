@@ -1,6 +1,4 @@
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
-import { showErrorToast } from "../components/Toast";
 
 const BASE_URL = `${process.env.REACT_APP_BASE_URL}/app`;
 
@@ -20,8 +18,13 @@ api.interceptors.request.use(
 
     // Nếu có token, thêm vào header Authorization
     console.log(config.url);
+    const exceptRoutes = ["/auth/oauth-login", "order/getByIdList"]
+
+    const isExcept = exceptRoutes.some(e => {
+      return config.url.includes(e)
+    })
     
-    if (token && !config.url.includes("/auth/oauth-login")) {
+    if (token && !isExcept) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
@@ -140,7 +143,11 @@ export const orderAPI = {
   getByIdAndStatus: (customerId, orderId, status) =>
     api.get(`/order/${customerId}/${orderId}/${status}`),
   delete: (id) => api.delete(`/order/${id}`),
-  getByIdList: (ids) => api.get(`order/getByIdList?ids=${ids}`),
+  getByIdList: (ids, token) => api.get(`order/getByIdList?ids=${ids}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  }),
 };
 
 //  API User
