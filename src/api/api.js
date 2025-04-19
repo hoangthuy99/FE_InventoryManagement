@@ -105,16 +105,14 @@ export const categoryAPI = {
   searchCategories: (data) => api.post("/category/searchCategories", data),
 };
 
-//  API Product
 export const productAPI = {
   getAll: () => api.get("/product"),
-  getAllPaginated: (page, limit) =>
-    api.get(`/product?page=${page}&limit=${limit}`),
+  getAllPaginated: (page, limit) => api.get(`/product?page=${page}&limit=${limit}`),
   getById: (id) => api.get(`/product/${id}`),
   create: (data) =>
-    api.post("/product/add-product", data, {
-      headers: { "Content-Type": "multipart/form-data" },
-    }), // Đảm bảo hỗ trợ upload file
+    api.post("/product", data, {
+      headers: { "Content-Type": "multipart/form-data" }, // Đảm bảo hỗ trợ upload file
+    }),
   update: (id, data) =>
     api.put(`/product/${id}`, data, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -122,12 +120,11 @@ export const productAPI = {
   delete: (id) => api.delete(`/product/${id}`),
   importExcel: (data) =>
     api.post("/product/importExcel", data, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     }),
   getSampleFile: () => api.get("/product/sampleExcel"),
 };
+
 
 export const orderAPI = {
   getAll: () => api.get("/order/"),

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import PageTitle from "../../components/Typography/PageTitle";
 import { showSuccessToast, showErrorToast } from "../../components/Toast";
 
@@ -22,6 +23,8 @@ import ImportExcel from "../../components/ImportExcel";
 import Invoice from "../../components/Invoice";
 
 const AllProduct = () => {
+  const history = useHistory();
+
   const [products, setProducts] = useState([]);
   const [sampleFile, setSampleFile] = useState("");
   const [page, setPage] = useState(0); // Backend sử dụng page = 0
@@ -157,8 +160,8 @@ const AllProduct = () => {
                       size="icon"
                       aria-label="Edit"
                       onClick={() =>
-                        (window.location.href = `http://localhost:3000/app/product/edit-product/${product.id}`)
-                      }
+                          history.push(`/app/product/add-product/${product.id}`)
+                        }
                     >
                       <EditIcon className="w-5 h-5" aria-hidden="true" />
                     </Button>

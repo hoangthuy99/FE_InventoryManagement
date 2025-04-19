@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import PageTitle from "../../components/Typography/PageTitle";
 import { showSuccessToast, showErrorToast } from "../../components/Toast";
 
@@ -22,6 +23,7 @@ import FilterBox from "../../components/FilterBox";
 import data from "../../assets/data.json";
 
 function Category() {
+   const history = useHistory();
   const [categories, setCategories] = useState([]);
   const [sampleFile, setSampleFile] = useState("");
   const [totalElements, setTotalElements] = useState(1);
@@ -186,8 +188,8 @@ function Category() {
                       size="icon"
                       aria-label="Edit"
                       onClick={() =>
-                        (window.location.href = `http://localhost:3000/app/category/edit-category/${category.id}`)
-                      }
+                          history.push(`/app/category/add-category/${category.id}`)
+                        }
                     >
                       <EditIcon className="w-5 h-5" aria-hidden="true" />
                     </Button>

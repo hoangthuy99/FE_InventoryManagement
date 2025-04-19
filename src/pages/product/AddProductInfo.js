@@ -1,153 +1,239 @@
-import { useState, useEffect } from "react";
-import { showErrorToast, showSuccessToast } from "../../components/Toast";
+import { useEffect, useState } from "react";
+import { useFormik } from "formik";
+import * as yup from "yup";
+import { useParams, useHistory } from "react-router-dom";
+import { showSuccessToast, showErrorToast } from "../../components/Toast";
 import PageTitle from "../../components/Typography/PageTitle";
 import SectionTitle from "../../components/Typography/SectionTitle";
-import { Input, Label, Textarea, Button, Select, HelperText } from "@windmill/react-ui";
-import { productAPI, categoryAPI } from "../../api/api";
+import {
+  Input,
+  HelperText,
+  Label,
+  Select,
+  Textarea,
+  Button,
+} from "@windmill/react-ui";
+import { productAPI, categoryAPI } from "../../api/api"; // Đảm bảo import categoryAPI
 
 function AddProduct() {
-  const [formData, setFormData] = useState({
-    name: "",
-    code: "",
-    qty: "",
-    price: "",
-    description: "",
-    categoryId: "",
-    activeFlag: 1,
+  const { id } = useParams();
+  const history = useHistory();
+  const [img, setImage] = useState(null);
+  const [currentImg, setCurrentImg] = useState(null);
+  const [categories, setCategories] = useState([]); // Thêm state danh mục
+
+  const validationSchema = yup.object({
+    name: yup.string().required("Tên sản phẩm không được để trống!"),
+    code: yup.string().required("Mã sản phẩm không được để trống!"),
+    price: yup
+      .number()
+      .typeError("Giá phải là số")
+      .required("Giá không được để trống!"),
+    qty: yup
+      .number()
+      .typeError("Số lượng phải là số")
+      .required("Số lượng không được để trống!"),
+    categoryId: yup.string().required("Vui lòng chọn danh mục!"), //  Bắt buộc chọn danh mục
+    description: yup.string(),
+    activeFlag: yup.number().oneOf([0, 1], "Trạng thái không hợp lệ"),
   });
 
-  const [image, setImage] = useState(null);
-  const [errors, setErrors] = useState({});
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      code: "",
+      price: "",
+      qty: "",
+      description: "",
+      activeFlag: 1,
+      categoryId: "",
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        const formData = new FormData();
+        Object.entries(values).forEach(([key, val]) => {
+          formData.append(key, String(val));
+        });
+        if (img) {
+          formData.append("img", img);
+        }
+
+        let res;
+        if (id) {
+          res = await productAPI.update(id, formData);
+        } else {
+          res = await productAPI.create(formData);
+        }
+
+        showSuccessToast(
+          id ? "Cập nhật sản phẩm thành công!" : "Thêm sản phẩm thành công!"
+        );
+        history.push("/app/product/all-product");
+      } catch (error) {
+        const msg = error.response?.data || "Thao tác thất bại!";
+        if (typeof msg === "string") {
+          if (msg.includes("mã sản phẩm")) {
+            formik.setFieldError("code", msg);
+          } else if (msg.includes("tên sản phẩm")) {
+            formik.setFieldError("name", msg);
+          } else {
+            showErrorToast(msg);
+          }
+        } else {
+          showErrorToast("Có lỗi xảy ra khi xử lý dữ liệu!");
+        }
+      }
+    },
+  });
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await categoryAPI.getAll();
-        setCategories(Array.isArray(response.data) ? response.data : []);
-      } catch (error) {
-        console.error("Lỗi khi gọi API danh mục:", error);
+        const res = await categoryAPI.getAll();
+        setCategories(res.data || []);
+      } catch {
+        showErrorToast("Không thể tải danh mục!");
       }
     };
     fetchCategories();
-  }, []);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const validateForm = () => {
-    let newErrors = {};
-
-    if (!formData.name.trim()) newErrors.name = "Tên sản phẩm không được để trống!";
-    if (!formData.code.trim()) {
-      newErrors.code = "Mã sản phẩm không được để trống!";
-    } else if (!/^[A-Za-z]{2}\d{3}$/.test(formData.code)) {
-      newErrors.code = "Mã sản phẩm phải có 5 ký tự, bắt đầu bằng 2 chữ cái và 3 số!";
-    }
-    if (!formData.qty.trim() || isNaN(formData.qty) || Number(formData.qty) <= 0) {
-      newErrors.qty = "Số lượng phải là số nguyên dương!";
-    }
-    if (!formData.price.trim() || isNaN(formData.price) || Number(formData.price) <= 0) {
-      newErrors.price = "Giá phải là số lớn hơn 0!";
-    }
-    if (!formData.categoryId) newErrors.categoryId = "Vui lòng chọn danh mục!";
-    if (!formData.description.trim()) newErrors.description = "Mô tả không được để trống!";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrors({});
-    if (!validateForm()) return;
-    setLoading(true);
-
-    try {
-      const formDataToSend = new FormData();
-      Object.keys(formData).forEach((key) => {
-        formDataToSend.append(key, formData[key]);
-      });
-      if (image) {
-        formDataToSend.append("img", image);
+    const fetchData = async () => {
+      if (!id) return;
+      try {
+        const res = await productAPI.getById(id);
+        const data = res.data;
+        formik.setValues({
+          name: data.name || "",
+          code: data.code || "",
+          price: data.price || "",
+          qty: data.qty || "",
+          categoryId: data.categoryId ? String(data.categoryId) : "",
+          description: data.description || "",
+          activeFlag: data.activeFlag ?? 1,
+        });
+        setCurrentImg(data.img || null);
+      } catch {
+        showErrorToast("Không thể tải dữ liệu sản phẩm!");
       }
-
-      await productAPI.create(formDataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      
-      showSuccessToast("Thêm sản phẩm thành công!");
-      setFormData({ name: "", code: "", qty: "", price: "", description: "", categoryId: "", activeFlag: 1 });
-      setImage(null);
-    } catch (error) {
-      if (error.response) {
-        const { status, data } = error.response;
-        if (status === 400 && data.errors) {
-          setErrors(data.errors);
-        } else {
-          showErrorToast("Lỗi: " + (data.message || "Thêm sản phẩm thất bại!"));
-        }
-      } else {
-        showErrorToast("Lỗi kết nối server!");
-      }
-    }
-    setLoading(false);
-  };
+    };
+    fetchData();
+  }, [id]);
 
   return (
     <>
-      <PageTitle>Thêm Sản Phẩm</PageTitle>
+      <PageTitle>{id ? "Chỉnh sửa" : "Thêm"} Sản Phẩm</PageTitle>
       <SectionTitle>Nhập thông tin sản phẩm</SectionTitle>
       <div className="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
-        {errors.general && <HelperText valid={false}>{errors.general}</HelperText>}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={formik.handleSubmit}>
           <Label>
             <span>Tên sản phẩm</span>
-            <Input type="text" name="name" value={formData.name} onChange={handleChange} />
-            {errors.name && <HelperText valid={false}>{errors.name}</HelperText>}
+            <Input className="mt-1" {...formik.getFieldProps("name")} />
+            {formik.touched.name && formik.errors.name && (
+              <HelperText valid={false}>{formik.errors.name}</HelperText>
+            )}
           </Label>
+
           <Label className="mt-4">
             <span>Mã sản phẩm</span>
-            <Input type="text" name="code" value={formData.code} onChange={handleChange} />
-            {errors.code && <HelperText valid={false}>{errors.code}</HelperText>}
+            <Input
+              className="mt-1"
+              {...formik.getFieldProps("code")}
+              disabled={!id}
+            />
+            {formik.touched.code && formik.errors.code && (
+              <HelperText valid={false}>{formik.errors.code}</HelperText>
+            )}
           </Label>
-          <Label className="mt-4">
-            <span>Số lượng</span>
-            <Input type="number" name="qty" value={formData.qty} onChange={handleChange} />
-            {errors.qty && <HelperText valid={false}>{errors.qty}</HelperText>}
-          </Label>
+
           <Label className="mt-4">
             <span>Giá</span>
-            <Input type="number" name="price" value={formData.price} onChange={handleChange} />
-            {errors.price && <HelperText valid={false}>{errors.price}</HelperText>}
+            <Input
+              type="number"
+              className="mt-1"
+              {...formik.getFieldProps("price")}
+            />
+            {formik.touched.price && formik.errors.price && (
+              <HelperText valid={false}>{formik.errors.price}</HelperText>
+            )}
           </Label>
+
           <Label className="mt-4">
-            <span>Mô tả</span>
-            <Textarea name="description" value={formData.description} onChange={handleChange} />
-            {errors.description && <HelperText valid={false}>{errors.description}</HelperText>}
+            <span>Số lượng</span>
+            <Input
+              type="number"
+              className="mt-1"
+              {...formik.getFieldProps("qty")}
+            />
+            {formik.touched.qty && formik.errors.qty && (
+              <HelperText valid={false}>{formik.errors.qty}</HelperText>
+            )}
           </Label>
+
           <Label className="mt-4">
             <span>Danh mục</span>
-            <Select name="categoryId" value={formData.categoryId} onChange={handleChange}>
+            <Select className="mt-1" {...formik.getFieldProps("categoryId")}>
               <option value="">-- Chọn danh mục --</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>{category.name}</option>
+              {categories.map((c) => (
+                <option key={c.id} value={String(c.id)}>
+                  {c.name}
+                </option>
               ))}
             </Select>
-            {errors.categoryId && <HelperText valid={false}>{errors.categoryId}</HelperText>}
+
+            {formik.touched.categoryId && formik.errors.categoryId && (
+              <HelperText valid={false}>{formik.errors.categoryId}</HelperText>
+            )}
           </Label>
+
           <Label className="mt-4">
-            <span>Hình ảnh</span>
-            <Input type="file" name="img" onChange={handleImageChange} accept="image/jpeg,image/png,image/jpg" />
+            <span>Mô tả sản phẩm</span>
+            <Textarea
+              className="mt-1"
+              {...formik.getFieldProps("description")}
+            />
+            {formik.touched.description && formik.errors.description && (
+              <HelperText valid={false}>{formik.errors.description}</HelperText>
+            )}
           </Label>
-          <Button type="submit" disabled={loading} className="mt-4">
-            {loading ? "Đang xử lý..." : "Thêm sản phẩm"}
+
+          <Label className="mt-4">
+            <span>Trạng thái</span>
+            <Select className="mt-1" {...formik.getFieldProps("activeFlag")}>
+              <option value={1}>Hoạt động</option>
+              <option value={0}>Không hoạt động</option>
+            </Select>
+          </Label>
+
+          {currentImg && (
+            <div className="mt-4">
+              <img
+                src={`/${currentImg}`}
+                alt="Product"
+                style={{ width: "150px", height: "150px", objectFit: "cover" }}
+              />
+            </div>
+          )}
+
+          <Label className="mt-4">
+            <span>Hình ảnh sản phẩm</span>
+            <Input
+              type="file"
+              className="mt-1"
+              onChange={(e) => setImage(e.target.files[0])}
+            />
+          </Label>
+
+          <Button
+            className="p-4 mt-6"
+            type="submit"
+            disabled={formik.isSubmitting}
+          >
+            {formik.isSubmitting
+              ? "Đang xử lý..."
+              : id
+              ? "Lưu sản phẩm"
+              : "Thêm sản phẩm"}
           </Button>
         </form>
       </div>

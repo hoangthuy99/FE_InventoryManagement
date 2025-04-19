@@ -19,7 +19,7 @@ import {
   WindmillContext,
 } from "@windmill/react-ui";
 import { useAuth } from "../context/AuthContext";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import { showSuccessToast } from "./Toast";
 import {
   collection,
@@ -180,7 +180,7 @@ function Header() {
               align="right"
               isOpen={isNotificationsMenuOpen}
               onClose={() => setIsNotificationsMenuOpen(false)}
-              className="max-h-64 overflow-hidden overflow-y-scroll"
+              className="overflow-hidden overflow-y-scroll max-h-64"
             >
               {notifications &&
                 notifications.map((n, i) => {
@@ -246,13 +246,18 @@ function Header() {
               isOpen={isProfileMenuOpen}
               onClose={() => setIsProfileMenuOpen(false)}
             >
-              <DropdownItem tag="a" href="#">
+              <DropdownItem
+                tag={Link}
+                to="/app/profile"
+                className="flex items-center"
+              >
                 <OutlinePersonIcon
                   className="w-4 h-4 mr-3"
                   aria-hidden="true"
                 />
                 <span>Profile</span>
               </DropdownItem>
+
               <DropdownItem tag="a" href="#">
                 <OutlineCogIcon className="w-4 h-4 mr-3" aria-hidden="true" />
                 <span>Settings</span>

@@ -10,26 +10,22 @@ import data from "../assets/data.json";
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const AllCategory = lazy(() => import("../pages/category/AllCategory"));
 const AddCategory = lazy(() => import("../pages/category/AddCategory"));
-const EditCategory = lazy(() => import("../pages/category/Editcategory"));
 const AddProductInfo = lazy(() => import("../pages/product/AddProductInfo"));
 const AllProduct = lazy(() => import("../pages/product/AllProduct"));
-const EditProduct = lazy(() => import("../pages/product/EditProduct"));
 const AddOrder = lazy(() => import("../pages/order/AddOrder"));
 const AllOrders = lazy(() => import("../pages/order/AllOrders"));
 const AddCustomer = lazy(() => import("../pages/customer/AddCustomer"));
 const AllCustomer = lazy(() => import("../pages/customer/AllCustomer"));
-const EditCustomer = lazy(() => import("../pages/customer/EditCustomer"));
 const AddBranch = lazy(() => import("../pages/branch/AddBranch"));
 const AllBranch = lazy(() => import("../pages/branch/AllBranch"));
-const EditBranch = lazy(() => import("../pages/branch/EditBranch"));
 const AddSupplier = lazy(() => import("../pages/supplier/AddSupplier"));
 const AllSupplier = lazy(() => import("../pages/supplier/AllSupplier"));
-const EditSupplier = lazy(() => import("../pages/supplier/EditSupplier"));
 const AllUser = lazy(() => import("../pages/user/AllUser"));
 const EditUser = lazy(() => import("../pages/user/EditUser"));
 const AllMenu = lazy(() => import("../pages/menu/AllMenu"));
 const EditMenu = lazy(() => import("../pages/menu/EditMenu"));
 const Tracking = lazy(() => import("../pages/shipping/Tracking"));
+const Profile = lazy(()=>import("../pages/Profile"));
 
 const Page404 = lazy(() => import("../pages/404"));
 const { roleTags } = data;
@@ -42,27 +38,25 @@ const routes = [
     roles: [roleTags.role_amdin, roleTags.role_staff],
   },
   {
+    path: "/profile/:username",
+    component: Profile,
+    code: "PROFILE", 
+  },
+  {
     path: "/category/all-category",
     component: AllCategory,
     code: "ALL_CATEGORY",
     roles: [roleTags.role_amdin],
   },
   {
-    path: "/category/add-category",
+    path: "/category/add-category/:id?",
     component: AddCategory,
     code: "ADD_CATEGORY",
     roles: [roleTags.role_amdin],
   },
 
   {
-    path: "/category/edit-category/:id?",
-    component: EditCategory,
-    code: "EDIT_CATEGORY",
-    roles: [roleTags.role_amdin],
-  },
-
-  {
-    path: "/product/add-product",
+    path: "/product/add-product/:id?",
     component: AddProductInfo,
     code: "ADD_PRODUCT",
     roles: [roleTags.role_amdin],
@@ -73,12 +67,7 @@ const routes = [
     code: "ALL_PRODUCT",
     roles: [roleTags.role_amdin],
   },
-  {
-    path: "/product/edit-product/:id?",
-    component: EditProduct,
-    code: "EDIT_PRODUCT",
-    roles: [roleTags.role_amdin],
-  },
+ 
   {
     path: "/order/all-orders",
     component: AllOrders,
@@ -99,7 +88,7 @@ const routes = [
     roles: [roleTags.role_amdin, roleTags.role_staff],
   },
   {
-    path: "/customer/add-customer",
+    path: "/customer/add-customer/:id?",
     component: AddCustomer,
     code: "ADD_CUSTOMER",
     roles: [roleTags.role_amdin],
@@ -110,14 +99,9 @@ const routes = [
     code: "ALL_CUSTOMER",
     roles: [roleTags.role_amdin],
   },
+ 
   {
-    path: "/customer/edit-customer/:id?",
-    component: EditCustomer,
-    code: "EDIT_CUSTOMER",
-    roles: [roleTags.role_amdin],
-  },
-  {
-    path: "/branch/add-branch",
+    path: "/branch/add-branch/:id?",
     component: AddBranch,
     code: "ADD_BRANCH",
     roles: [roleTags.role_amdin],
@@ -128,12 +112,7 @@ const routes = [
     code: "ALL_BRANCH",
     roles: [roleTags.role_amdin],
   },
-  {
-    path: "/branch/edit-branch/:id?",
-    component: EditBranch,
-    code: "EDIT_BRANCH",
-    roles: [roleTags.role_amdin],
-  },
+ 
   {
     path: "/purchase/add-purchase/:id?",
     component: AddPurchase,
@@ -147,7 +126,7 @@ const routes = [
     roles: [roleTags.role_amdin, roleTags.role_staff],
   },
   {
-    path: "/supplier/add-supplier",
+    path: "/supplier/add-supplier/:id?",
     component: AddSupplier,
     code: "ADD_SUPPLIER",
     roles: [roleTags.role_amdin],
@@ -158,12 +137,7 @@ const routes = [
     code: "ALL_SUPPLIER",
     roles: [roleTags.role_amdin],
   },
-  {
-    path: "/supplier/edit-supplier/:id?",
-    component: EditSupplier,
-    code: "EDIT_SUPPLIER",
-    roles: [roleTags.role_amdin],
-  },
+ 
 
   {
     path: "/user/all-user",
