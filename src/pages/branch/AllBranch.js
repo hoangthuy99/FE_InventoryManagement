@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PageTitle from "../../components/Typography/PageTitle";
+import { useHistory } from "react-router-dom";
 import { showSuccessToast, showErrorToast } from "../../components/Toast";
 
 import {
@@ -20,6 +21,7 @@ import { Box } from "@mui/material";
 import ImportExcel from "../../components/ImportExcel";
 
 function AllBranch() {
+  const history = useHistory();
   const [branches, setBranches] = useState([]);
   const [page, setPage] = useState(0);
   const [limit] = useState(10);
@@ -136,8 +138,8 @@ function AllBranch() {
                       size="icon"
                       aria-label="Edit"
                       onClick={() =>
-                        (window.location.href = `http://localhost:3000/app/branch/edit-branch/${branch.id}`)
-                      }
+                          history.push(`/app/branch/add-branch/${branch.id}`)
+                        }
                     >
                       <EditIcon className="w-5 h-5" aria-hidden="true" />
                     </Button>

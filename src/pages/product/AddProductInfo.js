@@ -17,6 +17,7 @@ import { productAPI, categoryAPI } from "../../api/api"; // Đảm bảo import 
 
 function AddProduct() {
   const { id } = useParams();
+  const isUpdate = !!id;
   const history = useHistory();
   const [img, setImage] = useState(null);
   const [currentImg, setCurrentImg] = useState(null);
@@ -108,11 +109,13 @@ function AddProduct() {
           code: data.code || "",
           price: data.price || "",
           qty: data.qty || "",
-          categoryId: data.categoryId ? String(data.categoryId) : "",
+          categoryId: data.categories?.id ? String(data.categories.id) : "",
           description: data.description || "",
           activeFlag: data.activeFlag ?? 1,
         });
         setCurrentImg(data.img || null);
+        console.log("Ảnh hiện tại:", data.img);
+
       } catch {
         showErrorToast("Không thể tải dữ liệu sản phẩm!");
       }
@@ -172,17 +175,32 @@ function AddProduct() {
 
           <Label className="mt-4">
             <span>Danh mục</span>
-            <Select className="mt-1" {...formik.getFieldProps("categoryId")}>
-              <option value="">-- Chọn danh mục --</option>
-              {categories.map((c) => (
-                <option key={c.id} value={String(c.id)}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
+            {isUpdate ? (
+              <div className="px-3 py-2 mt-1 bg-gray-100 rounded">
+                {categories.find(
+                  (c) => c.id === Number(formik.values.categoryId)
+                )?.name || "Không rõ"}
+              </div>
+            ) : (
+              <>
+                <Select
+                  className="mt-1"
+                  {...formik.getFieldProps("categoryId")}
+                >
+                  <option value="">-- Chọn danh mục --</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={String(c.id)}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Select>
 
-            {formik.touched.categoryId && formik.errors.categoryId && (
-              <HelperText valid={false}>{formik.errors.categoryId}</HelperText>
+                {formik.touched.categoryId && formik.errors.categoryId && (
+                  <HelperText valid={false}>
+                    {formik.errors.categoryId}
+                  </HelperText>
+                )}
+              </>
             )}
           </Label>
 
@@ -208,9 +226,10 @@ function AddProduct() {
           {currentImg && (
             <div className="mt-4">
               <img
-                src={`/${currentImg}`}
+                 src={`http://localhost:8089/${currentImg}`}
                 alt="Product"
                 style={{ width: "150px", height: "150px", objectFit: "cover" }}
+                
               />
             </div>
           )}

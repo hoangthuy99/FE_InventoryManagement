@@ -29,7 +29,10 @@ export const AuthProvider = ({ children }) => {
 
   const buildMenuTree = (menuList, parentId = null) => {
     return menuList
-      .filter((menu) => menu.parentId === parentId)
+      .filter(
+        (menu) =>
+          menu.parentId === parentId && menu.showInSidebar !== false
+      )
       .map((menu) => ({
         path: menu.path,
         icon: menu.icon,
@@ -38,6 +41,7 @@ export const AuthProvider = ({ children }) => {
         routes: buildMenuTree(menuList, menu.id), // gọi đệ quy
       }));
   };
+  
 
   const shipperLogin = (token) => {
     localStorage.setItem("shipperToken", token);
@@ -129,7 +133,21 @@ export const LoginSuccessRoute = ({ children }) => {
     children
   );
 };
+export const ProtectedRouteProfile = ({ children }) => {
+  const { token } = useAuth();
+  let exp = 0;
 
+  if (token) {
+    const { expiration } = JSON.parse(token);
+    exp = expiration;
+  }
+
+  return token && exp > Date.now() ? (
+    children
+  ) : (
+    <Redirect to="/login" />
+  );
+};
 export const ProtectedRouteShipping = ({ children }) => {
   const { shippeprToken } = useAuth();
   let exp = 0;

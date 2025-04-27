@@ -58,7 +58,6 @@ function Tracking() {
     }
   };
 
-  // Get notification by self
   const getSelfNotification = async () => {
     try {
       const querySnapshot = await getDocs(q);
@@ -68,14 +67,22 @@ function Tracking() {
           ...doc.data(),
         };
       });
-
-      console.log("Notifications:", notifications);
-      getOrdersByIdList(notifications.map((n) => n.orderId).join(","), accessToken);
+  
+      const ids = notifications.map((n) => n.orderId);
+      console.log("Notification IDs:", ids);
+  
+      if (ids.length === 0) {
+        console.warn("Không có đơn hàng nào được gán cho shipper này.");
+        return;
+      }
+  
+      getOrdersByIdList(ids, accessToken); // Đảm bảo truyền mảng, không join(",")
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      console.error("Error fetching notifications:", error.message, error);
       return [];
     }
   };
+  
 
   useEffect(() => {
     getSelfNotification();
@@ -184,52 +191,52 @@ function Tracking() {
   };
 
   return (
-    <div class="bg-gray-100">
-      <div class="max-w-md mx-auto bg-white shadow-lg overflow-hidden">
-        <div class="bg-blue-500 p-4 flex items-center justify-between">
-          <div class="flex items-center">
+    <div className="bg-gray-100">
+      <div className="max-w-md mx-auto overflow-hidden bg-white shadow-lg">
+        <div className="flex items-center justify-between p-4 bg-blue-500">
+          <div className="flex items-center">
             <img
               alt="App logo"
-              class="rounded-full"
+              className="rounded-full"
               height="40"
               src="https://storage.googleapis.com/a1aa/image/bRLj7DEdZLDEb9pwtdV1cG89uapOj9ne3-bSjT2Spv0.jpg"
               width="40"
             />
-            <h1 class="text-white text-xl font-bold ml-3">Shipper App</h1>
+            <h1 className="ml-3 text-xl font-bold text-white">Shipper App</h1>
           </div>
           <div
             onClick={() => shipperLogout()}
-            class="flex items-center text-white cursor-pointer hover:text-red-500"
+            className="flex items-center text-white cursor-pointer hover:text-red-500"
           >
             <OutlineLogoutIcon className="w-4 h-4" aria-hidden="true" />
             <span>Log out</span>
           </div>
         </div>
-        <div class="p-4">
-          <h2 class="text-lg font-semibold mb-4">Danh sách đơn hàng</h2>
-          <div className="max-h-64 overflow-y-scroll overflow-hidden">
+        <div className="p-4">
+          <h2 className="mb-4 text-lg font-semibold">Danh sách đơn hàng</h2>
+          <div className="overflow-hidden overflow-y-scroll max-h-64">
             {orders &&
               orders.map((o) => (
                 <div
                   onClick={() => setOrderSelected(o)}
-                  class={
+                  className={
                     "p-3 rounded-lg shadow cursor-pointer mb-4 " +
                     (orderSelected?.id === o?.id ? " bg-gray-300" : " bg-white")
                   }
                 >
-                  <div class="flex items-center">
+                  <div className="flex items-center">
                     <img
                       alt="Package image"
-                      class="rounded-full mr-3"
+                      className="mr-3 rounded-full"
                       height="50"
                       src="https://tse3.mm.bing.net/th?id=OIP.9YGf5zV6GpSu1_Fsjs8mUQHaHa&pid=Api&P=0&h=220"
                       width="50"
                     />
                     <div>
-                      <h3 class="text-md font-semibold">
+                      <h3 className="font-semibold text-md">
                         Đơn hàng {o?.orderCode}
                       </h3>
-                      <p class="text-gray-600">
+                      <p className="text-gray-600">
                         Trạng thái: {status[o?.status]}
                       </p>
                     </div>
@@ -238,52 +245,52 @@ function Tracking() {
               ))}
           </div>
         </div>
-        <div class="bg-gray-200 p-4 flex justify-around">
-          <div class="text-center">
-            <i class="fas fa-box text-blue-500 text-2xl"></i>
-            <p class="text-blue-500 text-sm">Đơn hàng</p>
+        <div className="flex justify-around p-4 bg-gray-200">
+          <div className="text-center">
+            <i className="text-2xl text-blue-500 fas fa-box"></i>
+            <p className="text-sm text-blue-500">Đơn hàng</p>
           </div>
-          <div class="text-center">
-            <i class="fas fa-map-marker-alt text-gray-600 text-2xl"></i>
-            <p class="text-gray-600 text-sm">Theo dõi</p>
+          <div className="text-center">
+            <i className="text-2xl text-gray-600 fas fa-map-marker-alt"></i>
+            <p className="text-sm text-gray-600">Theo dõi</p>
           </div>
-          <div class="text-center">
-            <i class="fas fa-history text-gray-600 text-2xl"></i>
-            <p class="text-gray-600 text-sm">Lịch sử</p>
+          <div className="text-center">
+            <i className="text-2xl text-gray-600 fas fa-history"></i>
+            <p className="text-sm text-gray-600">Lịch sử</p>
           </div>
-          <div class="text-center">
-            <i class="fas fa-user text-gray-600 text-2xl"></i>
-            <p class="text-gray-600 text-sm">Hồ sơ</p>
+          <div className="text-center">
+            <i className="text-2xl text-gray-600 fas fa-user"></i>
+            <p className="text-sm text-gray-600">Hồ sơ</p>
           </div>
         </div>
       </div>
-      <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-5">
-        <div class="h-64">
+      <div className="max-w-md mx-auto mt-5 overflow-hidden bg-white rounded-lg shadow-lg">
+        <div className="h-64">
           <img
             alt="Map showing shipper's location"
-            class="w-full h-full object-cover"
+            className="object-cover w-full h-full"
             height="300"
             src="https://storage.googleapis.com/a1aa/image/By6I3fkufKnTwGbUh_DQIZeMShTwNEGeP0tRBX2JJvY.jpg"
             width="400"
           />
         </div>
-        <div class="p-4">
-          <div class="flex items-center mb-4">
-            <i class="fas fa-box text-blue-500 text-2xl mr-3"></i>
+        <div className="p-4">
+          <div className="flex items-center mb-4">
+            <i className="mr-3 text-2xl text-blue-500 fas fa-box"></i>
             <div>
-              <h2 class="text-lg font-semibold">
+              <h2 className="text-lg font-semibold">
                 Đơn hàng {orderSelected?.orderCode}
               </h2>
-              <p class="text-gray-600">
+              <p className="text-gray-600">
                 Trạng thái: {status[orderSelected?.status]}
               </p>
             </div>
           </div>
-          <div class="flex items-center mb-4">
-            <i class="fas fa-clock text-blue-500 text-2xl mr-3"></i>
+          <div className="flex items-center mb-4">
+            <i className="mr-3 text-2xl text-blue-500 fas fa-clock"></i>
             <div>
-              <h2 class="text-lg font-semibold">ETA</h2>
-              <p class="text-gray-600">15 mins</p>
+              <h2 className="text-lg font-semibold">ETA</h2>
+              <p className="text-gray-600">15 mins</p>
             </div>
           </div>
           {updateMode ? (
@@ -292,7 +299,7 @@ function Tracking() {
                 setStatusChange(orderSelected?.status);
                 setUpdateMode(false);
               }}
-              class={
+              className={
                 "w-full bg-gray-400 text-white py-2 rounded-lg " +
                 ([8, 9].includes(orderSelected?.status) ? " hidden" : "")
               }
@@ -302,7 +309,7 @@ function Tracking() {
           ) : (
             <button
               onClick={() => setUpdateMode(true)}
-              class={
+              className={
                 "w-full bg-blue-500 text-white py-2 rounded-lg " +
                 ([8, 9].includes(orderSelected?.status) ? " hidden" : "")
               }
@@ -312,15 +319,15 @@ function Tracking() {
           )}
         </div>
       </div>
-      <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-5">
-        <div class="p-4">
-          <h2 class="text-lg font-semibold mb-4">Thông tin đơn hàng</h2>
-          <div class="mb-4">
-            <h3 class="text-md font-semibold">Mã đơn hàng</h3>
-            <p class="text-gray-600">{orderSelected?.orderCode}</p>
+      <div className="max-w-md mx-auto mt-5 overflow-hidden bg-white rounded-lg shadow-lg">
+        <div className="p-4">
+          <h2 className="mb-4 text-lg font-semibold">Thông tin đơn hàng</h2>
+          <div className="mb-4">
+            <h3 className="font-semibold text-md">Mã đơn hàng</h3>
+            <p className="text-gray-600">{orderSelected?.orderCode}</p>
           </div>
-          <div class="mb-4">
-            <h3 class="text-md font-semibold">Trạng thái</h3>
+          <div className="mb-4">
+            <h3 className="font-semibold text-md">Trạng thái</h3>
             {updateMode ? (
               <FormControl fullWidth>
                 <Select
@@ -339,27 +346,27 @@ function Tracking() {
                 </Select>
               </FormControl>
             ) : (
-              <p class="text-gray-600">{status[orderSelected?.status]}</p>
+              <p className="text-gray-600">{status[orderSelected?.status]}</p>
             )}
           </div>
-          <div class="mb-4">
-            <h3 class="text-md font-semibold">Địa chỉ giao hàng</h3>
-            <p class="text-gray-600">{orderSelected?.deliveryAddress}</p>
+          <div className="mb-4">
+            <h3 className="font-semibold text-md">Địa chỉ giao hàng</h3>
+            <p className="text-gray-600">{orderSelected?.deliveryAddress}</p>
           </div>
-          <div class="mb-4">
-            <h3 class="text-md font-semibold">Thời gian dự kiến</h3>
-            <p class="text-gray-600">15 mins</p>
+          <div className="mb-4">
+            <h3 className="font-semibold text-md">Thời gian dự kiến</h3>
+            <p className="text-gray-600">15 mins</p>
           </div>
-          <div class="flex justify-around mt-4">
-            <button class="bg-blue-500 text-white py-2 px-4 rounded-lg  text-center">
+          <div className="flex justify-around mt-4">
+            <button className="px-4 py-2 text-center text-white bg-blue-500 rounded-lg">
               <a href={`tel:${orderSelected?.customer?.phone}`}>Gọi</a>
             </button>
-            <button class="bg-green-500 text-white py-2 px-4 rounded-lg  text-center">
+            <button className="px-4 py-2 text-center text-white bg-green-500 rounded-lg">
               Nhắn tin
             </button>
             <button
               onClick={handleUpdateOrder}
-              class="bg-yellow-500 text-white py-2 px-4 rounded-lg  text-center"
+              className="px-4 py-2 text-center text-white bg-yellow-500 rounded-lg"
             >
               Cập nhật
             </button>

@@ -115,7 +115,7 @@ function Login() {
                     {errors?.password?.message}
                   </HelperText>
                 </Label>
-                <Button className="mt-4 w-full" type="submit">
+                <Button className="w-full mt-4" type="submit">
                   Log in
                 </Button>
               </form>

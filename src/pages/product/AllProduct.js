@@ -12,7 +12,6 @@ import {
   TableFooter,
   TableContainer,
   Badge,
-  Avatar,
   Button,
   Pagination,
 } from "@windmill/react-ui";
@@ -20,7 +19,6 @@ import { EditIcon, TrashIcon } from "../../icons";
 import { productAPI } from "../../api/api";
 import { Box, Container, Input } from "@mui/material";
 import ImportExcel from "../../components/ImportExcel";
-import Invoice from "../../components/Invoice";
 
 const AllProduct = () => {
   const history = useHistory();
@@ -131,10 +129,10 @@ const AllProduct = () => {
                 <TableCell>{page * limit + index + 1}</TableCell>
                 <TableCell>{product.code}</TableCell>
                 <TableCell>
-                  <Avatar
-                    size="large"
+                  <img
                     src={`http://localhost:8089/${product.img}`}
                     alt={product.name}
+                    style={{ width: '100px', height: '100px' }}
                   />
                 </TableCell>
                 <TableCell>{product.name}</TableCell>

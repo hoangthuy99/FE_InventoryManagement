@@ -57,7 +57,9 @@ function AddBranch() {
           await branchAPI.create(formDataToSend);
           showSuccessToast("Thêm chi nhánh thành công!");
         }
-        history.push("/app/branch/all-branch");
+        // history.push("/app/branch/all-branch");
+       //API trả về dữ liệu không hợp lệ
+       console.log("API Response:", formDataToSend.data);
       } catch (error) {
         const msg = error.response?.data?.message || "Thao tác thất bại!";
         showErrorToast(msg);
@@ -143,7 +145,7 @@ function AddBranch() {
             <span>Hình ảnh</span>
             <Input
               type="file"
-              name="img"
+              name="image"
               onChange={handleImageChange}
               accept="image/jpeg,image/png,image/jpg"
             />

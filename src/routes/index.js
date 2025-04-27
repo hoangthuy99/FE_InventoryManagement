@@ -27,7 +27,6 @@ const EditMenu = lazy(() => import("../pages/menu/EditMenu"));
 const Tracking = lazy(() => import("../pages/shipping/Tracking"));
 const Profile = lazy(()=>import("../pages/Profile"));
 
-const Page404 = lazy(() => import("../pages/404"));
 const { roleTags } = data;
 
 const routes = [
@@ -38,10 +37,11 @@ const routes = [
     roles: [roleTags.role_amdin, roleTags.role_staff],
   },
   {
-    path: "/profile/:username",
+    path: "/profile",
     component: Profile,
     code: "PROFILE", 
   },
+
   {
     path: "/category/all-category",
     component: AllCategory,

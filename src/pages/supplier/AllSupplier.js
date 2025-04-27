@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PageTitle from "../../components/Typography/PageTitle";
+import { useHistory } from "react-router-dom";
 import { showSuccessToast, showErrorToast } from "../../components/Toast";
 import {
   Table,
@@ -21,6 +22,7 @@ function AllSupplier() {
   const [page, setPage] = useState(0); // Trang hiện tại (bắt đầu từ 0)
   const [limit] = useState(10); // Số lượng hiển thị mỗi trang
   const [totalResults, setTotalResults] = useState(0); // Tổng số nhà cung cấp
+  const history = useHistory();
 
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -82,7 +84,7 @@ function AllSupplier() {
               suppliers.map((sup, index) => (
                 <TableRow key={sup.id}>
                   <TableCell>{page * limit + index + 1}</TableCell>
-                  <TableCell>{sup.supCode}</TableCell>
+                  <TableCell>{sup.subCode}</TableCell>
                   <TableCell>{sup.name}</TableCell>
                   <TableCell>{sup.email}</TableCell>
                   <TableCell>{sup.address}</TableCell>
@@ -99,7 +101,7 @@ function AllSupplier() {
                         size="icon"
                         aria-label="Edit"
                         onClick={() =>
-                          (window.location.href = `/app/supplier/edit-supplier/${sup.id}`)
+                          history.push(`/app/supplier/add-supplier/${sup.id}`)
                         }
                       >
                         <EditIcon className="w-5 h-5" aria-hidden="true" />

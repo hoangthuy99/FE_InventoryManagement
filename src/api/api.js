@@ -155,6 +155,9 @@ export const userAPI = {
   update: (id, data) => api.put(`/user/${id}`, data),
   delete: (id) => api.delete(`/user/${id}`),
   getAllUserGoogle: () => api.get("/user/getAllUsersGG"),
+  getProfile: () => api.get("/user/profile"),
+  getGmailMessages: () => api.get("/user/getGmailMessages"),
+  
 };
 
 // API menu
@@ -218,7 +221,7 @@ export const supplierAPI = {
   getById: (id) => api.get(`/supplier/${id}`),
   getAllPaginated: (page, limit) =>
     api.get(`/supplier/getAllSuppliers?page=${page}&limit=${limit}`),
-  add: (supplierData) => api.post("/supplier/add-supplier", supplierData),
+  add: (supplierData) => api.post("/supplier/addSupplier", supplierData),
   update: (id, supplierData) => api.put(`/supplier/${id}`, supplierData),
   delete: (id) => api.delete(`/supplier/${id}`),
 };

@@ -27,6 +27,7 @@ function EditMenu() {
       path: "",
       icon: "",
       parentId: "",
+      showInSidebar: true,
       activeFlag: 1,
       roleIds: [],
     },
@@ -38,7 +39,9 @@ function EditMenu() {
           : await menuAPI.create(values);
 
         if (response.data) {
-          showSuccessToast(id ? "Cập nhật menu thành công!" : "Thêm menu thành công!");
+          showSuccessToast(
+            id ? "Cập nhật menu thành công!" : "Thêm menu thành công!"
+          );
           history.push("/app/menus/all-menu");
         } else {
           showErrorToast("API không trả về dữ liệu hợp lệ!");
@@ -72,7 +75,8 @@ function EditMenu() {
           const menuRes = await menuAPI.getById(id);
           const data = menuRes.data;
 
-          const extractedRoleIds = data.roles?.map((r) => r.id) || data.roleIds || [];
+          const extractedRoleIds =
+            data.roles?.map((r) => r.id) || data.roleIds || [];
 
           formik.setValues({
             code: data.code || "",
@@ -80,6 +84,7 @@ function EditMenu() {
             path: data.path || "",
             icon: data.icon || "",
             parentId: data.parentId || "",
+            showInSidebar: data.showInSidebar !== undefined ? data.showInSidebar : true,
             activeFlag: data.activeFlag ?? 1,
             roleIds: extractedRoleIds,
           });
@@ -134,6 +139,22 @@ function EditMenu() {
                 <HelperText valid={false}>{formik.errors.icon}</HelperText>
               )}
             </Label>
+            <Label className="w-full md:w-1/2">
+              <div className="flex flex-col space-y-2">
+                <span>Hiển thị sidebar</span>
+                <input
+                  type="checkbox"
+                  className="w-5 h-5 text-purple-600 border-gray-300 form-checkbox focus:ring focus:ring-purple-300"
+                  checked={formik.values.showInSidebar}
+                  onChange={() =>
+                    formik.setFieldValue(
+                      "showInSidebar",
+                      !formik.values.showInSidebar
+                    )
+                  }
+                />
+              </div>
+            </Label>
 
             <Label className="w-full md:w-1/2">
               <span>Trạng thái</span>
@@ -145,7 +166,9 @@ function EditMenu() {
                 <option value={0}>Không hoạt động</option>
               </select>
               {formik.touched.activeFlag && formik.errors.activeFlag && (
-                <HelperText valid={false}>{formik.errors.activeFlag}</HelperText>
+                <HelperText valid={false}>
+                  {formik.errors.activeFlag}
+                </HelperText>
               )}
             </Label>
           </div>
@@ -176,8 +199,16 @@ function EditMenu() {
             )}
           </Label>
 
-          <Button className="p-4 mt-6" type="submit" disabled={formik.isSubmitting}>
-            {formik.isSubmitting ? "Đang xử lý..." : id ? "Lưu Menu" : "Thêm Menu"}
+          <Button
+            className="p-4 mt-6"
+            type="submit"
+            disabled={formik.isSubmitting}
+          >
+            {formik.isSubmitting
+              ? "Đang xử lý..."
+              : id
+              ? "Lưu Menu"
+              : "Thêm Menu"}
           </Button>
         </form>
       </div>

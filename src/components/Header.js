@@ -60,7 +60,47 @@ function Header() {
     showSuccessToast("You are signed out");
   }
 
-  // Get notification by self
+  const fetchNewEmails = async () => {
+    try {
+      const res = await fetch("/user/getGmailMessages");
+      const data = await res.json();
+  
+      if (!data.messages) return [];
+  
+      const newEmails = data.messages.filter((message) => {
+        return message.labelIds && message.labelIds.includes("UNREAD");
+      });
+  
+      return newEmails;
+    } catch (err) {
+      console.error("Lỗi khi gọi Gmail API từ backend:", err);
+      return [];
+    }
+  };
+  
+
+  const { token } = getTokenInfo();
+
+  const addEmailNotification = async () => {
+    const newEmails = await fetchNewEmails(); // Không cần token nữa
+    const newNotifications = newEmails.map((email) => ({
+      id: email.id,
+      title: `Email mới: ${email.id}`,
+      isRead: false,
+      createdAt: new Date().toISOString(),
+      type: "email",
+    }));
+  
+    setNotifications((prev) => [...newNotifications, ...prev]);
+  };
+  
+
+  useEffect(() => {
+    addEmailNotification();
+  }, []);
+  
+
+  // Get notifications from Firebase
   const getSelfNotification = async () => {
     try {
       const querySnapshot = await getDocs(q);
@@ -70,23 +110,18 @@ function Header() {
           ...doc.data(),
         };
       });
-
-      console.log("Notifications:", notifications);
       setNotifications(notifications);
     } catch (error) {
       console.error("Error fetching notifications:", error);
-      return [];
     }
   };
-
-  console.log(notifications);
 
   useEffect(() => {
     getSelfNotification();
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       if (firstRender.current) {
         firstRender.current = false;
         return;
@@ -122,7 +157,7 @@ function Header() {
   return (
     <header className="z-40 py-4 bg-white shadow-bottom dark:bg-gray-800">
       <div className="container flex items-center justify-between h-full px-6 mx-auto text-purple-600 dark:text-purple-300">
-        {/* <!-- Mobile hamburger --> */}
+        {/* Mobile hamburger */}
         <button
           className="p-1 mr-5 -ml-1 rounded-md lg:hidden focus:outline-none focus:shadow-outline-purple"
           onClick={toggleSidebar}
@@ -130,7 +165,8 @@ function Header() {
         >
           <MenuIcon className="w-6 h-6" aria-hidden="true" />
         </button>
-        {/* <!-- Search input --> */}
+
+        {/* Search input */}
         <div className="flex justify-center flex-1 lg:mr-32">
           <div className="relative w-full max-w-xl mr-6 focus-within:text-purple-500">
             <div className="absolute inset-y-0 flex items-center pl-2">
@@ -143,8 +179,9 @@ function Header() {
             />
           </div>
         </div>
+
         <ul className="flex items-center flex-shrink-0 space-x-6">
-          {/* <!-- Theme toggler --> */}
+          {/* Theme toggler */}
           <li className="flex">
             <button
               className="rounded-md focus:outline-none focus:shadow-outline-purple"
@@ -158,7 +195,8 @@ function Header() {
               )}
             </button>
           </li>
-          {/* <!-- Notifications menu --> */}
+
+          {/* Notifications menu */}
           <li className="relative">
             <button
               className="align-middle rounded-md"
@@ -167,7 +205,7 @@ function Header() {
               aria-haspopup="true"
             >
               <BellIcon className="w-5 h-5" aria-hidden="true" />
-              {/* <!-- Notification badge --> */}
+              {/* Notification badge */}
               {notifications.some((n) => !n.isRead) && (
                 <span
                   aria-hidden="true"
@@ -182,51 +220,50 @@ function Header() {
               onClose={() => setIsNotificationsMenuOpen(false)}
               className="overflow-hidden overflow-y-scroll max-h-64"
             >
-              {notifications &&
-                notifications.map((n, i) => {
-                  return (
-                    <>
-                      <DropdownItem
-                        tag="div"
-                        className="flex-col items-start"
-                        onClick={() => {
-                          if (!n.isRead) {
-                            updateNoti(n.id, { isRead: true });
-                            setNotifications((prev) => {
-                              return prev.map((p) => {
-                                if (p.id === n.id) p.isRead = true;
-                                return p;
-                              });
-                            });
-                          }
-                          history.push(`/app/order/add-order/${n.orderId}`);
-                        }}
-                      >
-                        <div className="w-full">
-                          <span>{`Đơn hàng ${n.orderCode}`}</span>
-                          {!n.isRead && (
-                            <span
-                              aria-hidden="true"
-                              className="inline-block float-right w-3 h-3 bg-red-600 border-2 border-white rounded-full dark:border-gray-800"
-                            ></span>
-                          )}
-                        </div>
-                        <div className="w-full">{n.title}</div>
-                        <div className="w-full text-xs text-gray-500">
-                          {dayjs(new Date(n.createdAt)).format(
-                            "DD-MM-YYYY HH:mm"
-                          )}
-                        </div>
-                      </DropdownItem>
-                      {i !== notifications.length - 1 && (
-                        <hr className="h-[1px] w-full bg-gray-400"></hr>
+              {notifications.map((n, i) => (
+                <>
+                  <DropdownItem
+                    tag="div"
+                    className="flex-col items-start"
+                    onClick={() => {
+                      if (!n.isRead) {
+                        updateNoti(n.id, { isRead: true });
+                        setNotifications((prev) => {
+                          return prev.map((p) => {
+                            if (p.id === n.id) p.isRead = true;
+                            return p;
+                          });
+                        });
+                      }
+                      if (n.type === "email") {
+                        history.push("/app/emails");
+                      } else {
+                        history.push(`/app/order/add-order/${n.orderId}`);
+                      }
+                    }}
+                  >
+                    <div className="w-full">
+                      <span>{n.title}</span>
+                      {!n.isRead && (
+                        <span
+                          aria-hidden="true"
+                          className="inline-block float-right w-3 h-3 bg-red-600 border-2 border-white rounded-full dark:border-gray-800"
+                        ></span>
                       )}
-                    </>
-                  );
-                })}
+                    </div>
+                    <div className="w-full text-xs text-gray-500">
+                      {dayjs(new Date(n.createdAt)).format("DD-MM-YYYY HH:mm")}
+                    </div>
+                  </DropdownItem>
+                  {i !== notifications.length - 1 && (
+                    <hr className="h-[1px] w-full bg-gray-400"></hr>
+                  )}
+                </>
+              ))}
             </Dropdown>
           </li>
-          {/* <!-- Profile menu --> */}
+
+          {/* Profile menu */}
           <li className="relative">
             <button
               className="rounded-full"
@@ -255,7 +292,7 @@ function Header() {
                   className="w-4 h-4 mr-3"
                   aria-hidden="true"
                 />
-                <span>Profile</span>
+                <span>Trang cá nhân</span>
               </DropdownItem>
 
               <DropdownItem tag="a" href="#">

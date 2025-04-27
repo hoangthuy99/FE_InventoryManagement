@@ -127,18 +127,28 @@ const InvoiceGDR = ({ invoiceData }) => (
         Tổng tiền thanh toán: {invoiceData?.total.toLocaleString()} VND
       </Text>
 
-      {/* Chữ ký */}
-      <Text style={styles.signature}>
-        Người lập phiếu: ............................
-      </Text>
-      <Text style={styles.signature}>
-        Thủ kho: ............................
-      </Text>
-      <Text style={styles.signature}>
-        Nhà cung cấp: ............................
-      </Text>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginTop: 30,
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={styles.signature}>
+            Người lập phiếu: ..................................................
+          </Text>
+          <Text style={styles.signature}>
+            Thủ kho: ..........................................................
+          </Text>
+          <Text style={styles.signature}>
+            Nhà cung cấp: .....................................................
+          </Text>
+        </View>
 
-      <Image src="/images/qrcode.png" />
+        <Image style={{ width: 100, height: 100 }} src="/images/qrcode.png" />
+      </View>
     </Page>
   </Document>
 );
