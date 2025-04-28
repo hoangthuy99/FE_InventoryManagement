@@ -76,7 +76,7 @@ function Tracking() {
         return;
       }
   
-      getOrdersByIdList(ids, accessToken); // Đảm bảo truyền mảng, không join(",")
+      getOrdersByIdList(ids); 
     } catch (error) {
       console.error("Error fetching notifications:", error.message, error);
       return [];
