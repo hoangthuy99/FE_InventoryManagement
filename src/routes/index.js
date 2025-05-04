@@ -146,7 +146,7 @@ const routes = [
     roles: [roleTags.role_amdin],
   },
   {
-    path: "/user/edit-user/:id?",
+    path: "/user/add-user/:id?",
     component: EditUser,
     code: "ADD_EMPLOYEE",
     roles: [roleTags.role_amdin],

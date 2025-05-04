@@ -3,8 +3,7 @@ import { showErrorToast, showSuccessToast } from "../../components/Toast";
 import LocationPicker from "../../components/LocationPicker/LocationPicker";
 import SectionTitle from "../../components/Typography/SectionTitle";
 import { Button } from "@windmill/react-ui";
-import database from "../../config/FirebaseConfig";
-import { getFirestore, getDocs, addDoc, collection } from "firebase/firestore";
+import { getDatabase, ref, set } from "firebase/database";
 
 import {
   FormControl,
@@ -337,18 +336,31 @@ function AddOrder() {
   // Send notification to shipper
   const sendNoti = async () => {
     try {
-      await addDoc(collection(database, "notification"), {
+      const db = getDatabase();
+      const shipperCode = users.find((u) => u.id === getValues("shipperId"))?.code;
+  
+      if (!shipperCode) {
+        console.warn("Không tìm thấy mã shipper để gửi thông báo.");
+        return;
+      }
+  
+      const notificationId = `${Date.now()}_${id}`; // tạo ID duy nhất
+      const notificationRef = ref(db, `notifications/${shipperCode}/${notificationId}`);
+  
+      await set(notificationRef, {
         createdAt: new Date().toISOString(),
         createdBy: username,
         isRead: false,
         orderId: id,
         orderCode: order.orderCode,
-        sendTo: users.find((u) => u.id === getValues("shipperId")).code,
+        sendTo: shipperCode,
         title: "Bạn có thêm đơn hàng mới",
+        type: "order",
       });
-      console.log("Dữ liệu đã được ghi!");
+  
+      console.log("Thông báo đã được ghi vào Realtime Database!");
     } catch (error) {
-      console.error("Lỗi khi ghi dữ liệu:", error);
+      console.error("Lỗi khi ghi dữ liệu vào Realtime DB:", error);
     }
   };
 

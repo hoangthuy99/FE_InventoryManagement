@@ -8,7 +8,7 @@ import ChartLegend from "../components/Chart/ChartLegend";
 import PageTitle from "../components/Typography/PageTitle";
 import { ChatIcon, CartIcon, MoneyIcon, PeopleIcon } from "../icons";
 import RoundIcon from "../components/RoundIcon";
-import response from "../utils/demo/tableData";
+import data from "../assets/data.json";
 import {
   TableBody,
   TableContainer,
@@ -41,10 +41,8 @@ const revenueFilters = [
 ];
 
 function Dashboard() {
-  const { fetchMenu } = useAuth();
-  const firstLoading = useRef(true);
-  const [data, setData] = useState([]);
   const [filterType, setFilterType] = useState(1);
+  const { orStatus } = data;
   const [lineChartData, setLineChartData] = useState({
     data: {
       labels: ["January", "February", "March", "April", "May", "June", "July"],
@@ -235,7 +233,7 @@ function Dashboard() {
       console.log("Dữ liệu API trả về:", response.data);
 
       if (response.data && Array.isArray(response.data)) {
-        setOrders(response.data?.filter((o) => o.status === 1));
+        setOrders(response.data);
       } else {
         setOrders([]);
       }
@@ -362,7 +360,7 @@ function Dashboard() {
                   </span>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm">{o.status}</span>
+                  {orStatus?.find((s) => s.key === o?.status)?.name}
                 </TableCell>
               </TableRow>
             ))}

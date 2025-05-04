@@ -84,7 +84,7 @@ const routes = [
     name: "Employee",
     routes: [
       { path: "/app/user/all-user", name: "All Employee" },
-      { path: "/app/user/edit-user", name: "Add Employee" },
+      { path: "/app/user/add-user", name: "Add Employee" },
     ],
 
     roles: [roleTags.role_amdin],

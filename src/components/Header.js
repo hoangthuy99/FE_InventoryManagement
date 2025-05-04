@@ -12,7 +12,6 @@ import {
 } from "../icons";
 import {
   Avatar,
-  Badge,
   Input,
   Dropdown,
   DropdownItem,
@@ -22,15 +21,12 @@ import { useAuth } from "../context/AuthContext";
 import { useHistory, Link } from "react-router-dom";
 import { showSuccessToast } from "./Toast";
 import {
-  collection,
-  doc,
-  getDocs,
-  onSnapshot,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import database from "../config/FirebaseConfig";
+  getDatabase,
+  ref,
+  onValue,
+  update,
+  remove,
+} from "firebase/database";
 import dayjs from "dayjs";
 
 function Header() {
@@ -39,119 +35,95 @@ function Header() {
   const { logout, getTokenInfo } = useAuth();
   const { username } = getTokenInfo();
   const history = useHistory();
-  const notiRef = collection(database, "notification");
-  const q = query(notiRef, where("sendTo", "==", username));
+
   const [notifications, setNotifications] = useState([]);
   const [isNotificationsMenuOpen, setIsNotificationsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const firstRender = useRef(true);
+  const database = getDatabase();
 
-  function handleNotificationsClick() {
+  const handleNotificationsClick = () => {
     setIsNotificationsMenuOpen(true);
-  }
+  };
 
-  function handleProfileClick() {
+  const handleProfileClick = () => {
     setIsProfileMenuOpen(true);
-  }
+  };
 
-  function handleLogout() {
+  const handleLogout = () => {
     logout();
     history.push("/login");
     showSuccessToast("You are signed out");
-  }
+  };
 
   const fetchNewEmails = async () => {
     try {
       const res = await fetch("/user/getGmailMessages");
       const data = await res.json();
-  
+
       if (!data.messages) return [];
-  
-      const newEmails = data.messages.filter((message) => {
-        return message.labelIds && message.labelIds.includes("UNREAD");
-      });
-  
-      return newEmails;
+
+      return data.messages.filter((message) =>
+        message.labelIds?.includes("UNREAD")
+      );
     } catch (err) {
       console.error("Lỗi khi gọi Gmail API từ backend:", err);
       return [];
     }
   };
-  
-
-  const { token } = getTokenInfo();
 
   const addEmailNotification = async () => {
-    const newEmails = await fetchNewEmails(); // Không cần token nữa
-    const newNotifications = newEmails.map((email) => ({
-      id: email.id,
-      title: `Email mới: ${email.id}`,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      type: "email",
-    }));
-  
-    setNotifications((prev) => [...newNotifications, ...prev]);
+    const newEmails = await fetchNewEmails();
+    const updates = {};
+
+    newEmails.forEach((email) => {
+      updates[email.id] = {
+        title: `Email mới: ${email.id}`,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        type: "email",
+      };
+    });
+
+    const updateRef = ref(database, `notifications/${username}`);
+    await update(updateRef, updates);
   };
-  
 
   useEffect(() => {
     addEmailNotification();
   }, []);
-  
-
-  // Get notifications from Firebase
-  const getSelfNotification = async () => {
-    try {
-      const querySnapshot = await getDocs(q);
-      const notifications = querySnapshot.docs.map((doc) => {
-        return {
-          id: doc.id,
-          ...doc.data(),
-        };
-      });
-      setNotifications(notifications);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
-  };
 
   useEffect(() => {
-    getSelfNotification();
-  }, []);
+    const notiRef = ref(database, `notifications/${username}`);
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (firstRender.current) {
-        firstRender.current = false;
-        return;
+    const unsubscribe = onValue(notiRef, (snapshot) => {
+      const data = snapshot.val();
+      let newList = [];
+
+      if (data) {
+        Object.entries(data).forEach(([key, value]) => {
+          newList.push({ id: key, ...value });
+        });
+
+        newList.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
       }
 
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          const docData = change.doc.data();
-          if (docData.sendTo) {
-            setNotifications((prev) => [
-              {
-                id: change.doc.id,
-                ...docData,
-              },
-              ...prev,
-            ]);
-            showSuccessToast("Bạn có thông báo mới");
-          }
-        }
-        if (change.type === "removed") {
-          console.log(change.doc);
-        }
-      });
+      if (!firstRender.current && newList.length > notifications.length) {
+        showSuccessToast("Bạn có thông báo mới");
+      }
+
+      setNotifications(newList);
+      if (firstRender.current) firstRender.current = false;
     });
 
     return () => unsubscribe();
-  }, [database]);
+  }, []);
 
   const updateNoti = async (docId, payload) => {
-    await updateDoc(doc(database, "notification", docId), payload);
+    const updateRef = ref(database, `notifications/${username}/${docId}`);
+    await update(updateRef, payload);
   };
 
   return (
@@ -196,7 +168,7 @@ function Header() {
             </button>
           </li>
 
-          {/* Notifications menu */}
+          {/* Notifications */}
           <li className="relative">
             <button
               className="align-middle rounded-md"
@@ -205,7 +177,6 @@ function Header() {
               aria-haspopup="true"
             >
               <BellIcon className="w-5 h-5" aria-hidden="true" />
-              {/* Notification badge */}
               {notifications.some((n) => !n.isRead) && (
                 <span
                   aria-hidden="true"
@@ -221,19 +192,18 @@ function Header() {
               className="overflow-hidden overflow-y-scroll max-h-64"
             >
               {notifications.map((n, i) => (
-                <>
+                <React.Fragment key={n.id}>
                   <DropdownItem
                     tag="div"
                     className="flex-col items-start"
                     onClick={() => {
                       if (!n.isRead) {
                         updateNoti(n.id, { isRead: true });
-                        setNotifications((prev) => {
-                          return prev.map((p) => {
-                            if (p.id === n.id) p.isRead = true;
-                            return p;
-                          });
-                        });
+                        setNotifications((prev) =>
+                          prev.map((p) =>
+                            p.id === n.id ? { ...p, isRead: true } : p
+                          )
+                        );
                       }
                       if (n.type === "email") {
                         history.push("/app/emails");
@@ -258,7 +228,7 @@ function Header() {
                   {i !== notifications.length - 1 && (
                     <hr className="h-[1px] w-full bg-gray-400"></hr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </Dropdown>
           </li>
@@ -283,15 +253,8 @@ function Header() {
               isOpen={isProfileMenuOpen}
               onClose={() => setIsProfileMenuOpen(false)}
             >
-              <DropdownItem
-                tag={Link}
-                to="/app/profile"
-                className="flex items-center"
-              >
-                <OutlinePersonIcon
-                  className="w-4 h-4 mr-3"
-                  aria-hidden="true"
-                />
+              <DropdownItem tag={Link} to="/app/profile" className="flex items-center">
+                <OutlinePersonIcon className="w-4 h-4 mr-3" aria-hidden="true" />
                 <span>Trang cá nhân</span>
               </DropdownItem>
 
@@ -299,11 +262,9 @@ function Header() {
                 <OutlineCogIcon className="w-4 h-4 mr-3" aria-hidden="true" />
                 <span>Settings</span>
               </DropdownItem>
+
               <DropdownItem onClick={handleLogout}>
-                <OutlineLogoutIcon
-                  className="w-4 h-4 mr-3"
-                  aria-hidden="true"
-                />
+                <OutlineLogoutIcon className="w-4 h-4 mr-3" aria-hidden="true" />
                 <span>Log out</span>
               </DropdownItem>
             </Dropdown>

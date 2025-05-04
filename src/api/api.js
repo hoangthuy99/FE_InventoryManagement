@@ -152,6 +152,7 @@ export const userAPI = {
   getAll: () => api.get("/user"),
   search: (data) => api.post("/user/search", data),
   getById: (id) => api.get(`/user/${id}`),
+  create: (data) => api.post("/user/add", data),
   update: (id, data) => api.put(`/user/${id}`, data),
   delete: (id) => api.delete(`/user/${id}`),
   getAllUserGoogle: () => api.get("/user/getAllUsersGG"),

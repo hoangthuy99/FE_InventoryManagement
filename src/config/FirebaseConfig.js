@@ -1,21 +1,19 @@
-// firebase-config.js
-
+// firebase.js
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB5BfNeXHaRN6myaiDqvoYShhFzpX5ZBXc",
-  authDomain: "rare-array-457716-j5.firebaseapp.com",
-  projectId: "rare-array-457716-j5",
-  storageBucket: "rare-array-457716-j5.firebasestorage.app",
-  messagingSenderId: "941592993989",
-  appId: "1:941592993989:web:422764bdf3ca974e9790ac",
-  measurementId: "G-NE431NQQQQ"
+  apiKey: "AIzaSyCw7Jf6eECIUGKt4LP3K44ExGSW2iqm1kI",
+  authDomain: "shpping-91bf8.firebaseapp.com",
+  projectId: "shpping-91bf8",
+  storageBucket: "shpping-91bf8.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abc123",
+  databaseURL: "https://shpping-91bf8-default-rtdb.firebaseio.com",
 };
 
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const database = getFirestore(app);
 
-export default database;
+const db = getDatabase(app);
+
+export { db };
