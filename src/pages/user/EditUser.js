@@ -38,27 +38,19 @@ function EditUser() {
     username: yup.string().required("Tên đăng nhập không được để trống!"),
     fullname: yup.string().required("Họ và tên không được để trống!"),
     email: yup.string().email("Email không hợp lệ!").required("Email không được để trống!"),
-    phone: yup.string().matches(/^\d{10,15}$/, "Số điện thoại phải từ 10-15 số!")
-      .required("Số điện thoại không được để trống!"),
+    phone: yup.string().matches(/^\d{10,15}$/, "Số điện thoại phải từ 10-15 số!").required("Số điện thoại không được để trống!"),
     address: yup.string().required("Địa chỉ không được để trống!"),
-    password: yup.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự!")
-      .required("Mật khẩu không được để trống!"),
-    confirmPassword: yup.string().oneOf([yup.ref("password")], "Mật khẩu nhập lại không khớp!")
-      .required("Mật khẩu xác nhận không được để trống!"),
-    activeFlag: yup.number().oneOf([0, 1], "Trạng thái không hợp lệ")
-      .required("Trạng thái không được để trống!"),
-    
+    password: yup.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự!").required("Mật khẩu không được để trống!"),
+    confirmPassword: yup.string().oneOf([yup.ref("password")], "Mật khẩu nhập lại không khớp!").required("Mật khẩu xác nhận không được để trống!"),
+    activeFlag: yup.number().oneOf([0, 1], "Trạng thái không hợp lệ").required("Trạng thái không được để trống!"),
   });
 
   // Schema dùng cho cập nhật
   const editValidationSchema = yup.object({
     fullname: yup.string().required("Họ và tên không được để trống!"),
-    email: yup.string().email("Email không hợp lệ!").required("Email không được để trống!"),
-    phone: yup.string().matches(/^\d{10,15}$/, "Số điện thoại phải từ 10-15 số!")
-      .required("Số điện thoại không được để trống!"),
+    phone: yup.string().matches(/^\d{10,15}$/, "Số điện thoại phải từ 10-15 số!").required("Số điện thoại không được để trống!"),
     address: yup.string().required("Địa chỉ không được để trống!"),
-    activeFlag: yup.number().oneOf([0, 1], "Trạng thái không hợp lệ")
-      .required("Trạng thái không được để trống!"),
+    activeFlag: yup.number().oneOf([0, 1], "Trạng thái không hợp lệ").required("Trạng thái không được để trống!"),
   });
 
   const formik = useFormik({
@@ -70,14 +62,16 @@ function EditUser() {
         const submitValues = { ...values };
 
         if (isEditMode) {
-          delete submitValues.password;
-          delete submitValues.confirmPassword;
-          delete submitValues.username;
-
-          await userAPI.update(id, submitValues);
+          // Gọi API cập nhật
+          const res = await userAPI.update(id, submitValues);
+        
+          // Gọi lại fetchUser để cập nhật state
+          await fetchUser();
+        
           showSuccessToast("Lưu người dùng thành công!");
           history.push("/app/user/all-user");
-        } else {
+        }
+         else {
           await userAPI.create(submitValues);
           showSuccessToast("Thêm người dùng thành công!");
           resetForm();
@@ -88,8 +82,9 @@ function EditUser() {
         );
       }
     },
-  });
+});
 
+  
   const fetchRoles = async () => {
     try {
       const response = await roleAPI.getAllRoles();
@@ -106,7 +101,7 @@ function EditUser() {
       const data = response.data?.data;
       if (data) {
         setInitialValues({
-          username: "********",
+          username: data.username,  // Chỉnh sửa các giá trị cần thiết
           fullname: data.fullname,
           email: data.email,
           phone: data.phone,
@@ -121,6 +116,7 @@ function EditUser() {
       showErrorToast("Lỗi khi tải thông tin người dùng!");
     }
   };
+  
 
   useEffect(() => {
     fetchRoles();

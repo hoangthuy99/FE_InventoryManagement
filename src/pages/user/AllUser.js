@@ -176,7 +176,7 @@ function AllUser() {
                         size="icon"
                         aria-label="Edit"
                         onClick={() =>
-                          (window.location.href = `/app/user/edit-user/${user.id}`)
+                          (window.location.href = `/app/user/add-user/${user.id}`)
                         }
                       >
                         <EditIcon className="w-5 h-5" aria-hidden="true" />

@@ -40,24 +40,34 @@ function Tracking() {
     acc[o.key] = o.name;
     return acc;
   }, {});
+  
 
   const getOrdersByIds = async (ids) => {
+    if (!ids || ids.length === 0) {
+      console.log("Không có ID đơn hàng để truy vấn.");
+      return;
+    }
+  
     try {
       console.log("Đang gọi API với IDs:", ids);  // Log kiểm tra
-      const res = await orderAPI.getByIdList(ids, accessToken);
-      if (res.data.code === 200 && res.data.data.length > 0) {
+      const res = await orderAPI.getByIdList(ids, accessToken); // Gọi API với token
+      console.log("API trả về:", res.data);  // Log toàn bộ response của API
+  
+      // Kiểm tra nếu API trả về đúng cấu trúc
+      if (res.data?.code === 200 && res.data?.data?.length > 0) {
         setOrders(res.data.data);
-        setOrderSelected(res.data.data[0]);
+        setOrderSelected(res.data.data[0]);  // Lựa chọn đơn hàng đầu tiên
       } else {
         setOrders([]);
         setOrderSelected(null);
-        console.log("Không tìm thấy đơn hàng");
+        console.log("Không tìm thấy đơn hàng.");
       }
     } catch (err) {
-      console.error("Lỗi khi lấy đơn hàng:", err);
+      console.error("Lỗi khi gọi API lấy đơn hàng:", err);
+      showErrorToast("Không thể lấy dữ liệu đơn hàng");
     }
   };
-  console.log("Order IDs từ Firebase:", orderIds);   
+  
  
 
 
