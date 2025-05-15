@@ -19,6 +19,7 @@ const filterStatus = {
 function Tracking() {
   const { getShipperToken, shipperLogout } = useAuth();
   const { code, accessToken } = getShipperToken();
+  const { code, accessToken } = getShipperToken();
 console.log("Access Token from React:", accessToken);
 
   const [orders, setOrders] = useState([]);
