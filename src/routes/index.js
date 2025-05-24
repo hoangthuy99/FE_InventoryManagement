@@ -97,7 +97,7 @@ const routes = [
     path: "/customer/all-customer",
     component: AllCustomer,
     code: "ALL_CUSTOMER",
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_amdin, roleTags.role_staff],
   },
  
   {
@@ -110,7 +110,7 @@ const routes = [
     path: "/branch/all-branch",
     component: AllBranch,
     code: "ALL_BRANCH",
-    roles: [roleTags.role_amdin],
+    roles: [roleTags.role_amdin, roleTags.role_staff],
   },
  
   {

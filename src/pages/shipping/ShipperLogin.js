@@ -20,12 +20,27 @@ function ShipperLogin() {
       const res = await authAPI.loginOauth(response.credential);
 
       if (res.status === 200) {
-        const { exp } = jwtDecode(res.data?.data.accessToken); // Kiểm tra lỗi
+        const { accessToken, code } = res.data?.data;
         const token = JSON.stringify({
-          accessToken: response.credential,
-          expiration: Date.now() + exp,
-          ...res.data?.data,
+          accessToken,
+          code,
+          expiration: jwtDecode(accessToken).exp * 1000,
         });
+        localStorage.setItem("shipperToken", token);
+        localStorage.setItem("shipperCode", code);
+        const tokenInfo = jwtDecode(accessToken);
+        const expiration = tokenInfo.exp * 1000;
+        const currentTime = Date.now();
+        if (expiration < currentTime) {
+          showErrorToast("Token expired");
+          return;
+        }
+        // Lưu token vào localStorage
+        localStorage.setItem("shipperToken", token);
+        localStorage.setItem("shipperCode", code);
+        // Lưu thông tin người dùng vào localStorage
+        localStorage.setItem("shipperUser", JSON.stringify(tokenInfo));
+
         shipperLogin(token);
         showSuccessToast("Login successfully");
         history.push("/shipping/tracking");

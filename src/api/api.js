@@ -43,7 +43,7 @@ api.interceptors.response.use(
 );
 
 //  Function API cho từng module
-//  API Category
+//  API C
 export const customerAPI = {
   getAll: () => api.get("/customer"),
   getAllPaginated: (page, limit) =>
@@ -53,6 +53,7 @@ export const customerAPI = {
   update: (id, data) => api.put(`/customer/${id}`, data),
   delete: (id) => api.delete(`/customer/${id}`),
   getSampleFile: () => api.get("/customer/sampleExcel"),
+  searchCustomer: (data) => api.post("/customer/searchCus", data),
   importExcel: (data) =>
     api.post("/customer/importExcel", data, {
       headers: {

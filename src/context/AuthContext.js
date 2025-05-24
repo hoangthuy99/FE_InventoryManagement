@@ -18,15 +18,21 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await menuAPI.getMenuByUser();
       const data = res.data;
-
-      const result = await buildMenuTree(data);
+  
+      // Kiểm tra menu có phải mảng không
+      if (!Array.isArray(data)) {
+        throw new Error("Menu data is not an array");
+      }
+  
+      const result = buildMenuTree(data);
       setFilteredMenu(result);
       setMenu(data);
     } catch (error) {
       showErrorToast(error.message);
+      console.error("Fetch menu error:", error);
     }
   };
-
+  
   const buildMenuTree = (menuList, parentId = null) => {
     return menuList
       .filter(

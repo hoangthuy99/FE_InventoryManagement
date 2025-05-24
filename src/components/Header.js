@@ -56,43 +56,6 @@ function Header() {
     showSuccessToast("You are signed out");
   };
 
-  const fetchNewEmails = async () => {
-    try {
-      const res = await fetch("/user/getGmailMessages");
-      const data = await res.json();
-
-      if (!data.messages) return [];
-
-      return data.messages.filter((message) =>
-        message.labelIds?.includes("UNREAD")
-      );
-    } catch (err) {
-      console.error("Lỗi khi gọi Gmail API từ backend:", err);
-      return [];
-    }
-  };
-
-  const addEmailNotification = async () => {
-    const newEmails = await fetchNewEmails();
-    const updates = {};
-
-    newEmails.forEach((email) => {
-      updates[email.id] = {
-        title: `Email mới: ${email.id}`,
-        isRead: false,
-        createdAt: new Date().toISOString(),
-        type: "email",
-      };
-    });
-
-    const updateRef = ref(database, `notifications/${username}`);
-    await update(updateRef, updates);
-  };
-
-  useEffect(() => {
-    addEmailNotification();
-  }, []);
-
   useEffect(() => {
     const notiRef = ref(database, `notifications/${username}`);
 

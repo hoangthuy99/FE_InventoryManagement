@@ -337,16 +337,21 @@ function AddOrder() {
   const sendNoti = async () => {
     try {
       const db = getDatabase();
-      const shipperCode = users.find((u) => u.id === getValues("shipperId"))?.code;
-  
+      const shipperCode = users.find(
+        (u) => u.id === getValues("shipperId")
+      )?.code;
+
       if (!shipperCode) {
         console.warn("Không tìm thấy mã shipper để gửi thông báo.");
         return;
       }
-  
+
       const notificationId = `${Date.now()}_${id}`; // tạo ID duy nhất
-      const notificationRef = ref(db, `notifications/${shipperCode}/${notificationId}`);
-  
+      const notificationRef = ref(
+        db,
+        `notifications/${shipperCode}/${notificationId}`
+      );
+
       await set(notificationRef, {
         createdAt: new Date().toISOString(),
         createdBy: username,
@@ -357,7 +362,7 @@ function AddOrder() {
         title: "Bạn có thêm đơn hàng mới",
         type: "order",
       });
-  
+
       console.log("Thông báo đã được ghi vào Realtime Database!");
     } catch (error) {
       console.error("Lỗi khi ghi dữ liệu vào Realtime DB:", error);
@@ -415,11 +420,12 @@ function AddOrder() {
                     onChange={field.onChange}
                     label="Chi nhánh"
                   >
-                    {branches.map((b) => (
-                      <MenuItem key={b.id} value={b.id}>
-                        {b.name}
-                      </MenuItem>
-                    ))}
+                    {Array.isArray(branches) &&
+                      branches.map((b) => (
+                        <MenuItem key={b.id} value={b.id}>
+                          {b.name}
+                        </MenuItem>
+                      ))}
                   </Select>
                   <FormHelperText>{errors.branchId?.message}</FormHelperText>
                 </FormControl>

@@ -1,4 +1,3 @@
-
 {
   "gdrStatus": [
     {
@@ -117,7 +116,12 @@
     }
   ],
   "roleTags": {
-    "role_amdin": "ROLE_ADMIN",
-    "role_staff": "ROLE_STAFF"
+    "role_admin": "ROLE_ADMIN",
+    "role_manager": "ROLE_MANAGER",
+    "role_branch_manager": "ROLE_BRANCH_MANAGER",
+    "role_store_manager": "ROLE_STORE_MANAGER",
+    "role_staff": "ROLE_STAFF",
+    "role_accountant": "ROLE_ACCOUNTANT",
+    "role_shipper": "ROLE_SHIPPER"
   }
 }

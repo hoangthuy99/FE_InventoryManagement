@@ -19,7 +19,7 @@ const filterStatus = {
 function Tracking() {
   const { getShipperToken, shipperLogout } = useAuth();
   const { code, accessToken } = getShipperToken();
-  const { code, accessToken } = getShipperToken();
+
 console.log("Access Token from React:", accessToken);
 
   const [orders, setOrders] = useState([]);
@@ -108,7 +108,7 @@ console.log("Access Token from React:", accessToken);
         },
         shipper: {
           code: orderSelected.shipper.code,
-          name: orderSelected.shipper.name,
+          name: orderSelected.shipper?.username || "",
         },
         address: orderSelected.deliveryAddress,
         updatedAt: new Date().toISOString(),
@@ -129,8 +129,7 @@ console.log("Access Token from React:", accessToken);
       console.error(err);
     }
   };
-  const { code: shipperCode } = getShipperToken();
-console.log("Shipper Code:", shipperCode);
+ 
 
 
   const sendNotification = async () => {
@@ -151,6 +150,8 @@ console.log("Shipper Code:", shipperCode);
       console.error("Lỗi gửi notification:", err);
     }
   };
+  console.log("Shipper info:", orderSelected.shipper);
+
 
   useEffect(() => {
     const { code: shipperCode } = getShipperToken(); // Lấy shipperCode từ AuthContext
@@ -234,8 +235,6 @@ console.log("Shipper Code:", shipperCode);
                     height="50"
                   />
                   <div>
-                    if (!orderSelected?.id) return{" "}
-                    <div>Không có đơn hàng nào được chọn</div>;
                     <h3 className="font-semibold text-md">
                       Đơn hàng {o.orderCode}
                     </h3>

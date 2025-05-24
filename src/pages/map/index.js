@@ -1,4 +1,3 @@
-
 import "ol/ol.css";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { areaAPI } from "../../api/api";
@@ -38,6 +37,8 @@ const modeOptions = [
 ];
 
 function MapLayer() {
+const mapMode = useMapStore.getState().mapMode;
+
   const {
     areas,
     setAreas,
@@ -50,7 +51,6 @@ function MapLayer() {
     setAreaSelected,
     resetAreaSelected,
     mode,
-    mapMode,
     setMode,
     deleteAreas,
     setDeleteAreas,
@@ -193,7 +193,7 @@ function MapLayer() {
   return (
     <Box>
       <Box
-        className="pt-5 w-1/2"
+        className="w-1/2 pt-5"
         display={"flex"}
         alignItems={"center"}
         gap={2}
@@ -228,13 +228,12 @@ function MapLayer() {
             }}
             size="small"
           >
-            {branchs?.map((b, i) => {
-              return (
+            {Array.isArray(branchs) &&
+              branchs.map((b, i) => (
                 <MenuItem key={i} value={b?.id}>
                   {b?.name}
                 </MenuItem>
-              );
-            })}
+              ))}
           </Select>
         </FormControl>
 
